@@ -28,6 +28,9 @@ module RRB
     end
 
     def inspect_method( namespace, node )
+      return unless node.range.contain?(@extracted_range)
+      @target_method = NodeMethod.new(namespace, node)
+      
       before_vars, in_vars, after_vars = partition_vars( node.local_vars,
                                                          @extracted_range )
       out_vars = before_vars + after_vars
@@ -45,13 +48,10 @@ module RRB
     end
     
     def visit_method( namespace, node )
-      return unless node.range.contain?(@extracted_range)
-      @target_method = NodeMethod.new(namespace, node)
       inspect_method(namespace, node)
     end
+    
     def visit_class_method( namespace, node )
-      return unless node.range.contain?(@extracted_range)
-      @target_method = NodeMethod.new(namespace, node)
       inspect_method(namespace, node)
     end
   end
@@ -89,8 +89,6 @@ module RRB
 
     extracted = lines[start_lineno..end_lineno]
     def_space_num =  count_indent_str( lines[method_lineno] ) 
-    call_space_num = count_indent( extracted )
-    
     
     0.upto(lines.length-1) do |lineno|
       if lineno == method_lineno
@@ -98,7 +96,7 @@ module RRB
         dst << reindent_lines( lines_of_def, def_space_num ).join
       end
       if lineno == end_lineno
-        dst << "\s" * call_space_num
+        dst << "\s" * count_indent( extracted )
         dst << fragment_of_call_method( new_method, args, assigned )
       end
       unless (start_lineno..end_lineno) === lineno
