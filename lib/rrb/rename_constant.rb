@@ -113,17 +113,12 @@ module RRB
 
       ns = Namespace.new(old_const)
       result_namespace = get_dumped_info.resolve_const( ns.chop, new_const )
-      if result_namespace.nil? then
-        return true
-      else
-          @error_message = "#{new_const}: already defined at "
-        if result_namespace != RRB::NS::Toplevel
-          @error_message << "#{result_namespace.name}\n"
-        else
-          @error_message << "Toplevel\n"
-        end
+      unless result_namespace.nil? then
+        @error_message = "#{result_namespace.name}::#{new_const} is already defined\n"
         return false
       end
+
+      return true
     end
 
   end
