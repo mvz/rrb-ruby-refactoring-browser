@@ -25,10 +25,7 @@ module RRB
     def result_to_io( dst )
 
       @files.each do |scriptfile|
-	dst << scriptfile.path
-	dst << IO_SPLITTER
-	dst << scriptfile.new_script
-	dst << IO_SPLITTER
+	scriptfile.result_to_io( dst )
       end
 
       dst << IO_TERMINATOR
