@@ -70,7 +70,7 @@ module RRB
 
     attr_reader :result
 
-    def visit_call( node )      
+    def visit_node( namespace, node )      
       node.method_calls.each do |call|
 	if call.name == @old_method then
 	  @result <<
@@ -94,14 +94,27 @@ module RRB
 				@old_method,
 				@new_method )
       end
-
-      visit_call( method_node )      
     end
 
-    def visit_toplevel( namespace, top_node )
-      visit_call( top_node )
-    end
     
+  end
+
+  class RenameMethodAllCheckVisitor < Visitor
+    
+    def initialize( old_method, new_method )
+      @old_method = old_method
+      @new_method = new_method
+      @result = true
+    end
+
+    def visit_node( namespace, node )
+      if node.fcalls.find{|fcall| fcall.name == @old_method } &&
+	  node.local_vars.find{|var| var.name == @new_method } then
+	@result = false
+      end
+    end
+
+    attr_reader :result
   end
   
   class ScriptFile
@@ -133,6 +146,13 @@ module RRB
       visitor = RenameMethodAllVisitor.new( old_method, new_method )
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
+    end
+
+    def rename_method_all?( old_method, new_method )
+      return false unless RRB.valid_method?( new_method )
+      visitor = RenameMethodAllCheckVisitor.new( old_method, new_method )
+      @tree.accept( visitor )
+      return visitor.result
     end
     
     attr_reader :new_script, :name
@@ -189,5 +209,8 @@ module RRB
     /^[A-Z][a-zA-Z0-9_]*$/ =~ id && !keyword?( id )
   end
  
-
+  def valid_method?( id )
+    /^[a-z_][a-zA-Z0-9_]*[!?]?$/ =~ id && !keyword?( id )
+  end
+  
 end
