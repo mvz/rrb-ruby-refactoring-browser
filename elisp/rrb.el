@@ -101,7 +101,7 @@ matches with rrb-ruby-file-name-regexp'"
 					    (list rrb-output-buffer
 						  "/tmp/rrb_log")
 					    nil
-					    "rename-local-variable"
+					    "--rename-local-variable"
 					    method old-var new-var
 					    "--stdin-stdout"))
       (if (/= error-code 0)

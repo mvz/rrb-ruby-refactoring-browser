@@ -7,8 +7,8 @@ def print_usage
 Usage: rrb refactoring-type refactoring-parameter io-type
 
   refactoring-type
-    * rename-local-variable Class#method old_var new_var
-    * rename-method-all old_method new_method
+    * --rename-local-variable Class#method old_var new_var
+    * --rename-method-all old_method new_method
 
   io-type
     * --stdin-stdout
@@ -34,11 +34,11 @@ if $0 == __FILE__ then
     #  analyze options
     refactor_type = ARGV.shift
     case refactor_type
-    when 'rename-local-variable'
+    when '--rename-local-variable'
       namespace, method_name = split_method_name ARGV.shift
       old_var = ARGV.shift
       new_var = ARGV.shift
-    when 'rename-method-all'
+    when '--rename-method-all'
       old_method = ARGV.shift
       new_method = ARGV.shift
     end
@@ -57,14 +57,14 @@ if $0 == __FILE__ then
 
     # refactoring
     case refactor_type
-    when 'rename-local-variable'
+    when '--rename-local-variable'
       unless script.rename_local_var?( namespace, method_name, old_var, new_var )
 	STDERR << "REJECTED\n"
 	exit 1
       end
       script.rename_local_var( namespace, method_name, old_var, new_var )
       output.call
-    when 'rename-method-all'
+    when '--rename-method-all'
       unless script.rename_method_all?( old_method, new_method )
 	STDERR << "REJECTED\n"
 	exit 1
