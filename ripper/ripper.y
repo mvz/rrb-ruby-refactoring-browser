@@ -22,6 +22,7 @@
 
 #define YYDEBUG 1
 #include "ruby.h"
+#include "version.h"
 #include "env.h"
 #include "node.h"
 #include "st.h"
@@ -2323,7 +2324,7 @@ static VALUE rip_ensure _((VALUE));
 #if RUBY_VERSION_CODE < 170
 extern VALUE rb_thread_pass _((void));
 #else
-extern VALUE rb_thread_schedule _((void));
+extern void rb_thread_schedule _((void));
 #endif
 
 struct rip_arg {
