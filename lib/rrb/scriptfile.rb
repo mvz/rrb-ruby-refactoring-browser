@@ -22,6 +22,14 @@ module RRB
       end
       @input.rewind
     end
+
+    def result_to_io( dst )
+      return if @new_script.nil?
+      dst << @path
+      dst << IO_SPLITTER
+      dst << @new_script
+      dst << IO_SPLITTER
+    end
     
     attr_reader :new_script, :path
 
