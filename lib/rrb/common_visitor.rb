@@ -55,7 +55,7 @@ module RRB
     attr_reader :namespace
 
     def visit_toplevel(namespace, node)
-      @namespace = namespace
+      @namespace = NodeNamespace.new_toplevel
     end
 
     def visit_class(namespace, node)
