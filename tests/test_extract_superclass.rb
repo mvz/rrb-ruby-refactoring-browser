@@ -96,6 +96,11 @@ EOS
                                                 RRB::NS['A::D::E']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( true,
+                   script.extract_superclass?( RRB::NS['B'], 'NEW',
+                                               [RRB::NS['B']],
+                                               '/home/heke/temp/file1.rb',
+                                               19 ))
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'NEW',
                                                [RRB::NS['K']],
