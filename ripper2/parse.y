@@ -3117,7 +3117,7 @@ block_call	: command do_block
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
+			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, escape_Qundef($4));
 		    %*/
 		    }
 		| block_call tCOLON2 operation2 opt_paren_args
@@ -3125,7 +3125,7 @@ block_call	: command do_block
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-			$$ = dispatch4(call, $1, ripper_intern("::"), $3, $4);
+			$$ = dispatch4(call, $1, ripper_intern("::"), $3, escape_Qundef($4));
 		    %*/
 		    }
 		;
@@ -3145,7 +3145,7 @@ method_call	: operation paren_args
 			$$ = new_call($1, $3, $4);
 		        fixpos($$, $1);
 		    /*%
-			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
+			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, escape_Qundef($4));
 		    %*/
 		    }
 		| primary_value tCOLON2 operation2 paren_args
