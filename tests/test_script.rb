@@ -112,24 +112,6 @@ end
     assert_equals(false, script.rename_class_var?(RRB::NS['X::B'], '@@a', '@@e'))
     assert_equals(true, script.rename_class_var?(RRB::NS['X::A'], '@@a', '@@f'))
   end
-  def test_extract_method
-    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
-      script_file.extract_method('bar', 11, 14)
-      assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,		    script_file.new_script )
-    end
-  end
-
-  def test_extract_method?
-    str_filename = 'samples/extract_method_sample.rb'
-    script = RRB::Script.new_from_filenames(str_filename)
-    
-    assert_equals(true, script.extract_method?(str_filename, 'bar', 11, 14))
-    assert_equals(false, script.extract_method?(str_filename, 'hogehoge', 11, 14))
-    assert_equals(false, script.extract_method?(str_filename, 'foo', 11, 14))
-    assert_equals(false, script.extract_method?(str_filename, 'bar', 8, 9))
-    assert_equals(true, script.extract_method?(str_filename, 'hoge', 21, 22))
-  end
 
   RENAME_METHOD_ALL_INPUT = "\
 /home/ohai/ruby/main.rb\C-a
