@@ -89,10 +89,9 @@ class TestNode < RUNIT::TestCase
     parser = RRB::Parser.new
     tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
 
+    # test visit_class and visit_method
     visitor1 = Visitor1.new
-
     tree.accept( visitor1 )
-
     assert_equals( [ 'TestClassA', 'TestClassB', 'TestClassC',
 		    'TestModuleA', 'TestModuleB' ],
 		  visitor1.classes )
@@ -101,9 +100,11 @@ class TestNode < RUNIT::TestCase
 		    [ 'TestClassA', 'method_3'],
 		    [ 'TestClassB', 'method_4'],
 		    [ 'TestModuleB', 'method_5'],
+		    [ '[sclass]', 'method_8' ],
 		  ],
 		  visitor1.methods.sort )
 
+    # test visit_class and namespace
     visitor2 = Visitor2.new
     tree.accept( visitor2 )
     assert_equals( [ [[], 'TestClassA'],
@@ -114,10 +115,12 @@ class TestNode < RUNIT::TestCase
 		  ],
 		  visitor2.classes )
 
+    # test visit_toplevel
     visitor3 = Visitor3.new
     tree.accept( visitor3 )
     assert_equals( [ 'TestClassA' ], visitor3.top_classes )
 
+    # test visit_node
     visitor4 = Visitor4.new
     tree.accept( visitor4 )    
     assert_equals( [['toplevel'],
@@ -133,17 +136,22 @@ class TestNode < RUNIT::TestCase
 		    ['TestClassA','TestModuleA','TestModuleB','method_5'],
 		    ['TestClassA','method_6'],
 		    ['TestClassA','method_7'],
+		    ['TestClassA', '[sclass]' ],
+		    ['TestClassA', '[sclass]', 'method_8' ],
 		  ].sort, visitor4.nodes.sort )
 
+    # test visit_singleton_method
     visitor5 = Visitor5.new
     tree.accept( visitor5 )
     assert_equals( [ [['TestClassA'],'method_6'] ].sort,
 		  visitor5.singleton_methods.sort )
 
+    # test visit_class_method
     visitor6 = Visitor6.new
     tree.accept( visitor6 )
     assert_equals( [ [['TestClassA'],'method_7'] ].sort,
 		  visitor6.class_methods.sort )
+
   end
 
 end
