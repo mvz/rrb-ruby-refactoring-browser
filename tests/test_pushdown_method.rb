@@ -19,13 +19,13 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     assert_equals("B calls B#z\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'w'),
                                                  RRB::NS['C'], filename, 28))
-    assert_equals("B#w: already defined at C\n", script.error_message)
+    assert_equals("C#w: already defined", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'w'),
                                                  RRB::NS['B'], filename, 23))    
     assert_equals("B is not the subclass of C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'asdf'),
                                                  RRB::NS['B'], filename, 23))    
-    assert_equals("C#asdf: no definition in C\n", script.error_message)
+    assert_equals("C#asdf: no definition", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                  RRB::NS['C'], filename, 28))
     assert_equals("B calls A#a\n", script.error_message)
@@ -193,7 +193,7 @@ end
     assert_equals(false,
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'fuga'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
-    assert_equals("Derived.fuga: already defined at Derived\n", script.error_message)
+    assert_equals("Derived.fuga: already defined", script.error_message)
 
   end
 
