@@ -399,17 +399,15 @@ module RRB
     end
 
     def ==(other)
-      return false unless other.kind_of?( Method )
-      return false unless @bare_name == other.bare_name
-      return false unless @namespace == other.namespace
-      return true
+      other.kind_of?( Method ) &&
+        @bare_name == other.bare_name &&
+        @namespace == other.namespace
     end
 
     def match_node?( namespace, method_node )
-      return false unless method_node.kind_of?( MethodNode ) 
-      return false unless namespace == @namespace 
-      return false unless method_node.name == @bare_name 
-      return true
+      method_node.kind_of?( MethodNode ) &&
+        namespace == @namespace &&
+        method_node.name == @bare_name 
     end
     
     def name
@@ -458,10 +456,9 @@ module RRB
     end
 
     def ==(other)
-      return false unless other.instance_of?( ClassMethod )
-      return false unless @bare_name == other.bare_name
-      return false unless @namespace == other.namespace
-      return true
+      other.instance_of?( ClassMethod ) &&
+        @bare_name == other.bare_name &&
+        @namespace == other.namespace
     end
 
     def match_node?( namespace, method_node )
