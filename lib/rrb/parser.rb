@@ -155,7 +155,7 @@ module RRB
 
     def on__assignable( var, arg )
       return unless var.kind_of?( IdInfo )
-      @scope_stack.last.assigned << var
+      @scope_stack.last.assigned << var if var.type == :id
       add_var( var )
     end
 
