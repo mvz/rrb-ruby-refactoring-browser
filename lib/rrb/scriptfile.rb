@@ -73,6 +73,10 @@ module RRB
     /^[a-z_][a-zA-Z0-9_]*$/ =~ id && !keyword?( id )
   end
 
+  def valid_instance_var?( id )
+    /^@[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
+  end
+
   def valid_global_var?( id ) 
     /^\$[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
   end
