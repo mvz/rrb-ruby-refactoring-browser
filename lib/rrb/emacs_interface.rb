@@ -91,13 +91,9 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def parse_argv_rename_method(argv)
+      classes = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
       old_method = argv.shift
       new_method = argv.shift
-      for i in 0...(argv.size)
-	break if /^--/ =~ argv[i]
-      end
-      classes = argv[0,i].map{|ns| RRB::NS.new(ns)}
-      i.times{ argv.shift }
       @args = [ classes, old_method, new_method ]
       @refactoring_method = :rename_method
       @check_method = :rename_method?
