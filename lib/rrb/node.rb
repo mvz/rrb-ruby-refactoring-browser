@@ -408,6 +408,10 @@ module RRB
       self.ary <=> other.ary
     end
 
+     def nested( bare_name )
+       Namespace.new( @namespace + [ bare_name ] )
+     end
+    
     Toplevel = Namespace.new( [] )
     Object = Namespace.new( ["Object"] )
   end
