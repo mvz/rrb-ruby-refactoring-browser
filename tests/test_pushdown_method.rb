@@ -156,7 +156,7 @@ class Base
 end
 
 class Derived < Base
-  def Base.hoge
+  def Derived.hoge
   end
 
 end
