@@ -76,13 +76,11 @@ end
 
   def test_rename_instance_var
     script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
-    #script.rename_instance_var(['X', 'A'], '@a', '@f')
     script.rename_instance_var(RRB::NS.new('X::A'), '@a', '@f')
     dst = ''
     script.result_to_io(dst)
     assert_equals(File.open('samples/rename_instance_var_sample_after.rb').read, dst)
     script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
-    #script.rename_instance_var(['X', 'B'], '@a', '@f')
     script.rename_instance_var(RRB::NS.new(['X', 'B']), '@a', '@f')
     dst = ''
     script.result_to_io(dst)
