@@ -4,6 +4,7 @@ require 'fileutils'
 require 'find'
 require 'rrb/dumped_info.rb'
 require 'rrb/default'
+require 'rrb/dump_modules'
 
 module RRB
 
@@ -60,7 +61,7 @@ module RRB
 	run_file << "$:.unshift '#{dirpath}'\n"
       end
       run_file << "require '#{main_script_path( script_dir_path )}'\n"
-      run_file << IO.read(File.join( File.dirname(__FILE__),"dump_modules.rb"))
+      run_file << DUMP_MODULES_SCRIPT
       run_file.close
       
       run_file_path

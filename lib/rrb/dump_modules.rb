@@ -1,4 +1,6 @@
 
+module RRB
+  DUMP_MODULES_SCRIPT = <<'EOS'
 ObjectSpace.each_object( Module ) do |mod|
 
   # 0 class type
@@ -50,4 +52,8 @@ ObjectSpace.each_object( Module ) do |mod|
 
   print "\n"
   
+end
+
+EOS
+
 end
