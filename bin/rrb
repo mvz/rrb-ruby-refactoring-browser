@@ -53,6 +53,7 @@ if $0 == __FILE__ then
       old_method = ARGV.shift
       new_method = ARGV.shift
     when '--extract-method'
+      filepath = ARGV.shift
       new_method = ARGV.shift
       start_lineno = ARGV.shift.to_i
       end_lineno = ARGV.shift.to_i
@@ -112,11 +113,11 @@ if $0 == __FILE__ then
       script.rename_method_all( old_method, new_method )
       output.call
     when '--extract-method'
-      unless script.extract_method?(new_method, start_lineno, end_lineno)
+      unless script.extract_method?(filepath, new_method, start_lineno, end_lineno)
         STDERR << "REJECTED\n"
         exit 1
       end
-      script.extract_method(new_method, start_lineno, end_lineno)
+      script.extract_method(filepath, new_method, start_lineno, end_lineno)
       output.call
     when '--move-method'
       unless script.move_method?(method_name, old_namespace, new_namespace)
