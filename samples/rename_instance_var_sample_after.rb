@@ -1,27 +1,28 @@
 samples/rename_instance_var_sample.rb
 module X
   class A
-    @@a = 3
     def method_1
-      @d = 0
-      @d = @b
+      @f = 0
+      @b = 0
     end
   end
   class B < A
     def method_1
-      @d = 0
-      @c = 1
+      @f = 0
+      @c = 0
     end
   end
-  class C
+  class C < A
     def method_1
-      @a = 0
+      @f = 0
+      @d = 0
     end
   end
-end
-module Y
-  class A
-    @a = 3
+  class D < B
+    def method_1
+      @f = 0
+      @e = 0
+    end
   end
 end
 -- END --

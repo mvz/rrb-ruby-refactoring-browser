@@ -1,26 +1,27 @@
 
 module X
   class A
-    @@a = 3
     def method_1
       @a = 0
-      @a = @b
+      @b = 0
     end
   end
   class B < A
     def method_1
       @a = 0
-      @c = 1
+      @c = 0
     end
   end
-  class C
+  class C < A
     def method_1
       @a = 0
+      @d = 0
     end
   end
-end
-module Y
-  class A
-    @a = 3
+  class D < B
+    def method_1
+      @a = 0
+      @e = 0
+    end
   end
 end
