@@ -130,14 +130,11 @@ module RRB
       method = get_method_on_region(path, start_lineno..end_lineno)
       namespace = get_class_on_region(path, start_lineno..end_lineno)
 
-      unless namespace
-        @error_message = "please select \n"
+      unless namespace && method
+        @error_message = "please select statements\n"
         return false
       end
-      unless method
-        @error_message = "please select\n"
-        return false
-      end
+
       if get_dumped_info[namespace.name].has_method?(new_method)
         @error_message = "#{namespace.name} already has #{new_method}\n"
         return false
