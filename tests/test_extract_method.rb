@@ -1,5 +1,6 @@
 require 'runit/testcase'
 require 'runit/cui/testrunner'
+require 'rrb/common_visitor'
 
 class TestScriptFile_ExtractMethod < RUNIT::TestCase
 
@@ -16,7 +17,7 @@ class TestScriptFile_ExtractMethod < RUNIT::TestCase
     File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
       script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( RRB::NS["B"],
-                    script_file.get_emethod_namespace( 11, 14 ).normal )
+                    script_file.get_class_on_region( 11..14 ).normal )
     end
   end
 
@@ -31,6 +32,7 @@ class TestScript_ExtractMethod < RUNIT::TestCase
     script = RRB::Script.new_from_filenames(str_filename)
 
     assert_equals(true, script.extract_method?(str_filename, 'fuga', 11, 14))
+    assert_equals(false, script.extract_method?(str_filename, 'fuga', 8, 9))
     assert_equals(false, script.extract_method?(str_filename, 'hogehoge', 11, 14))
     assert_equals(false, script.extract_method?(str_filename, 'foo', 11, 14))
     assert_equals(false, script.extract_method?(str_filename, 'bar', 8, 9))
