@@ -22,7 +22,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      str_namespace = NodeNamespace.new(node, namespace).name
+      str_namespace = namespace.nested( node.name ).name
       if @str_old_namespace == str_namespace
         unless class_include_the_method?(node)
           @result = false 

@@ -14,10 +14,10 @@ module RRB
    
     def visit_class(namespace, node)
       return false unless node.class_vars.find{|i| i.name == @old_var}
-      ancestor_names = @dumped_info[@owner].ancestor_names
-      class_name = NodeNamespace.new( node, namespace ).normal
-      new_owner = ancestor_names.find{|anc| anc == class_name}
-      @owner = new_owner if new_owner
+      class_name = namespace.nested( node.name )
+      if @dumped_info[@owner].ancestor_names.include?( class_name )
+        @owner = class_name
+      end
     end
   end
 
@@ -34,7 +34,7 @@ module RRB
     attr_reader :result
     
     def check_namespace(namespace)
-      @dumped_info[namespace.normal].subclass_of?(@owner)
+      @dumped_info[namespace].subclass_of?(@owner)
     end
 
     def rename_class_var(namespace, node)
@@ -54,7 +54,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      rename_class_var(NodeNamespace.new( node, namespace ), node)
+      rename_class_var(namespace.nested(node.name), node)
     end
   end
 
@@ -72,7 +72,7 @@ module RRB
     attr_reader :result
 
     def check_namespace(namespace)
-      @dumped_info[namespace.normal].subclass_of?(@owner)
+      @dumped_info[namespace].subclass_of?(@owner)
     end
 
     def rename_class_var?(namespace, node)
@@ -98,7 +98,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      if !rename_class_var?(NodeNamespace.new( node, namespace ), node)
+      if !rename_class_var?(namespace.nested( node.name ), node)
         @result = false
       end
     end

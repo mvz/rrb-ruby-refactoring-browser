@@ -110,9 +110,12 @@ module RRB
     end
     
     def accept( visitor )
-      visitor.visit_toplevel( NodeNamespace.new_toplevel, self )
-      super visitor, NodeNamespace.new_toplevel
-      accept_children( visitor, NodeNamespace.new_toplevel )
+      visitor.visit_toplevel( Namespace::Toplevel, self )
+      super visitor, Namespace::Toplevel
+      accept_children( visitor, Namespace::Toplevel )
+#       visitor.visit_toplevel( NodeNamespace.new_toplevel, self )
+#       super visitor, NodeNamespace.new_toplevel
+#       accept_children( visitor, NodeNamespace.new_toplevel )
     end
     
   end
@@ -123,7 +126,8 @@ module RRB
     def accept( visitor, namespace )
       visitor.visit_class( namespace, self )
       super
-      accept_children( visitor, NodeNamespace.new( self, namespace ) )
+      accept_children( visitor, namespace.nested( self.name ) )
+#      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
 
   end
@@ -192,7 +196,8 @@ module RRB
     def accept( visitor, namespace )
       visitor.visit_singleton_class( namespace, self )
       super
-      accept_children( visitor, NodeNamespace.new( self, namespace ) )
+      accept_children( visitor, namespace.nested( "[sclass]" ) )
+#      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
     
   end
@@ -285,50 +290,10 @@ module RRB
     
   end
   
-  class NodeNamespace
-    extend Forwardable
-
-    def initialize( cur_node, cur_namespace )
-      if cur_node.nil? then
-	@nodes = []
-      elsif cur_namespace.nil? then
-	@nodes = [ cur_node ]
-      else
-	@nodes = cur_namespace.nodes + [ cur_node ]
-      end
-    end
-
-    def NodeNamespace.new_toplevel
-      new( nil, nil )
-    end
-
-    def name
-      @nodes.map{|c| c.name}.join('::')
-    end
-
-    def match?( namespace )
-      self.normal == namespace
-    end
-
-    def normal
-      Namespace.new( @nodes.map{|c| c.name} )
-    end
-
-    def body_node
-      @nodes.last
-    end
-    
-    # this methods exist for test_node
-    def_delegators :@nodes, :map, :last
-    
-    protected
-    def nodes
-      @nodes
-    end
-  end
 
   class Namespace
     include Enumerable
+    extend Forwardable
     
     @@cache = Hash.new
 
@@ -408,12 +373,15 @@ module RRB
       self.ary <=> other.ary
     end
 
-     def nested( bare_name )
-       Namespace.new( @namespace + [ bare_name ] )
-     end
+    def nested( bare_name )
+      Namespace.new( @namespace + [ bare_name ] )
+    end
     
     Toplevel = Namespace.new( [] )
     Object = Namespace.new( ["Object"] )
+     
+    # this methods exist for test_node
+    def_delegators :@namespace, :last
   end
 
   # shortcut name
@@ -444,7 +412,7 @@ module RRB
 
     def match_node?( namespace, method_node )
       return false unless method_node.kind_of?( MethodNode ) 
-      return false unless namespace.match?( @namespace ) 
+      return false unless namespace == @namespace 
       return false unless method_node.name == @bare_name 
       return true
     end
@@ -502,7 +470,7 @@ module RRB
     end
 
     def match_node?( namespace, method_node )
-      method_node.kind_of?( ClassMethodNode ) && namespace.match?( @namespace ) && method_node.name == @bare_name
+      method_node.kind_of?( ClassMethodNode ) && namespace == @namespace && method_node.name == @bare_name
     end
     
     def name

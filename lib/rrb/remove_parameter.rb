@@ -57,7 +57,7 @@ module RRB
       end
 
       node.fcalls.each do|fcall|
-        called = MethodName.new( namespace.normal, fcall.name )
+        called = MethodName.new( namespace, fcall.name )
         real_called = @dumped_info.real_method( called )
         if real_called == @method_name
           remove_fcall_parameter(fcall)
@@ -90,7 +90,7 @@ module RRB
         end
       end
       
-      if namespace.match?(@namespace) 
+      if namespace == @namespace 
         node.fcalls.find_all{|fcall| fcall.name == @method_name.bare_name}.each do |fcall|
           if fcall.args.include?(nil) || fcall.args == []
             @error_message = "parameter is too complex\n"

@@ -20,10 +20,10 @@ module RRB
     def check_pushdown_method(namespace, node)
 
       return if @method_name.match_node?( namespace, node )
-      return unless @dumped_info[namespace.normal].subclass_of?(@old_namespace)
-      return if @dumped_info[namespace.normal].subclass_of?(@new_namespace)
+      return unless @dumped_info[namespace].subclass_of?(@old_namespace)
+      return if @dumped_info[namespace].subclass_of?(@new_namespace)
       return unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
-      called_method = MethodName.new( namespace.normal, @method_name.bare_name )
+      called_method = MethodName.new( namespace, @method_name.bare_name )
       if @dumped_info.real_method( called_method ) == @method_name
         @result = false
         @error_message = "#{namespace.name} calls #{@method_name.name}"
@@ -104,7 +104,7 @@ module RRB
         return false
       elsif definition_count > 1
         target_class = get_class_on_cursor(path, lineno)
-        unless target_class && new_namespace.contain?(target_class.normal )
+        unless target_class && new_namespace.contain?(target_class)
           @error_message = "Specify which definition to push down method to\n"
           return false
         end

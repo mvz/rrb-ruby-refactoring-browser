@@ -103,7 +103,7 @@ module RRB
         return false
       elsif definition_count > 1
         target_class = get_class_on_cursor(path, lineno)
-        unless target_class && new_namespace.contain?(target_class.normal )
+        unless target_class && new_namespace.contain?(target_class )
           @error_message = "Specify which definition to pull up method to\n"
           return false
         end

@@ -20,7 +20,7 @@ module RRB
     
     def visit_class( namespace, node )
       if node.range.contain?( @lineno )
-        @namespace = NodeNamespace.new( node, namespace ).normal
+        @namespace = namespace.nested( node.name )
         @node = node
       end
     end
@@ -48,8 +48,8 @@ module RRB
     attr_reader :result
     
     def visit_class( namespace, node )
-      classname = NodeNamespace.new( node, namespace )
-      return unless @targets.find{|klass| classname.match?(klass)} 
+      classname = namespace.nested( node.name )
+      return unless @targets.include?( classname )
       return if node.superclass == nil
       @result << Replacer.new_from_id( node.superclass.body, @new_superclass )
     end

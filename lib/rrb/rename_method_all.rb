@@ -65,11 +65,10 @@ module RRB
     
     def visit_method( namespace, node )
       if node.name == @method then
-        ns = namespace.normal
-        if ns == Namespace::Toplevel then
+        if namespace == Namespace::Toplevel then
           @classes.add Namespace::Object
         else
-          @classes.add ns
+          @classes.add namespace
         end
       end
     end

@@ -18,8 +18,8 @@ module RRB
     attr_reader :delete_range, :insert_lineno
 
     def visit_class(namespace, node)
-      cur_namespace = NodeNamespace.new(node, namespace)
-      if cur_namespace.match?(@new_namespace) && !@ignore_new_namespace
+      cur_namespace = namespace.nested( node.name )
+      if cur_namespace == @new_namespace && !@ignore_new_namespace
         unless @insert_lineno_decided
           @insert_lineno = node.range.head.lineno
           if node.range.head.lineno <= @specified_lineno && @specified_lineno <= node.range.tail.lineno
@@ -68,13 +68,13 @@ module RRB
   class GetClassOnRegionVisitor < Visitor
     def initialize( range)
       @range = range
-      @namespace = NodeNamespace.new_toplevel
+      @namespace = Namespace::Toplevel 
     end
     attr_reader :namespace
 
     def visit_class(namespace, node)
       if node.range.contain?( @range ) then
-        @namespace = NodeNamespace.new(node, namespace)
+        @namespace = namespace.nested( node.name ) 
       else
         unless node.range.out_of?(@range) then
           @namespace = nil
@@ -108,7 +108,7 @@ module RRB
     attr_reader :result
 
     def visit_class(namespace, node)
-      if NodeNamespace.new(node, namespace).match?(@namespace)
+      if namespace.nested( node.name ) == @namespace
         @result += 1
       end
     end

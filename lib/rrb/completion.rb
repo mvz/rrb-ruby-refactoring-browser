@@ -38,7 +38,7 @@ module RRB
     end
 
     def visit_class( namespace, node )
-      @classes << NodeNamespace.new(node, namespace).name
+      @classes << namespace.nested( node.name ).name 
     end
 
     attr_reader :classes
@@ -65,7 +65,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      class_name = NodeNamespace.new(node, namespace).name
+      class_name = namespace.nested(node.name).name
       @classes[class_name] ||= Set.new
       @classes[class_name].merge(node.class_vars.map{|cvar| cvar.name})
     end

@@ -11,6 +11,7 @@ module RRB
 
     def [](index)
       index = Namespace.new( index ) if index.kind_of?( String )
+      raise unless index.kind_of?( Namespace )
       @classes[index]
     end
 

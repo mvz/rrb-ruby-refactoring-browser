@@ -46,7 +46,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
           rename_method_def( namespace, node.name_id, node.head_keyword, renamed )
         end
 
-        if namespace.match?( renamed.namespace )
+        if namespace == renamed.namespace 
           rename_fcalls( node.fcalls, renamed )
         end
       end
@@ -81,7 +81,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
     
     def visit_method( namespace, node )
       node.fcalls.each do |fcall|
-        @result.add MethodName.new( namespace.normal, fcall.name )
+        @result.add MethodName.new( namespace, fcall.name )
       end
     end
   end
