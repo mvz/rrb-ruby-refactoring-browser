@@ -326,7 +326,7 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
   "compleion read for rename constant"
-  (rrb-comp-read-type-2 "--constants" "" "Old constant: " "New constant: "))
+  (rrb-comp-read-type-2 "--constants" (rrb-get-class-on-cursor) "Old constant: " "New constant: "))
 
 (defun rrb-rename-constant (old-const new-const)
   "Refactor code: Rename constant"
