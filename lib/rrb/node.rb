@@ -17,6 +17,9 @@ module RRB
 
     def visit_singleton_method( namespace, node )
     end
+
+    def visit_class_method( namespace, node )
+    end
     
   end
 
@@ -120,6 +123,28 @@ module RRB
     end
 
     attr_reader :s_obj
+  end
+
+  class ClassMethodNode < Node
+
+    def initialize( sdef )
+      @name_id = sdef.name_id
+      @class_defs = sdef.class_defs
+      @method_defs = sdef.method_defs
+      @local_vars = sdef.local_vars
+      @method_calls = sdef.method_calls
+      @fcalls = sdef.fcalls
+      @singleton_method_defs = sdef.singleton_method_defs
+      @class_method_defs = sdef.class_method_defs
+      @s_obj = sdef.s_obj
+    end
+
+    def accept( visitor, namespace )
+      visitor.visit_class_method( namespace, self )
+      super
+      accept_children( visitor, namespace )
+    end
+    
   end
   
   class IdInfo
