@@ -1,4 +1,5 @@
 require 'rrb/script'
+require 'rrb/rename_constant'
 require 'set'
 
 module RRB
@@ -51,6 +52,33 @@ module RRB
 
     attr_reader :classes
   end
+
+  class RefactableConstsVisitor < Visitor
+    include ConstResolver
+    
+    def initialize(dumped_info)
+      @dumped_info = dumped_info
+      @consts = Set.new
+    end
+
+    def visit_node( namespace, node)
+      ns = namespace.str
+      if ModuleNode === node || SingletonClassNode === node
+        ns << '::' unless namespace.str==""
+        ns << node.name_id.name
+      end
+
+      node.consts.each do |constinfo|
+        @consts << resolve_const(@dumped_info, ns, constinfo.name)
+      end
+    end
+
+    def visit_class( namespace, node)
+      @consts << resolve_const(@dumped_info, namespace.str, node.name_id.name)
+    end
+
+    attr_reader :consts
+  end
   
   class ScriptFile
 
@@ -64,6 +92,12 @@ module RRB
       visitor = RefactableClassesIVarsVisitor.new
       @tree.accept( visitor )
       visitor.classes
+    end
+
+    def refactable_consts(dumped_info)
+      visitor = RefactableConstsVisitor.new(dumped_info)
+      @tree.accept( visitor )
+      visitor.consts
     end
     
   end
@@ -85,6 +119,14 @@ module RRB
 	end
       end
 
+      result
+    end
+
+    def refactable_consts
+      result = Set.new
+      @files.each do |scriptfile|
+        result.merge scriptfile.refactable_consts(get_dumped_info)
+      end
       result
     end
     
