@@ -12,12 +12,16 @@ module RRB
 	@method_defs = []
 	@method_calls = []
 	@local_vars = []
+	@global_vars = []
+	@instance_vars = []
+	@class_vars = []
 	@fcalls = []
 	@singleton_method_defs = []
 	@class_method_defs = []
 	@singleton_class_defs = []      
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
+      attr_reader :global_vars, :instance_vars, :class_vars
       attr_reader :singleton_method_defs, :class_method_defs
       attr_reader :singleton_class_defs
     end
@@ -122,9 +126,22 @@ module RRB
       @scope_stack.last.fcalls << method
     end
 
+    def add_var( var )
+      case var.type
+      when :id
+	@scope_stack.last.local_vars << var
+      when :gvar
+	@scope_stack.last.global_vars << var
+      when :ivar
+	@scope_stack.last.instance_vars << var
+      when :cvar
+	@scope_stack.last.class_vars << var
+      end      
+    end
+    
     def on__assignable( var, arg )
       return unless var.kind_of?( IdInfo )
-      @scope_stack.last.local_vars << var
+      add_var( var )
     end
 
     def on__local_count(  arg )
@@ -134,10 +151,13 @@ module RRB
     
     def on__varref( var )
       return unless var.kind_of?( IdInfo )
+
       if @scope_stack.last.local_vars.find{|i| i.name == var.name } then
 	@scope_stack.last.local_vars << var
       elsif var.type == :id
 	@scope_stack.last.fcalls << var
+      else
+	add_var( var )
       end
       var
     end
