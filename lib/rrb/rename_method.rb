@@ -68,7 +68,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     
     def visit_method( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @method } then
-	@classes << namespace.str
+	@classes << Namespace.new( namespace.str )
       end
     end
 
@@ -88,15 +88,15 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
       classes = []
       result = []
       basis.each do |namespace|
-	classes << namespace.str
-	get_dumped_info[namespace.str].ancestors.each do |ancestor|
+	classes << namespace
+	get_dumped_info[namespace].ancestors.each do |ancestor|
 	  if ancestor.has_method?( methodname )
-	    classes << ancestor.class_name
+	    classes << Namespace.new( ancestor.class_name )
 	  end
 	end
       end
       classes_call_method( methodname ).each do |classname|
-	if basis.find{|ns| get_dumped_info[ns.str].subclass_of?(classname)} then
+	if basis.find{|ns| get_dumped_info[ns].subclass_of?(classname)} then
 	  classes << classname
 	end
       end
