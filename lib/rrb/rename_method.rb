@@ -8,7 +8,7 @@ module RRB
     end
 
     def match?( namespace )
-      namespace.map{|i| i.name} == @nest
+      namespace.match?( @nest )
     end
     
   end
