@@ -163,6 +163,7 @@ module RRB
 	  file << line
 	end
       end
+      @input.rewind
     end
     
     attr_reader :new_script, :path
