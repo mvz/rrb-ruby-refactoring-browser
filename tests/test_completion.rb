@@ -51,6 +51,13 @@ end
 		  'C::D' => Set[ '@var3' ]},
 		  ivars )
   end
+
+  def test_refactable_consts
+    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    dumped_info = RRB::Script.new( [scriptfile] ).get_dumped_info
+    assert_equals( Set['::A','::B','::C','::C::D'],
+                   scriptfile.refactable_consts(dumped_info) )
+  end
   
 end
 
@@ -59,6 +66,7 @@ class TestScript_Completion < RUNIT::TestCase
   INPUT = "\
 /tmp/tmp/test1.rb\C-a
 require 'test2'
+Hoge = 0
 class B < A
   def method_1( arg1, arg3 )
     print arg1
@@ -94,6 +102,12 @@ end
     assert_equals( { 'A' => Set[ '@varr', '@varrr' ], 'B' => Set[ '@var' ] },
 		  script.refactable_classes_instance_vars )
     
+  end
+
+  def test_refactable_consts
+    script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
+    assert_equals( Set['::A', '::B', '::Hoge'],
+		  script.refactable_consts )
   end
   
 end
