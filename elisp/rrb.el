@@ -224,7 +224,6 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-get-value-on-cursor "--class")))
 
 (defun rrb-get-method-on-cursor ()
-  (interactive)
   (save-current-buffer
     (rrb-setup-input-buffer (list (current-buffer)))
     (rrb-get-value-on-cursor "--method")))
@@ -246,7 +245,7 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename method all
 (defun rrb-comp-read-rename-method-all ()
   "Completion read for Rename method all"
-  (rrb-comp-read-type-2 "--methods" "" "Old method: " "New method: "))
+  (rrb-comp-read-type-2 "--bare-methods" "" "Old method: " "New method: "))
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
@@ -357,7 +356,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pullup-method ()
   "completion read for pull up method"
-  (rrb-comp-read-type-3 "--methods-fullname" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
 
 (defun rrb-pullup-method (old-method new-class)
   "Refactor code: Pull up method"
@@ -371,7 +370,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pushdown-method ()
   "completion read for push down method"
-  (rrb-comp-read-type-3 "--methods-fullname" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
 
 (defun rrb-pushdown-method (old-method new-class)
   "Refactor code: Push down method"
