@@ -263,6 +263,14 @@ module RRB
 
     attr_reader :head, :tail
 
+    def contain?( range )
+      @head.lineno < range.begin && range.end < @tail.lineno 
+    end
+
+    def out_of?( range )
+      range.last < @head.lineno || @tail.lineno < range.first
+    end
+    
   end
   
   class NodeNamespace
