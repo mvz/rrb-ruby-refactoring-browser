@@ -4,9 +4,6 @@ require 'runit/cui/testrunner'
 require 'rrb/dumped_info.rb'
 require 'rrb/dump_modules'
 
-WORK_DIR = '/tmp/rrbtest'
-RUBY_SCRIPT_NAME = "#{WORK_DIR}/script.rb"
-DUMPED_FILE_NAME = "#{WORK_DIR}/dumped"
 DUMPED_SCRIPT = <<EOS
 class TestClassA
   def pubA
@@ -145,24 +142,27 @@ class TestDumpedInfo < RUNIT::TestCase
   end
   
   def make_info
-    File.open(DUMPED_FILE_NAME) do |file|
+    File.open(@dumped_file) do |file|
       return RRB::DumpedInfo.get_dumped_info( file )
     end
   end
   
   def setup
-    Dir.mkdir WORK_DIR
-    File.open( RUBY_SCRIPT_NAME, "w" ) do |output|
+    @work_dir = RRB.mk_work_dir
+    @dumped_file = @work_dir + "/dumped"
+    @script_file = @work_dir + "/script.rb"
+    
+    File.open( @script_file, "w" ) do |output|
       output << DUMPED_SCRIPT
       output << RRB::DUMP_MODULES_SCRIPT
     end
     
-    system "ruby -r rrb_reflection #{RUBY_SCRIPT_NAME} > #{DUMPED_FILE_NAME}"    
+    system "ruby -r rrb_reflection #{@script_file} > #{@dumped_file}"    
   end
   
   def teardown
-    File.delete( RUBY_SCRIPT_NAME, DUMPED_FILE_NAME )
-    Dir.rmdir( WORK_DIR )
+    File.delete( @script_file, @dumped_file )
+    Dir.rmdir( @work_dir )
   end
 end
 
