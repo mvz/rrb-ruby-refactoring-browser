@@ -30,7 +30,7 @@ class TestScript_RemoveParameter < RUNIT::TestCase
                   script.remove_parameter?(RRB::NS.new('Derived'), 
                                            'using_parameter_function',
                                            'heke'))
-    assert_equals("heke is used in Derived#using_parameter_function\n",
+    assert_equals("heke is used\n",
                   script.error_message)
 
     assert_equals(false,
@@ -46,8 +46,8 @@ class TestScript_RemoveParameter < RUNIT::TestCase
     script.remove_parameter(RRB::NS.new('Derived'), 'target_function', 'heke')
     result = ''
     script.result_to_io( result )
-#    assert_equals( File.open('samples/remove_parameter_sample_after.rb').read,
-#                   result )
+    assert_equals( File.open('samples/remove_parameter_sample_after.rb').read,
+                   result )
   end
   
 end
