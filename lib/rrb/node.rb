@@ -258,8 +258,7 @@ module RRB
     end
 
     def match?( namespace )
-      namespace = namespace.ary if namespace.kind_of?( Namespace )      
-      @nodes.map{|c| c.name} == namespace
+      @nodes.map{|c| c.name} == namespace.ary
     end
 
     # this methods exist for test_node
@@ -298,7 +297,6 @@ module RRB
       @namespace
     end
 
-    def_delegators :@namespace, :map, :join
   end
 
   # shortcut name
