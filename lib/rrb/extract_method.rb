@@ -1,36 +1,9 @@
 require 'rrb/script'
+require 'rrb/common_visitor'
 require 'stringio'
 
 module RRB
 
-  class ExtractMethodGetNamespaceVisitor < Visitor
-    def initialize(start_lineno, end_lineno)
-      @start_lineno = start_lineno
-      @end_lineno = end_lineno
-      @namespace = @m_node = nil
-    end
-    attr_reader :namespace, :m_node
-
-    def visit_toplevel(namespace, node)
-      @m_node = node
-      @namespace = namespace
-    end
-
-    def visit_method(namespace, node)
-      if node.range.contain?( @start_lineno .. @end_lineno ) then
-        @m_node = node
-        @namespace = namespace
-      else
-        unless node.range.out_of?(@start_lineno .. @end_lineno) then
-          @m_node = nil
-          @namespace = nil
-        end
-      end
-      
-    end
-    
-  end
-  
   class ExtractMethodVisitor < Visitor
 
     def initialize(start_lineno, end_lineno)
@@ -133,7 +106,7 @@ module RRB
 
   class ScriptFile
     def get_emethod_namespace(start_lineno, end_lineno)
-      get_namespace = ExtractMethodGetNamespaceVisitor.new(start_lineno, end_lineno)
+      get_namespace = GetClassOnRegionVisitor.new(start_lineno, end_lineno)
       @tree.accept(get_namespace)
       get_namespace.namespace
     end
