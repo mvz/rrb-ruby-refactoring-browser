@@ -1,6 +1,6 @@
 require 'ripper.so'
 
-class R < Ripper
+class R < RRB::Ripper
   def method_missing( mid, *args )
     puts mid
     args[0]

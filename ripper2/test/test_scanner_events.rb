@@ -2,13 +2,15 @@
 # test_scanner_events.rb
 #
 
-require 'ripper.so'
-raise 'ripper version differ' unless Ripper::Version == '0.1.0'
+module RRB
+end
+require 'rrb_ripper.so'
+raise 'ripper version differ' unless RRB::Ripper::Version == '0.1.0'
 require 'test/unit'
 
 class TestRipper_ScannerEvents < Test::Unit::TestCase
 
-  class R < Ripper
+  class R < RRB::Ripper
     def R.scan(target, src)
       r = new(src, target)
       r.parse

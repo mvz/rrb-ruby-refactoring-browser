@@ -1,6 +1,9 @@
-require 'ripper.so'
+module RRB
+end
 
-class R < Ripper
+require 'rrb_ripper.so'
+
+class R < RRB::Ripper
   def initialize(*args)
     super
     @lineno = 0

@@ -2,9 +2,11 @@
 # test_parser_events.rb
 #
 
-require 'ripper.so'
+module RRB
+end
+require 'rrb_ripper.so'
 require 'test/dummyparser'
-raise "ripper version differ" unless Ripper::Version == '0.1.0'
+raise "ripper version differ" unless RRB::Ripper::Version == '0.1.0'
 require 'test/unit'
 
 

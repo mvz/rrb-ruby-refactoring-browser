@@ -8754,11 +8754,13 @@ ripper_value(self, obj)
 #endif
 
 void
-Init_ripper()
+Init_rrb_ripper()
 {
+    VALUE rrb;
     VALUE Ripper;
 
-    Ripper = rb_define_class("Ripper", rb_cObject);
+    rrb = rb_const_get(rb_cObject, rb_intern("RRB"));
+    Ripper = rb_define_class_under(rrb, "Ripper", rb_cObject);
     rb_define_const(Ripper, "Version", rb_str_new2(RIPPER_VERSION));
     rb_define_singleton_method(Ripper, "yydebug", ripper_s_get_yydebug, 0);
     rb_define_singleton_method(Ripper, "yydebug=", ripper_s_set_yydebug, 1);

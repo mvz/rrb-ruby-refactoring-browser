@@ -9,8 +9,12 @@
 # Copyright (C) 2003 Minero Aoki
 #
 
-require 'ripper.so'
+module RRB
+end
 
+require 'rrb_ripper.so'
+
+module RRB
 class Ripper
   def Ripper.parse(str, *args)
     new.parse(str, *args)
@@ -39,4 +43,5 @@ class Ripper
   def on__scan(event, token)
   end
 #include handlers2
+end
 end

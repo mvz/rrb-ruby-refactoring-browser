@@ -42,7 +42,7 @@ class NodeList
 end
 
 
-class DummyParser < Ripper
+class DummyParser < RRB::Ripper
 
   def method_missing( mid, *args )
     raise NoMethodError, "wrong method: #{mid}" unless /\Aon__/ === mid.to_s

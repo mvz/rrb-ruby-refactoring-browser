@@ -12,7 +12,7 @@ def main
                          dispids.[ch] lib/ripper.rb lex.c )
   $CPPFLAGS += ' -DRIPPER'
   $CPPFLAGS += ' -DRIPPER_DEBUG' if $debug
-  create_makefile 'ripper'
+  create_makefile 'rrb_ripper'
 end
 
 def have_command( cmd )
