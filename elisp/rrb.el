@@ -127,3 +127,9 @@ matches with rrb-ruby-file-name-regexp'"
   (interactive "sRefactored method: \nsOld variable: \nsNew variable: ")
   (save-excursion
     (rrb-do-refactoring (list "--rename-local-variable" method old-var new-var))))
+
+(defun rrb-rename-method-all (old-method new-method)
+  "Refactor code: rename method all old method as new"
+  (interactive "sOld method: \nsNew method: ")
+  (save-excursion
+    (rrb-do-refactoring (list "--rename-method-all" old-method new-method))))
