@@ -85,7 +85,10 @@ class TestParser < RUNIT::TestCase
     # test assigned
     assert_equals( [], method_3_info.assigned )
     assert_equals( [ 'c', 'x' ], method_1_info.assigned.map{|info| info.name})
-    
+
+    # test superclass
+    assert_equals( 'TestClassA::TestClassB',
+		  parsed_info.class_info("TestClassD").superclass.name )
   end
   
 end
