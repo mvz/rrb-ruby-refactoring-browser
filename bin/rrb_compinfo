@@ -11,7 +11,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   INFOTYPE
     * --methods-local-vars
     * --methods
-    * --methods-fullname
+    * --bare-methods
     * --classes
     * --classes-instance-vars
     * --classes-class-vars
@@ -40,18 +40,18 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   case infotype
   when '--methods-local-vars'
     script.refactable_methods.each do |method|
-      print method.fullname, ';'
+      print method.name, ';'
       print method.local_vars.to_a.join(",")
       print "\n"
     end
-  when '--methods'
-    Set.new( script.refactable_methods.map{|method| method.name} ).each do |method|
-      print method,","
+  when '--bare-methods'
+    script.refactable_methods.each do |method|
+      print method.bare_name,","
     end
     print "\n"
-  when '--methods-fullname'
+  when '--methods'
     script.refactable_methods.each do |method|
-      print method.fullname, ','
+      print method.name, ','
     end
   when '--classes'
     script.refactable_classes.each do |klass|
