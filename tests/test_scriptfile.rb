@@ -5,6 +5,7 @@ require 'rrb/scriptfile'
 require 'rrb/rename_local_var'
 require 'rrb/rename_global_var'
 require 'rrb/rename_method_all'
+require 'rrb/extract_method'
 
 class TestScriptFile < RUNIT::TestCase
 
@@ -97,6 +98,13 @@ class TestScriptFile < RUNIT::TestCase
     end
   end
   
+  def test_extract_method
+    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
+      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file.extract_method('bar', 6, 9)
+      assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,		    script_file.new_script )
+    end
+  end
 end
 
 if $0 == __FILE__
