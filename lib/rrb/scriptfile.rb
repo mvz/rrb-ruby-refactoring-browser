@@ -15,6 +15,7 @@ module RRB
     def write_source_to( dir )
       filepath = File.join( dir,@path )
       FileUtils.mkdir_p( File.dirname( filepath ) )
+      @input.rewind
       File.open(  filepath , "w" ) do |file|
 	@input.each do |line|
 	  file << line
