@@ -102,7 +102,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 	@refactoring_method = :rename_method
 	@check_method = :rename_method?
       else
-	raise RRB::Error, "Unknown refactoring"
+	raise RRBError, "Unknown refactoring"
       end
 
       # analyze IO-TYPE
@@ -117,7 +117,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 	@script = Script.new_from_filenames( argv )
 	@output = proc{ @script.result_to_io( STDOUT ) }
       else
-	raise RRB::Error, "Unknown input/output option"
+	raise RRBError, "Unknown input/output option"
       end
       
     end
