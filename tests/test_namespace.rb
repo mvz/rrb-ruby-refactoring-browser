@@ -26,7 +26,12 @@ class TestNamespace < RUNIT::TestCase
   def  test_eql?
     assert( RRB::Namespace.new("X::B::C").eql?( RRB::Namespace.new(['X','B','C'])))
     assert( !RRB::Namespace.new("X::B::C").eql?(RRB::Namespace.new(['X','D','C'])))
-  end 
+  end
+
+  def test_inspect
+    assert_equals( '#<RRB::NS: X::Y::Z>', RRB::Namespace.new("X::Y::Z").inspect )
+  end
+  
 end
 
 if $0 == __FILE__
