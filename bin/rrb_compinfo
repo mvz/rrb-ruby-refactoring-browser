@@ -20,6 +20,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   IOTYPE
     * --stdin-stdout
     * --filein-stdout FILES..
+    * --marshalin-stdout FILE
 "
   end
   
@@ -40,6 +41,8 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
     script = RRB::Script.new_from_io( STDIN )
   when '--filein-stdout'
     script = RRB::Script.new_from_filenames( *ARGV )
+  when '--marshalin-stdout'
+    script = RRB::Script.new_from_marshal(ARGV.shift)
   end
 
   case infotype

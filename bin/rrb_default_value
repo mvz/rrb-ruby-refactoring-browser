@@ -14,6 +14,7 @@ Usage: rrb_default_value PATH LINENO INFOTYPE IOTYPE
   IOTYPE
     * --stdin-stdout
     * --filein-stdout FILES..
+    * --marshalin-stdout
 "
   end
   
@@ -31,6 +32,8 @@ Usage: rrb_default_value PATH LINENO INFOTYPE IOTYPE
     script = RRB::Script.new_from_io( STDIN )
   when '--filein-stdout'
     script = RRB::Script.new_from_filenames( *ARGV )
+  when '--marshalin-stdout'
+    script = RRB::Script.new_from_marshal(ARGV.shift)
   end
 
   case infotype
