@@ -17,9 +17,7 @@ module RRB
 
     attr_reader :result
 
-    def visit_method(namespace, node)
-      return unless @method_name.instance_method?
-
+    def check_pushdown_method(namespace, node)
       if namespace.match?(@old_namespace)
         if node.name == @method_name.name
           node.calls.each do |call|
@@ -42,7 +40,16 @@ module RRB
 	  end
 	end
       end
-      
+    end
+
+    def visit_method(namespace, node)
+      return unless @method_name.instance_method?
+      check_pushdown_method(namespace, node)
+    end
+
+    def visit_class_method(namespace, node)
+      return unless @method_name.class_method?
+      check_pushdown_method(namespace, node)
     end
   end
 
