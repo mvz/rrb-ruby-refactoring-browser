@@ -3,8 +3,6 @@ require 'rrb/common_visitor'
 
 
 module RRB
-  def f
-  end
   class ScriptFile
 
     def get_method_on_cursor(lineno)
