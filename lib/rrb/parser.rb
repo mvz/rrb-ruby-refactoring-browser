@@ -56,6 +56,10 @@ module RRB
       IdInfo.new :gvar, lineno, pointer, id
     end
 
+    def on__OP( op )
+      IdInfo.new :op, lineno, pointer, op
+    end
+    
     def on__local_push
       @scope_stack.push( Scope.new )
     end
