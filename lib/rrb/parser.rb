@@ -12,8 +12,9 @@ module RRB
 	@method_defs = []
 	@method_calls = []
 	@local_vars = []
+	@fcalls = []
       end
-      attr_reader :class_defs, :method_defs, :method_calls, :local_vars
+      attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
     end
     
     
@@ -83,11 +84,11 @@ module RRB
     end
 
     def on__fcall( function, args )
-      @scope_stack.top.method_calls << function
+      @scope_stack.top.fcalls << function
     end
 
     def on__varcall( method, arg )
-      @scope_stack.top.method_calls << method
+      @scope_stack.top.fcalls << method
     end
 
     def on__assignable( var, arg )
@@ -103,7 +104,7 @@ module RRB
       if @scope_stack.top.local_vars.find{|i| i.name == var.name } then
 	@scope_stack.top.local_vars << var
       elsif var.type == :id
-	@scope_stack.top.method_calls << var
+	@scope_stack.top.fcalls << var
       end
     end
     

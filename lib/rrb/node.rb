@@ -20,9 +20,11 @@ module RRB
       @method_defs = scope.method_defs
       @local_vars = scope.local_vars
       @method_calls = scope.method_calls
+      @fcalls = scope.fcalls
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
+    attr_reader :fcalls
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
