@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+require 'rrb/script'
+
+if $0 == __FILE__ then
+  
+  def print_usage
+    print "\
+Usage: rrb_marshal IOTYPE
+
+  IOTYPE
+    * --stdin-fileout
+    * --filein-fileout \"INPUT FILES...\" OUTPUTFILE
+"
+  end
+  
+  if ARGV.size == 0 || ARGV[0] == '--help' then
+    print_usage
+    exit
+  end
+
+  case ARGV.shift
+  when '--stdin-fileout'
+    script = RRB::Script.new_from_io( STDIN )
+    outputfile = ARGV.shift
+  when '--filein-fileout'
+    script = RRB::Script.new_from_filenames( *(ARGV.shift.split(" ")) )
+    outputfile = ARGV.shift
+  else
+    raise RRBError, "Unknown input/output option"
+  end
+
+  File.open(outputfile, "w") do |file|
+    Marshal.dump(script, file)
+  end
+  
+end
