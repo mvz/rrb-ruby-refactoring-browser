@@ -270,20 +270,9 @@ matches with rrb-ruby-file-name-regexp'"
 
 ;;;; Refactoring: Rename class
 
-(defun rrb-complist-classes ()
-  (save-current-buffer
-    (set-buffer rrb-output-buffer)
-    (goto-char (point-min))
-    (mapcar 'list
-	    (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
-
 (defun rrb-comp-read-rename-class ()
   "compleion read for rename class"
-  (when (/= 0 (rrb-run-process "rrb_compinfo" "--classes"))
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (list (completing-read "Old class/module: " (rrb-complist-classes))
-	(read-from-minibuffer "New class/module: ")))
-  
+  (rrb-comp-read-type-2 "--classes" "Old class/module: " "New class/module: "))
 
 (defun rrb-rename-class (old-class new-class)
   "Refactor code: Rename class or module"
