@@ -47,8 +47,13 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def split_method_name( str )
-      a, b = str.split( /#/ )
-      return Namespace.new(a), b
+      if str['#']
+        a, b = str.split( /#/ )
+        return Namespace.new(a), MethodName.new(b, true)
+      elsif str['.']
+        a, b = str.split( /./ )
+        return Namespace.new(a), MethodName.new(b, false)
+      end
     end
 
     def parse_argv_rename_local_variable(argv)
@@ -98,7 +103,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 
     def parse_argv_rename_method(argv)
       classes = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
-      old_method = argv.shift
+      old_method = MethodName.new(argv.shift, true)
       new_method = argv.shift
       @args = [ classes, old_method, new_method ]
       @refactoring_method = :rename_method
