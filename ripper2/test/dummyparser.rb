@@ -183,8 +183,8 @@ class DummyParser < RRB::Ripper
     Node.new('break', a)
   end
 
-  def on__call(a, b, c)
-    Node.new('call', a, b, c)
+  def on__call(a, b, c, d)
+    Node.new('call', a, b, c, d)
   end
 
   def on__case(a, b)
@@ -259,8 +259,8 @@ class DummyParser < RRB::Ripper
     Node.new('ensure', a)
   end
 
-  def on__fcall(a)
-    Node.new('fcall', a)
+  def on__fcall(a, b)
+    Node.new('fcall', a, b)
   end
 
   def on__field(a, b, c)
