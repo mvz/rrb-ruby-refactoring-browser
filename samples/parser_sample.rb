@@ -46,6 +46,12 @@ class TestClassA
       z ** 3
     end
   end
+
+  def method_8
+    $x = 5
+    @y = $x + 4
+    return $xx*@y*@@z
+  end
   
 end
 
