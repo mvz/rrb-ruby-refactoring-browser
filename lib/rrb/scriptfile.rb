@@ -29,7 +29,10 @@ module RRB
 
 
   Replacer = Struct.new( :lineno, :pointer, :before, :after )
-
+  def Replacer.new_from_id( id, after )
+    new( id.lineno, id.pointer, id.name, after )
+  end
+  
   # guard object 
   Guard = Object.new
   def Guard.lineno
