@@ -24,30 +24,32 @@ module RRB
 raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
 	" "*num_spaces
     end
+
+    def rename_method_def( namespace, id, head_keyword )
+      @result << Replacer.new( id.lineno, id.pointer, id.name, @new_method )
+      @result << Replacer.new( id.lineno, head_keyword.head_pointer,
+			      "",
+			      warning_piece( namespace,
+					    head_keyword.head_pointer ) )
+    end
+
+    def rename_fcalls( fcalls )
+      fcalls.each do |fcall|
+	if fcall.name == @old_method then
+	  @result << Replacer.new( fcall.lineno, fcall.pointer, fcall.name,
+				  @new_method )
+	end
+      end
+    end
     
     def visit_method( namespace, node )
       
       @classes.each do |classname|
 	if namespace.match?( classname ) &&  @old_method == node.name then
-	  @result << Replacer.new( node.name_id.lineno,
-				  node.name_id.pointer,
-				  node.name_id.name,
-				  @new_method )
-	  @result << Replacer.new( node.name_id.lineno,
-				  node.head_keyword.head_pointer,
-				  "",
-				  warning_piece( namespace,
-						node.head_keyword.head_pointer ) )
+	  rename_method_def( namespace, node.name_id, node.head_keyword )
 	end
 	if namespace.match?( classname ) then
-	  node.fcalls.each do |fcall|
-	    if fcall.name == @old_method then
-	      @result << Replacer.new( fcall.lineno,
-				      fcall.pointer,
-				      fcall.name,
-				      @new_method )
-	    end
-	  end
+	  rename_fcalls( node.fcalls )
 	end
 	
       end
