@@ -51,6 +51,7 @@ module RRB
 	end
       end
     end
+
     
     def Script.new_from_io( input )
 
@@ -62,6 +63,14 @@ module RRB
 	files << ScriptFile.new( StringIO.new( content ), name )
       end
 
+      return new( files )
+    end
+
+    def Script.new_from_filenames( filenames )
+      files = []
+      filenames.each do |filename|
+	files << ScriptFile.new( File.open(filename), filename )
+      end
       return new( files )
     end
     
