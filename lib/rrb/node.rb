@@ -141,19 +141,25 @@ module RRB
   
   # represent one method
   class MethodNode < Node
+    def initialize( name_id, scope, args, head_kw, tail_kw )
+      @args = args
+      super name_id, scope, head_kw, tail_kw
+    end
 
     def accept( visitor, namespace )
       visitor.visit_method( namespace, self )
       super
       accept_children( visitor, namespace )
     end
+    attr_reader :args
     
   end
 
   class SingletonMethodNode < Node
 
-    def initialize( s_obj, method_name, scope, head_kw, tail_kw )
+    def initialize( s_obj, method_name, scope, args, head_kw, tail_kw )
       @s_obj = s_obj
+      @args = args
       super method_name, scope, head_kw, tail_kw
     end
     
@@ -164,6 +170,7 @@ module RRB
     end
 
     attr_reader :s_obj
+    attr_reader :args
   end
 
   class ClassMethodNode < Node
@@ -433,5 +440,17 @@ module RRB
     end
     
   end
-  
+  class MethodCall 
+    def initialize(body, args)
+      @body = body
+      @args = args
+    end
+
+    attr_reader :body, :args
+
+    def name
+      body.name
+    end
+  end
+
 end
