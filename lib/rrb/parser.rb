@@ -54,35 +54,35 @@ module RRB
     end
     
     def on__const(token)
-      IdInfo.new(:const, lineno, column + token.size, token)
+      IdInfo.new(:const, lineno, column, token)
     end
 
     def on__ident(token)
-      IdInfo.new(:id, lineno, column + token.size, token)
+      IdInfo.new(:id, lineno, column, token)
     end
 
     def on__cvar(token)
-      IdInfo.new(:cvar, lineno, column + token.size, token)
+      IdInfo.new(:cvar, lineno, column, token)
     end
 
     def on__ivar(token)
-      IdInfo.new(:ivar, lineno, column + token.size, token)
+      IdInfo.new(:ivar, lineno, column, token)
     end
 
     def on__gvar(token)
-      IdInfo.new(:gvar, lineno, column + token.size, token)
+      IdInfo.new(:gvar, lineno, column, token)
     end
 
     def on__kw(token)
-      IdInfo.new(:keyword, lineno, column + token.size, token)
+      IdInfo.new(:keyword, lineno, column, token)
     end
     
     def on__op(token)
-      IdInfo.new(:op, lineno, column + token.size, token)
+      IdInfo.new(:op, lineno, column, token)
     end
     
     def on__symbol(id)
-      IdInfo.new(:symbol, id.lineno, id.pointer, id.name)
+      IdInfo.new(:symbol, id.lineno, id.column, id.name)
     end
 
 
