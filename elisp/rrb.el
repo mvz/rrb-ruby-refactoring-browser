@@ -130,20 +130,21 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-run-process (command &rest args)
   "Run COMMAND and return error code"
-  (let ((error-code)
-	(tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
-    (rrb-clean-output-buffer)
-    (set-buffer rrb-input-buffer)
-    (setq error-code (apply 'call-process-region
-			    (point-min) (point-max)
-			    command
-			    nil
-			    (list rrb-output-buffer tmpfile)
-			    nil
-			    `(,@args "--stdin-stdout")))
-    (rrb-output-to-error-buffer tmpfile)
-    (delete-file tmpfile)
-    error-code))
+  (save-current-buffer
+    (let ((error-code)
+	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
+      (rrb-clean-output-buffer)
+      (set-buffer rrb-input-buffer)
+      (setq error-code (apply 'call-process-region
+			      (point-min) (point-max)
+			      command
+			      nil
+			      (list rrb-output-buffer tmpfile)
+			      nil
+			      `(,@args "--stdin-stdout")))
+      (rrb-output-to-error-buffer tmpfile)
+      (delete-file tmpfile)
+      error-code)))
 
 (defun rrb-buffer-point-alist ()
   (save-current-buffer
@@ -486,7 +487,9 @@ matches with rrb-ruby-file-name-regexp'"
 		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-pullup-method)))
   (save-current-buffer
-    (rrb-do-refactoring "--pullup-method" old-method new-class)))
+    (rrb-do-refactoring "--pullup-method" old-method new-class
+			(buffer-file-name)
+			(number-to-string (rrb-current-line)))))
 		 
 ;;;; Refactoring: Push down method
 
@@ -502,5 +505,7 @@ matches with rrb-ruby-file-name-regexp'"
 		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-pushdown-method)))
   (save-current-buffer
-    (rrb-do-refactoring "--pushdown-method" old-method new-class)))
+    (rrb-do-refactoring "--pushdown-method" old-method new-class 
+			(buffer-file-name)
+			(number-to-string (rrb-current-line)))))
 		 
