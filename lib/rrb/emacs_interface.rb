@@ -3,6 +3,7 @@ require 'rrb/rename_local_var'
 require 'rrb/rename_instance_var'
 require 'rrb/rename_class_var'
 require 'rrb/rename_global_var'
+require 'rrb/rename_method'
 require 'rrb/rename_method_all'
 require 'rrb/rename_constant'
 require 'rrb/extract_method'
@@ -88,6 +89,19 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @refactoring_method = :extract_method
       @check_method = :extract_method?
     end
+
+    def parse_argv_rename_method(argv)
+      old_method = argv.shift
+      new_method = argv.shift
+      for i in 0...(argv.size)
+	break if /^--/ =~ argv[i]
+      end
+      classes = argv[0,i].map{|ns| RRB::NS.new(ns)}
+      i.times{ argv.shift }
+      @args = [ classes, old_method, new_method ]
+      @refactoring_method = :rename_method
+      @check_method = :rename_method?
+    end
     
     def parse_argv_rename_method_all(argv)
       old_method = argv.shift
@@ -106,19 +120,6 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @check_method = :move_method?	
     end
     
-    def parse_argv_rename_method(argv)
-      old_method = argv.shift
-      new_method = argv.shift
-      for i in 0...(argv.size)
-	break if /^--/ =~ argv[i]
-      end
-      classes = argv[0,i]
-      i.times{ argv.shift }
-      @args = [ classes, old_method, new_method ]
-      @refactoring_method = :rename_method
-      @check_method = :rename_method?
-    end
-
     def parse_argv_rename_constant(argv)
       old_const = argv.shift
       new_const = argv.shift
