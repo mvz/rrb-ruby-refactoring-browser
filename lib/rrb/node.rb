@@ -59,6 +59,10 @@ module RRB
     attr_reader :head_keyword, :tail_keyword
     attr_reader :assigned
     attr_reader :attr_readers, :attr_writers, :attr_accessors
+
+    def calls
+      @fcalls + @method_calls
+    end
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
