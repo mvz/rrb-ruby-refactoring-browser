@@ -44,12 +44,18 @@ ObjectSpace.each_object( Module ) do |mod|
   print "#"
 
   # 5 singleton_methods
-  class << mod
-    public_instance_methods(false).each do |method_name|
+  if RUBY_VERSION >= '1.8.0' then
+    mod.singleton_methods(false).each do |method_name|
       print method_name, ";"
     end
+  else
+    class << mod
+      public_instance_methods(false).each do |method_name|
+        print method_name, ";"
+      end
+    end
   end
-
+  
   print "\n"
   
 end
