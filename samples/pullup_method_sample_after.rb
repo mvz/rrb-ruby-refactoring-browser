@@ -20,5 +20,10 @@ class Derived < Base
     def bar
     end
   end
+  def Derived.foo
+    bar
+  end
+  def Derived.bar
+  end
 end
 -- END --
