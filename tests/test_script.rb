@@ -5,7 +5,7 @@ require 'rrb/script.rb'
 
 class TestScript < RUNIT::TestCase
 
-INPUT_STRING = <<EOS
+  INPUT_STRING = "
 /home/ohai/ruby/test/file1.rb\C-l
 
 # comment
@@ -14,7 +14,7 @@ class Rename
   def method_1( x, y )
     z = 3
     z.upto(6) do |i|
-      print i*3, "\\n"
+      print i*3, \"\\n\"
     end
     print z**4, z**5
   end
@@ -26,9 +26,9 @@ class Rename
   end
 end
 \C-l-- END --\C-l
-EOS
+"
 
-OUTPUT_STRING = <<EOS
+  OUTPUT_STRING = "
 /home/ohai/ruby/test/file1.rb\C-l
 
 # comment
@@ -37,7 +37,7 @@ class Rename
   def method_1( x, y )
     z = 3
     z.upto(6) do |i|
-      print i*3, "\\n"
+      print i*3, \"\\n\"
     end
     print z**4, z**5
   end
@@ -49,7 +49,7 @@ class Rename
   end
 end
 \C-l-- END --\C-l
-EOS
+"
 
   def test_rename_local_var?
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STRING ) )
