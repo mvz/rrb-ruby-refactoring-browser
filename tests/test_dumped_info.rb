@@ -35,7 +35,11 @@ class TestClassD
   end
 end
 class TestClassF < TestClassB
-end  
+end
+class << TestClassA
+  class InnerSingletonClass
+  end
+end
 EOS
 
 class TestDumpedInfo < RUNIT::TestCase
