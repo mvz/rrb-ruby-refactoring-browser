@@ -61,6 +61,9 @@ if $0 == __FILE__ then
       method_name = ARGV.shift
       old_namespace = RRB::Namespace.new( ARGV.shift )
       new_namespace = RRB::Namespace.new( ARGV.shift )
+    else
+      STDERR << "Unknown refactoring: #{refactor_type}\n"
+      exit 2
     end
 
     case ARGV.shift
@@ -73,6 +76,8 @@ if $0 == __FILE__ then
     when '--filein-stdout'
       script = RRB::Script.new_from_filenames( ARGV )
       output = proc{ script.result_to_io( STDOUT ) }
+    else
+      STDERR << "Unknown input/output option\n"
     end
 
     # refactoring
