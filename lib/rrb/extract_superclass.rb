@@ -3,6 +3,41 @@ require 'rrb/common_visitor'
 
 module RRB
 
+  class ExtractSuperclass_GetNamespaceOnLineVisitor < Visitor
+    def initialize( lineno )
+      @lineno = lineno..lineno
+      @namespace = Namespace::Toplevel
+      @node = nil
+    end
+
+    attr_reader :namespace, :node
+    
+    def check_out_of( node )
+      unless node.range.out_of?( @lineno )
+        @namespace = @node = nil
+      end
+    end
+    
+    def visit_class( namespace, node )
+      if node.range.contain?( @lineno )
+        @namespace = NodeNamespace.new( node, namespace ).normal
+        @node = node
+      end
+    end
+    
+    def visit_method( namespace, node )
+      check_out_of( node )
+    end
+
+    def visit_class_method( namespace, node )
+      check_out_of( node )
+    end
+
+    def visit_singleton_method( namespace, node )
+      check_out_of( node )
+    end
+  end
+  
   class ExtractSuperclassVisitor < Visitor
     def initialize( namespace, new_class, targets )
       @new_superclass = namespace.abs_name + '::' + new_class
@@ -29,27 +64,34 @@ module RRB
     end
 
     def reindent_lines_node( lines, node )
+      return lines if node == nil
       RRB.reindent_lines( lines, node.range.head.head_pointer + INDENT_LEVEL )
     end
     
-    def reindent_lines_in( lines, namespace )
-      return lines if namespace.match?( Namespace::Toplevel ) 
-      reindent_lines_node( lines, namespace.body_node )
-    end
-    
     def add_superclass_def( lines, lineno )
-      indented = reindent_lines_in( lines, class_on( lineno ) ).join
+      indented = reindent_lines_node( lines, class_node_on( lineno ) ).join
       @new_script = RRB.insert_str( @new_script, lineno, nil, indented, nil )
     end
 
     def class_on( lineno )
-      get_class_on_region( lineno..lineno )
+      visitor = ExtractSuperclass_GetNamespaceOnLineVisitor.new( lineno )
+      @tree.accept( visitor )
+      visitor.namespace
     end
-    
+
+    def class_node_on( lineno )
+      visitor = ExtractSuperclass_GetNamespaceOnLineVisitor.new( lineno )
+      @tree.accept( visitor )
+      visitor.node
+    end
   end
   
   class Script
 
+    def class_on( path, lineno )
+      @files.find{|scriptfile| scriptfile.path == path}.class_on( lineno )
+    end
+    
     def superclass_def( namespace, new_class, old_superclass, where )
       result = [
         "class #{new_class} < ::#{old_superclass.name}\n",
@@ -76,7 +118,7 @@ module RRB
       new_superclass = get_dumped_info[targets.first].superclass.class_name
       def_str = superclass_def( namespace, new_class,
                                 new_superclass,
-                                deffile.class_on(lineno).normal )
+                                deffile.class_on(lineno) )
       deffile.add_superclass_def( def_str, lineno )
     end
     
@@ -106,11 +148,12 @@ module RRB
       end
 
       # check where new class is defined
-      unless get_class_on_cursor( path, lineno ).normal.contain?( namespace )
+      if class_on( path, lineno ).nil? ||
+         ! class_on( path, lineno ).contain?( namespace )
         @error_message = "Invalid Position to define new class\n"
         return false
       end
-
+      
       return true
     end
     
