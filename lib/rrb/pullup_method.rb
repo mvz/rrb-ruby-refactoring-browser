@@ -54,18 +54,18 @@ module RRB
 
   class Script
     def pullup_method(old_namespace, method_name, new_namespace,
-                      filename, lineno)
+                      path, lineno)
       pullupped_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
 	scriptfile.pullup_method(old_namespace, method_name,
                                  new_namespace, pullupped_method,
-                                 scriptfile.path != filename,
+                                 scriptfile.path != path,
                                  lineno)
       end      
     end
 
     def pullup_method?(old_namespace, method_name, new_namespace,
-                       filename, lineno)
+                       path, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
         @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
         return false
@@ -81,8 +81,9 @@ module RRB
         return false
       end
 
-      unless check_namespace_defined(filename, new_namespace)
-        @error_message = "No Definition of #{new_namespace.name} in #{filename}\n"
+      target_class = get_class_on_cursor(path, lineno)
+      unless target_class && new_namespace.contain?(target_class.normal )
+        @error_message = "Specify where to pull up method\n"
         return false
       end
 
