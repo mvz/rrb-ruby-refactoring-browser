@@ -97,8 +97,12 @@ Enumerable
 = RRB::NullDumpedClassInfo
 ((<RRB::DumpedClassInfo>))のダミーとなるオブジェクトを作るクラス
 存在しないクラスの情報を取ろうとすると得られる。
-NullObjectパターンを参照
+NullObjectパターン&singletonパターンを参照
 
+== class method
+--- instance
+      return the singleton instance
+      
 == method
 --- type
       return "NullDumpedClass"
