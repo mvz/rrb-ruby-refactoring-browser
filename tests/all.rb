@@ -11,4 +11,6 @@ ObjectSpace.each_object(Class) do |klass|
   end
 end
 
-RUNIT::CUI::TestRunner.run( suite )
+if __FILE__ == $0 then
+  RUNIT::CUI::TestRunner.run( suite )
+end
