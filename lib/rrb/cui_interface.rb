@@ -365,8 +365,8 @@ USG
     REFACTORING_MAP = {
       'rename-local-variable' => RenameLocalVariable,
       'rename-instance-variable' => RenameInstanceVariable,
-      'rename-class-variable' => nil,
-      'rename-global-variable' => nil,
+      'rename-class-variable' => RenameClassVariable,
+      'rename-global-variable' => RenameGlobalVariable,
       'rename-constant' => nil,
       'rename-class' => nil,
       'rename-method-all' => nil,
