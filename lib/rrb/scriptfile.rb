@@ -78,6 +78,26 @@ module RRB
     return dst
   end
 
+  def insert_str(src, insert_lineno, delete_range, insert_str)
+    dst = ''
+    lines = src.split(/^/)
+
+    0.upto(lines.length - 1) do |lineno|
+      if lineno == insert_lineno
+        dst << insert_str
+      end
+      if delete_range
+        unless (delete_range.head.lineno-1..delete_range.tail.lineno-1) === lineno
+          dst << lines[lineno]
+        end
+      else
+        dst << lines[lineno]
+      end
+    end
+    dst
+    
+  end
+
   Keywords = [ "__LINE__","__FILE__","BEGIN","END","alias","and","begin","break","case","class","def","defined?","do","else","elsif","end","ensure","false","for","if","in","module","next","nil","not","or","redo","rescue","retry","return","self","super","then","true","undef","unless","until","when","while","yield" ]
 
   def keyword?( id )
