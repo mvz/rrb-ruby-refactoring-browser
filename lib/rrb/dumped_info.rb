@@ -9,6 +9,7 @@ module RRB
     end
 
     def [](index)
+      index = index.str if index.kind_of?( Namespace )
       @classes[index]
     end
 
@@ -86,6 +87,7 @@ module RRB
     end
 
     def subclass_of?(classname)
+      classname = classname.str if classname.kind_of?( Namespace )
       @ancestor_names.include?(classname) ||  @class_name == classname
     end
   end
