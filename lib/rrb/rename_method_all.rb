@@ -56,30 +56,36 @@ module RRB
     attr_reader :result
   end
 
-  class MethodDefineCheckVisitor < Visitor
+  class ClassesDefineMethodVisitor < Visitor
 
-    def initialize( method, classes )
+    def initialize( method )
       @method = method
-      @classes = classes
+      @classes = Set.new
     end
 
-    def visit_class( namespace, node )
-      if node.method_defs.inject( false ){|r,i| (r || i.name == @method) } then
-	classname = NodeNamespace.new( node, namespace ).normal
-	@classes.delete_if{|class_info| class_info.class_name ==  classname }
-      end
-    end
-
-    def visit_toplevel( namespace, node )
-      if node.method_defs.inject( false ){|r,i| r || i.name == @method } then
-	@classes.delete_if{|class_info| class_info.class_name ==  'Object' }
+    attr_reader :classes
+    
+    def visit_method( namespace, node )
+      if node.name == @method then
+        ns = namespace.normal
+        if ns == Namespace::Toplevel then
+          @classes.add Namespace::Object
+        else
+          @classes.add ns
+        end
       end
     end
     
   end
-
+  
   class ScriptFile
 
+    def classes_define_method( method )
+      visitor = ClassesDefineMethodVisitor.new( method )
+      @tree.accept( visitor )
+      visitor.classes
+    end
+    
     def rename_method_all( old_method, new_method )
       visitor = RenameMethodAllVisitor.new( old_method, new_method )
       @tree.accept( visitor )
@@ -95,10 +101,6 @@ module RRB
       return visitor.result
     end
 
-    def method_define_check( method, classes )
-      @tree.accept MethodDefineCheckVisitor.new( method, classes )
-    end
-
   end
 
   class Script
@@ -107,6 +109,14 @@ module RRB
       @files.each do |scriptfile|
 	scriptfile.rename_method_all( old_method, new_method )
       end
+    end
+
+    def classes_define_method( method )
+      classes = Set.new
+      @files.each do |scriptfile|
+        classes.merge scriptfile.classes_define_method( method )
+      end
+      classes
     end
     
     def rename_method_all?( old_method, new_method )
@@ -118,11 +128,11 @@ module RRB
 	return false if has_old_method && has_new_method
       end
 
-      refactored_classes = info.classes_having_method( old_method )      
-      @files.each do |scriptfile|
-	scriptfile.method_define_check( old_method, refactored_classes )
+      refactored_classes = info.classes_having_method( old_method )
+      refactored_classes.map!{|c| c.class_name}
+      if Set.new(refactored_classes) != classes_define_method( old_method ) then
+        return false
       end
-      return false unless refactored_classes.empty?
       
       @files.each do |scriptfile|
 	unless scriptfile.rename_method_all?( old_method, new_method ) then
