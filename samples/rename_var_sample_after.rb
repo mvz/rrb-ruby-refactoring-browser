@@ -1,4 +1,4 @@
-
+samples/rename_var_sample.rb
 # comment
 
 class Rename
@@ -10,3 +10,4 @@ class Rename
     print bb**4, bb**5, "#{bb}", " #{3*bb**2}"
   end
 end
+-- END --

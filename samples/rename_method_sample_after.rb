@@ -1,4 +1,4 @@
-
+samples/rename_method_sample.rb
 class A
 
   def initialize
@@ -52,3 +52,4 @@ if __FILE__ == $0 then
 
   p obj.feefoo
 end
+-- END --

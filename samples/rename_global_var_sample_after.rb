@@ -1,4 +1,4 @@
-$y = 3
+samples/rename_global_var_sample.rb$y = 3
 $z = $y
 
 class Rename
@@ -12,3 +12,4 @@ class Rename
     end
   end
 end
+-- END --
