@@ -97,6 +97,16 @@
 --- Ripper#on__NEQ
 --- Ripper#on__NMATCH
 --- Ripper#on__NTH_REF
+--- Ripper#on__OP( op )
+
+    新設
+    
+    再定義可能な演算子(==など、=,::などは含まれない)がscanされた
+    ときに呼びだされる。
+    単項演算子が`-hoge'の形で使われた場合は呼びだされない。
+    `-@'の場合は呼びだされる。
+    * ((|op|)) 演算子の文字列
+    
 --- Ripper#on__OR
 --- Ripper#on__OROR
 --- Ripper#on__OROR_ASSIGN
@@ -106,6 +116,7 @@
 --- Ripper#on__PLUS
 --- Ripper#on__PLUS_ASSIGN
 --- Ripper#on__POW
+--- Ripper#on__POW_ASSIGN
 --- Ripper#on__Q( q )
     
     ?(クエスチョンマーク)がscanされたときに呼びだされる
@@ -469,7 +480,8 @@
 --- Ripper#on__super
 --- Ripper#on__symbol
 --- Ripper#on__tPOW_ASSIGN
-    * bug
+    * bug (on__POW_ASSIGNが正しい) 修正した
+    
 --- Ripper#on__toplevel_const_get( const_name )
     
     ::CONST_NAME という方式による定数の参照
