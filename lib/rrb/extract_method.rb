@@ -52,18 +52,6 @@ module RRB
     end
   end
 
-  def space_width( str )
-    result = 0
-    str.each_byte do |c|
-      if c == ?\t then
-        result = (result/TAB_WIDTH + 1)*TAB_WIDTH
-      else
-        result += 1
-      end
-    end
-    result
-  end
-  module_function :space_width
   
   def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
     dst = ''
