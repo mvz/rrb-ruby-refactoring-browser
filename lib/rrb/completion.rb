@@ -39,6 +39,24 @@ module RRB
     attr_reader :methods
   end
 
+  class RefactableClassesVisitor < Visitor
+
+    def initialize
+      @classes = Set.new
+    end
+
+    def visit_class( namespace, node )
+      if namespace.normal == Namespace::Toplevel
+        @classes << '::' + node.name_id.name
+      else
+        @classes << '::' + namespace.str + '::' + node.name_id.name
+      end
+    end
+
+    attr_reader :classes
+  end
+
+  
   class RefactableClassesIVarsVisitor < Visitor
 
     def initialize
@@ -88,6 +106,12 @@ module RRB
       visitor.methods
     end
 
+    def refactable_classes
+      visitor = RefactableClassesVisitor.new
+      @tree.accept( visitor )
+      visitor.classes
+    end
+
     def refactable_classes_instance_vars
       visitor = RefactableClassesIVarsVisitor.new
       @tree.accept( visitor )
@@ -110,6 +134,14 @@ module RRB
       end
     end
 
+    def refactable_classes
+      result = Set.new
+      @files.each do |scriptfile|
+        result.merge scriptfile.refactable_classes
+      end
+      result
+    end
+    
     def refactable_classes_instance_vars
       result = Hash.new
       @files.each do |scriptfile|
