@@ -1,9 +1,11 @@
-;;; rrb.el - Ruby Refactoring Brower emacs interface
+;;; rrb.el -- Ruby Refactoring Brower emacs interface
 
-;; Copyright (C) 2003 OHBAYASHI Ippei
+;; Copyright (C) 2003 OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
 
 ;; Author: OHBAYASHI Ippei <ohai@kmc.gr.jp>
-;; Maintainer: OHBAYASHI Ippei <ohai@kmc.gr.jp>
+;;	YOSHIDA Yuichi <oxy@kmc.gr.jp>
+;;	HARA Yutaka <yhara@kmc.gr.jp>
+;; Keywords: ruby refactoring browser
 
 ;;; Code:
 
