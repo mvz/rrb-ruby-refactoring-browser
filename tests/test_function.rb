@@ -45,7 +45,7 @@ EOS
   def test_replace_str
 
     assert_equals( AFTER_REPLACE,
-		  RRB.replace_str( StringIO.new(BEFORE_REPLACE), REPLACE_INFO))
+		  RRB.replace_str( BEFORE_REPLACE, REPLACE_INFO) )
   end
   
 end

@@ -179,13 +179,13 @@ end
 "
 
   def test_classes_call_method
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT_STR ), 'test.rb' )
+    scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
     assert_equals( [ RRB::NS['B'], RRB::NS['C::D'] ],
 		  scriptfile.classes_call_method( 'foo' ) )
   end
   
   def test_rename_method
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT_STR ), 'test.rb' )
+    scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
     scriptfile.rename_method( %w(A B C::D).map{|x| RRB::NS.new(x)}, 'foo', 'feefoo' )
     assert_equals( OUTPUT_STR, scriptfile.new_script )
   end

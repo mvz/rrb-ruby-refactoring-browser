@@ -33,7 +33,7 @@ end
 "
   
   def test_refactable_methods
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     methods = scriptfile.refactable_methods.map do |method|
       [ method.fullname, method.local_vars ]
     end
@@ -46,14 +46,14 @@ end
   end
 
   def test_refactable_classes
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     classes = scriptfile.refactable_classes
     assert_equals( Set['::A','::B','::C','::C::D'],
 		  classes )
   end
 
   def test_refactable_classes_instance_vars
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     ivars = scriptfile.refactable_classes_instance_vars
     assert_equals( { 'A' => Set[ '@var' ], 'B' =>  Set[ '@var', '@var2' ],
 		  'C::D' => Set[ '@var3' ]},
@@ -61,7 +61,7 @@ end
   end
 
   def test_refactable_consts
-    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     dumped_info = RRB::Script.new( [scriptfile] ).get_dumped_info
     assert_equals( Set['::A','::B','::C','::C::D','::A::CONST'],
                    scriptfile.refactable_consts(dumped_info) )

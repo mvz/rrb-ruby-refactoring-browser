@@ -14,8 +14,7 @@ class TestScriptFile < RUNIT::TestCase
 
     File.open( 'samples/rename_var_sample.rb', 'r' ) do |file|
 
-      script_file = RRB::ScriptFile.new( file, file.path )
-      #script_file.rename_local_var( ['Rename'], 'method_1', 'z', 'bb' )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       script_file.rename_local_var( RRB::NS.new('Rename'),
 				   'method_1', 'z', 'bb' )
       assert_equals( File.open( 'samples/rename_var_sample_after.rb' ).read,
@@ -27,7 +26,7 @@ class TestScriptFile < RUNIT::TestCase
   def test_rename_local_var?
     
     File.open( 'samples/rename_var_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( true, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							 'z', 'bb' ) )
@@ -54,7 +53,7 @@ class TestScriptFile < RUNIT::TestCase
 
   def test_rename_global_var
     File.open( 'samples/rename_global_var_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       script_file.rename_global_var('$x', '$y' )
       assert_equals( File.open( 'samples/rename_global_var_sample_after.rb' ).read,
 		    script_file.new_script )
@@ -64,7 +63,7 @@ class TestScriptFile < RUNIT::TestCase
   def test_rename_global_var?
    
     File.open( 'samples/rename_global_var_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( true, script_file.rename_global_var?('$x', '$y'))
       assert_equals( false, script_file.rename_global_var?('$x', '$z'))
       assert_equals( false, script_file.rename_global_var?('$x', 'x'))
@@ -77,7 +76,7 @@ class TestScriptFile < RUNIT::TestCase
   def test_rename_method_all
 
     File.open('samples/rename_method_sample.rb') do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       script_file.rename_method_all( 'foo', 'feefoo' )
       assert_equals( File.open( 'samples/rename_method_sample_after.rb' ).read,
 		    script_file.new_script )
@@ -88,7 +87,7 @@ class TestScriptFile < RUNIT::TestCase
   def test_rename_method_all?
     
     File.open('samples/rename_method_sample.rb') do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( true, script_file.rename_method_all?( 'foo', 'feefoo' ) )
       assert_equals( true, script_file.rename_method_all?( 'foo', 'foo?' ) )
       # collision with local variable
@@ -111,7 +110,7 @@ class TestScriptFile < RUNIT::TestCase
   end
   def test_move_method?
     File.open( 'samples/move_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals(true, script_file.move_method?('foo', RRB::NS.new('X::B'), RRB::NS.new('X::A')))
       assert_equals(false, script_file.move_method?('bar', RRB::NS.new('X::B'), RRB::NS.new('X::A')))
       assert_equals(false, script_file.move_method?('foos', RRB::NS.new('X::B'), RRB::NS.new('X::A')))

@@ -5,7 +5,7 @@ class TestScriptFile_ExtractMethod < RUNIT::TestCase
 
   def test_extract_method
     File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       script_file.extract_method('fuga', 11, 14)
       assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,
                     script_file.new_script )
@@ -14,7 +14,7 @@ class TestScriptFile_ExtractMethod < RUNIT::TestCase
 
   def test_get_emethod_namespace
     File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( RRB::NS["B"],
                     script_file.get_emethod_namespace( 11, 14 ).normal )
     end
