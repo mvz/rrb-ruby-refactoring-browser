@@ -54,6 +54,8 @@ module RRB
   module_function
   
   def replace_str( input, replace_info )
+    return nil if replace_info.empty?
+    
     src = StringIO.new( input )
     sorted_info = replace_info.sort_by{|i| [ i.lineno, -i.pointer ] }
     sorted_info << Guard
