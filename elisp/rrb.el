@@ -58,7 +58,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-setup-input-buffer ()
   "Generate input string on \" *rrb-input*\""
-  (save-excursion
+  (save-current-buffer
     (set-buffer rrb-input-buffer)
     (erase-buffer)
     (mapcar 'rrb-insert-input-string
@@ -162,7 +162,7 @@ matches with rrb-ruby-file-name-regexp'"
   (interactive (progn
 		 (rrb-setup-input-buffer)
 		 (rrb-comp-read-rename-local-variable)))
-  (save-excursion
+  (save-current-buffer
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
 ;;;; Refactoring: Rename method all
@@ -185,8 +185,7 @@ matches with rrb-ruby-file-name-regexp'"
   (interactive (progn
 		 (rrb-setup-input-buffer)
 		 (rrb-comp-read-rename-method-all)))
-  (save-excursion
-    (rrb-setup-input-buffer)
+  (save-current-buffer
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
 
 ;;;; Refactoring: Extract method
@@ -206,7 +205,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-extract-method (begin end new_method)
   "Refactor code: Extract method"
   (interactive "r\nsNew method: ")
-  (save-excursion
+  (save-current-buffer
     (rrb-setup-input-buffer)
     (rrb-do-refactoring "--extract-method"
 			(buffer-file-name)
@@ -239,6 +238,6 @@ matches with rrb-ruby-file-name-regexp'"
   (interactive (progn
 		 (rrb-setup-input-buffer)
 		 (rrb-comp-read-rename-instance-variable)))
-  (save-excursion
+  (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
   
