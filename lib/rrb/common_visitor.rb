@@ -86,17 +86,17 @@ module RRB
       end
     end
   end
-  class CheckNamespaceDefinedVisitor < Visitor
+  class CountNamespaceDefinitionVisitor < Visitor
     def initialize(namespace)
       @namespace = namespace
-      @result = false
+      @result = 0
     end
 
     attr_reader :result
 
     def visit_class(namespace, node)
       if NodeNamespace.new(node, namespace).match?(@namespace)
-        @result = true
+        @result += 1
       end
     end
 
@@ -122,8 +122,8 @@ module RRB
       visitor.namespace
     end    
     
-    def check_namespace_defined(namespace)
-      visitor = CheckNamespaceDefinedVisitor.new(namespace)
+    def count_namespace_definition(namespace)
+      visitor = CountNamespaceDefinitionVisitor.new(namespace)
       @tree.accept(visitor)
       visitor.result
     end
@@ -145,9 +145,18 @@ module RRB
       target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
       target_scriptfile && target_scriptfile.get_method_on_region(range)
     end
-    def check_namespace_defined(path, namespace)
+
+    def get_class_on_cursor(path, lineno)
+      get_class_on_region(path, lineno..lineno)
+    end
+
+    def get_method_on_cursor(path, lineno)
+      get_method_on_region(path, lineno..lineno)
+    end
+
+    def count_namespace_definition(path, namespace)
       target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
-      target_scriptfile && target_scriptfile.check_namespace_defined(namespace)
+      target_scriptfile && target_scriptfile.count_namespace_definition(namespace)
     end
 
   end
