@@ -50,13 +50,13 @@ module RRB
     end
     
     def mk_run_file( work_dir_path, script_dir_path )
-
       run_file_path = File.join( work_dir_path, 'rrb_dump.rb' )
       run_file = File.open( run_file_path, "w" ) 
       find_dir( script_dir_path ).each do |dirpath|
 	run_file << "$:.unshift '#{dirpath}'\n"
       end
       run_file << "require 'rrb_reflection'\n"
+      run_file << "$rrb_run_for_reflection = true\n"
       @files.each do |scriptfile|
 	run_file << "require '#{File.join( script_dir_path, scriptfile.path )}'\n"
       end
