@@ -96,6 +96,13 @@ module RRB
       end
     end
 
+    def visit_singleton_method( namespace, s_method_node )
+      visit_method( namespace, s_method_node )
+    end
+
+    def visit_class_method( namespace, c_method_node )
+      visit_method( namespace, c_method_node )
+    end
     
   end
 
