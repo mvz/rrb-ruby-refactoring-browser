@@ -5,23 +5,18 @@ module RRB
   class ScriptFile
 
     def initialize( input, path )
-      @input = input
+      @input = input 
       @path = path
       @tree = Parser.new.run( input )
-      input.rewind 
       @new_script = nil
     end
     
     def write_source_to( dir )
       filepath = File.join( dir,@path )
       FileUtils.mkdir_p( File.dirname( filepath ) )
-      @input.rewind
       File.open(  filepath , "w" ) do |file|
-	@input.each do |line|
-	  file << line
-	end
+        file << @input
       end
-      @input.rewind
     end
 
     def result_to_io( dst )
@@ -57,7 +52,8 @@ module RRB
   
   module_function
   
-  def replace_str( src, replace_info )
+  def replace_str( input, replace_info )
+    src = StringIO.new( input )
     sorted_info = replace_info.sort_by{|i| [ i.lineno, -i.pointer ] }
     sorted_info << Guard
     

@@ -95,7 +95,7 @@ module RRB
 	path = input.gets( IO_SPLITTER ).chop
 	break if path == IO_TERMINATOR
 	content = input.gets( IO_SPLITTER ).chop
-	files << ScriptFile.new( StringIO.new( content ), path )
+	files << ScriptFile.new( content, path )
       end
 
       return new( files )
@@ -104,7 +104,7 @@ module RRB
     def Script.new_from_filenames( *filenames )
       files = []
       filenames.each do |filename|
-	files << ScriptFile.new( File.open(filename), filename )
+	files << ScriptFile.new( File.read(filename), filename )
       end
       return new( files )
     end

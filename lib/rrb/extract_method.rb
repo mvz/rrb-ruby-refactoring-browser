@@ -95,8 +95,8 @@ module RRB
   def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
     dst = ''
 
-    lines = src.readlines
-
+    lines = src.split(/^/)
+    
     def_space_num =  RRB.space_width(/^(\s*)/.match(lines[method_lineno])[0])
     call_space_num = RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
     imp_space_num = def_space_num + 2
