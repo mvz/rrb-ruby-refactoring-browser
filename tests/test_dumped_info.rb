@@ -37,7 +37,7 @@ class TestDumpedInfo < RUNIT::TestCase
     end
     
     assert_equals( "class", info.type )
-    assert_equals( "TestClassB", info.module_name )
+    assert_equals( "TestClassB", info.class_name )
     assert_equals( ["TestClassA","Object","Kernel"], info.ancestor_names )
     assert_equals( ["pub"], info.public_method_names )
     assert_equals( ["pro1", "pro2"], info.protected_method_names.sort )
