@@ -16,6 +16,7 @@ class TestNamespace < RUNIT::TestCase
   def test_EQ
     assert( RRB::Namespace.new("X::B::C") == RRB::Namespace.new(['X','B','C']) )
     assert( RRB::Namespace.new("X::B::C") != RRB::Namespace.new(['X','D','C']) )
+    assert( RRB::Namespace.new("X::B::C") != nil )
   end
 
   def test_hash
