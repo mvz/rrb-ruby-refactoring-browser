@@ -5,11 +5,14 @@ require 'find'
 require 'rrb/dumped_info.rb'
 require 'rrb/default'
 require 'rrb/dump_modules'
+require 'rbconfig'
 
 module RRB
 
   IO_SPLITTER = "\C-a"
   IO_TERMINATOR = '-- END --'
+
+  RUBY_COMMAND = Config::CONFIG['ruby_install_name']
   
   class Script
 
@@ -78,7 +81,7 @@ module RRB
 
 	run_file_path = mk_run_file( work_dir_path, script_dir_path )
 	
-	IO.popen("ruby #{run_file_path}") do |io|
+	IO.popen("#{RUBY_COMMAND} #{run_file_path}") do |io|
 	  return DumpedInfo.get_dumped_info( io )
 	end
       ensure
