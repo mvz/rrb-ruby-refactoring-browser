@@ -115,3 +115,11 @@
 * on__block と on__end_do
   一箇所呼ぶ順序が逆のところがある。
   いれかえた
+
+* 要注意記号
+  variable (true,false,nil,selfなどを含む)
+  fname (op,reswordを含む)
+
+* tSTAR
+  opに含まれているのは何故?
+  
