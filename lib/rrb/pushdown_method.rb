@@ -17,28 +17,36 @@ module RRB
 
     attr_reader :result
 
-    def check_pushdown_method(namespace, node)
+    def check_condition(namespace, node)
+      return false if @method_name.match_node?( namespace, node )
+      return false unless @dumped_info[namespace].subclass_of?(@old_namespace)
+      return false if @dumped_info[namespace].subclass_of?(@new_namespace)
+      return false unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
+      return true
 
-      return if @method_name.match_node?( namespace, node )
-      return unless @dumped_info[namespace].subclass_of?(@old_namespace)
-      return if @dumped_info[namespace].subclass_of?(@new_namespace)
-      return unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
-      called_method = Method.new( namespace, @method_name.bare_name )
-      if @dumped_info.real_method( called_method ) == @method_name
-        @result = false
-        @error_message = "#{namespace.name} calls #{@method_name.name}"
-      end
-      
+      return true
     end
 
     def visit_method(namespace, node)
       return unless @method_name.instance_method?
-      check_pushdown_method(namespace, node)
+      return unless check_condition(namespace, node)
+
+      called_method = Method.new( namespace, @method_name.bare_name )
+      if @dumped_info.real_method( called_method ) == @method_name
+        @result = false
+        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
+      end
     end
 
     def visit_class_method(namespace, node)
       return unless @method_name.class_method?
-      check_pushdown_method(namespace, node)
+      return unless check_condition(namespace, node)
+@result = false
+      called_method = ClassMethod.new( namespace, @method_name.bare_name )
+      if @dumped_info.real_class_method( called_method ) == @method_name
+        @result = false
+        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
+      end
     end
   end
 
