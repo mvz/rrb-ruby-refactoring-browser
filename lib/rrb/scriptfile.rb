@@ -95,7 +95,7 @@ module RRB
         if adjust_space
           def_space_num =  count_indent_str(lines[lineno - 1])
           if lines[lineno - 1] =~ /^(\s*)class/ || lines[lineno - 1] =~ /^(\s*)def/
-            def_space_num += 2
+            def_space_num += INDENT_LEVEL
           end
           base_space_num = insert_str.split("\n").map{|str| RRB.count_indent_str(str)}.sort[0]
           insert_str.split("\n").each do |str|
