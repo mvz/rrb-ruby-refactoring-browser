@@ -50,7 +50,7 @@ module RRB
       end
       
       return nil if classinfo == nil
-      return Namespace::Toplevel if classinfo.class_name == Namespace.new("Object")
+      return Namespace::Toplevel if classinfo.class_name == Namespace::Object
       return classinfo.class_name
     end
     
