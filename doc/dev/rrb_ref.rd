@@ -39,20 +39,18 @@ Enumerable
       ((|namespace|))という名前空間上にある((|const|))という定数が
       実際にはどのネームスペースに属しているものであるのかを返す。
       
-      返値は((<RRB::Namespace>))のインスタンスである。
-      
-= RRB::Replacer
-これを使ってソースの置換をする。
+      返値は((<RRB::Namespace>))のインスタンスである。その定数が存在しなければ
+      返り値はnilである。
 
-== class method
---- new( lineno, pointer, before, after )
-      ((|lineno|))行目、行頭から((|pointer|))番目にある((|before|))という
-      文字列を((|after|))という文字列に置換するReplacerを生成する
-      
---- new_from_id( id, after )
-      ((|id|))で与えられた識別子( ((<RRB::IdInfo>))のインスタンス )を
-      ((|after|))という名前で置換するReplacerを生成する
-      
+--- exist?( methodname, inherited_too=true )
+      指定したメソッドが存在するかどうかを判定する。
+
+      inherited_tooを真にした場合はメソッドの継承も考慮する
+
+--- real_method( methodname )
+      指定したメソッドの実体を得る。つまりそのメソッドが継承したものである場合
+      は継承元のメソッドを表わす((<RRB::Method>))のインスタンスを返す。
+
 = RRB::DumpedClassInfo
 リフレクションによって得られた個々のクラスの情報
 
@@ -93,7 +91,7 @@ Enumerable
 
       ((|classname|))は文字列か((<RRB::Namespace>))のインスタンス
       でなければならない
-      
+
 = RRB::NullDumpedClassInfo
 ((<RRB::DumpedClassInfo>))のダミーとなるオブジェクトを作るクラス
 存在しないクラスの情報を取ろうとすると得られる。
@@ -118,7 +116,7 @@ NullObjectパターン&singletonパターンを参照
 --- has_method?( methodname, inherited_too=true )
 --- subclass_of?(classname)
       return false
-
+      
 = RRB::Node
 パースした結果得られる構文木の個々のノードをあらわす。
 このクラスのインスタンスは生成されず、
@@ -326,31 +324,17 @@ NullObjectパターン&singletonパターンを参照
 --- out_of?( range )
       引数で指定した範囲がselfの範囲と交わらなければ真を、交われば偽を返す
       
-= RRB::NodeNamespace
-Visitorで構文木をtraverseしているときに、visit_*に与えられる現在のノードの
-名前空間を表わすクラス
-
-== class method
---- new( cur_node, cur_ns )
-      ((|cur_ns|))の下に((|cur_node|))をくっつけた名前空間を
-      あらわすインスタンスを生成する
-
-== method
---- name
-      そのインスタンスがあらわす名前空間をあらわす文字列を返す
-      
---- match?( ns )
-      ((<RRB::Namespace>))との一致判定をする。
-      ((|ns|))は RRB::Namespace のインスタンスである必要がある。
-
---- normal
-      selfに対応する((<RRB::Namespace>))のインスタンスを返す
-      
 = RRB::Namespace
-名前空間(A::Bなど)を表わすクラス
+名前空間(A::Bなど)を表わすクラス。値オブジェクトである。
 
 hash,eql?が定義してあるのでSetの元やHashのキーとして利用できる
 
+== constant
+--- Toplevel
+      トップレベルの名前空間を表わす((<RRB::Namespace>))のインスタンス
+--- Object
+      Objectの名前空間を表わす((<RRB::Namespace>))のインスタンス
+      
 == class method
 --- new( ns )
 --- []( ns )
@@ -371,3 +355,63 @@ hash,eql?が定義してあるのでSetの元やHashのキーとして利用できる
 --- chop
       一番末尾の部分を削ったものを返すメソッド
       つまり、RRB::NS["A::B::C"] に対し RRB::NS["A::B"]を返す
+
+--- abs_name
+      名前空間に対応する文字列を返す。nameとの違いは「::」が文字列の先頭に
+      加えられること。
+
+--- nested( bare_name )
+      selfより一段ネストが深くなったネームスペースを表わすオブジェクトを
+      返す。
+      
+--- contain?( other )
+      otherがselfからさらにネストが深くなったものであるかどうかを判定する
+
+= RRB::Method
+メソッドの名前をその名前空間も含めて表わすクラス。
+これは値オブジェクトとして利用することを想定している。
+
+eql?、hashを定義しているので、hashのキーやSetの要素として利用可能である。
+== class method
+--- new( namespace, bare_name )
+      新たな((<RRB::Method>))のインスタンスを生成してそれを返す
+
+--- []( str )
+      "A::B#heke"という形の文字列から((<RRB::Method>))もしくは
+      ((<RRB::ClassMethod>))のインスタンスを生成し、それを返す
+
+== method
+--- instance_method?
+      selfがインスタンスメソッドを表わしているならば真を返す。
+
+      ここでは真を返す
+      
+--- class_method?
+      selfがクラスメソッドを表わしているならば真を返す。
+
+      ここでは偽を返す
+      
+--- ==
+      値として等しいかどうかを判定する
+      
+--- match_node?( namespace, node )
+      nodeが((<RRB::MethodNode>))であり、さらにnamespaceとnodeの組が
+      selfが表わすメソッドと一致しているなら真を返す
+      
+--- name
+      "A::B#heke"の形の文字列を返す
+
+= RRB::ClassMethod
+メソッドの名前をその名前空間も含めて表わすクラス。
+((<RRB::Method>))と同じメソッドを持つ。
+
+== class method
+--- new( namespace, bare_name )
+--- []
+
+== method
+--- instance_method?
+--- class_method?
+--- ==
+--- match_node?
+--- name
