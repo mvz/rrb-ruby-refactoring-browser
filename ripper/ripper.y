@@ -2455,8 +2455,10 @@ void
 Init_rrb_ripper()
 {
     VALUE Ripper;
-
-    Ripper = rb_define_class("Ripper", rb_cObject);
+    VALUE rrb;
+    
+    rrb = rb_const_get(rb_cObject, rb_intern("RRB"));
+    Ripper = rb_define_class_under(rrb, "Ripper", rb_cObject);
     rb_define_const(Ripper, "Version", rb_str_new2(RIPPER_VERSION));
     rb_define_singleton_method(Ripper, "new", ripper_s_new, -1);
     rb_define_method(Ripper, "parse", ripper_parse, -1);

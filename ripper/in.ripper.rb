@@ -3,12 +3,16 @@
 # DO NOT MODIFY!!!!!!
 #
 
+module RRB
+end
 require 'rrb_ripper.so'
 
-class Ripper
-  def self.parse( s, *args )
-    new.parse s, *args
-  end
+module RRB
+  class Ripper
+    def self.parse( s, *args )
+      new.parse s, *args
+    end
 
 #include handlers
+  end
 end

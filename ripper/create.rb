@@ -42,9 +42,9 @@ File.foreach( INTERF_INPUT ) do |line|
     when /handlers/
       list.each do |name|
         f.print <<METHOD
-  def on__#{name}( *args )
-    nil
-  end
+    def on__#{name}( *args )
+      nil
+    end
 METHOD
       end
     else
