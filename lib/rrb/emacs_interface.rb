@@ -11,6 +11,7 @@ require 'rrb/move_method'
 require 'rrb/pullup_method'
 require 'rrb/pushdown_method'
 require 'rrb/remove_parameter'
+require 'rrb/extract_superclass'
 
 module RRB
 
@@ -28,9 +29,10 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --extract-method path new_method start_lineno end_lineno
     * --rename-method \"old-class1 old-class2...\" old_method new_method
     * --rename-constant old_const new_const
-    * --pullup-method old_class#method new_class
-    * --pushdown-method old_class#method new_class
+    * --pullup-method old_class#method new_class path lineno
+    * --pushdown-method old_class#method new_class path lineno
     * --remove-parameter class#method parameter
+    * --extract-superclass namespace new_class \"target-class1 target-class2...\" path lineno
 
   io-type
     * --stdin-stdout
@@ -129,9 +131,9 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     def parse_argv_pullup_method(argv)
       old_namespace, method_name = split_method_name argv.shift
       new_namespace = Namespace.new(argv.shift)
-      filename = argv.shift
+      path = argv.shift
       lineno = argv.shift.to_i
-      @args = [old_namespace, method_name, new_namespace, filename, lineno]
+      @args = [old_namespace, method_name, new_namespace, path, lineno]
       @refactoring_method = :pullup_method
       @check_method = :pullup_method?
     end
@@ -139,9 +141,9 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     def parse_argv_pushdown_method(argv)
       old_namespace, method_name = split_method_name argv.shift
       new_namespace = Namespace.new(argv.shift)
-      filename = argv.shift
+      path = argv.shift
       lineno = argv.shift.to_i
-      @args = [old_namespace, method_name, new_namespace, filename, lineno]
+      @args = [old_namespace, method_name, new_namespace, path, lineno]
       @refactoring_method = :pushdown_method
       @check_method = :pushdown_method?
     end
@@ -152,6 +154,17 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @args = [namespace, method_name, target_parameter]
       @refactoring_method = :remove_parameter
       @check_method = :remove_parameter?
+    end
+
+    def parse_argv_extract_superclass(argv)
+      namespace = RRB::NS.new(argv.shift)
+      new_class = argv.shift
+      targets = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
+      path = argv.shift
+      lineno = argv.shift.to_i
+      @args = [namespace, new_class, targets, path, lineno]
+      @refactoring_method = :extract_superclass
+      @check_method = :extract_superclass?
     end
     
     def parse_argv( argv )
@@ -182,6 +195,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
         parse_argv_pushdown_method(argv)
       when '--remove-parameter'
         parse_argv_remove_parameter(argv)
+      when '--extract-superclass'
+        parse_argv_extract_superclass(argv)
       else
 	raise RRBError, "Unknown refactoring"
       end
