@@ -122,11 +122,9 @@ end
     assert_equals( false, script.rename_method_all?( 'foo', 'hek' ) )
   end
 
-  WORK_DIR = '/tmp/rrb_work'
-  
   def test_dump
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
-    info = script.get_dumped_info( WORK_DIR )
+    info = script.get_dumped_info
     assert_equals( "class", info["B"].type )
     assert_equals( ["foo","bar"], info["B"].public_method_names )
   end
