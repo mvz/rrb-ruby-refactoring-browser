@@ -32,6 +32,8 @@
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
 (defconst rrb-io-terminator "-- END --")
+(defconst rrb-modifier "modified")
+(defconst rrb-not-modifier "not-modified")
 
 (defvar rrb-input-buffer (get-buffer-create " *rrb-input*"))
 (defvar rrb-output-buffer (get-buffer-create " *rrb-output*"))
@@ -69,6 +71,7 @@
      (if (= (current-column) 0) 1 0)))
 
 (defun rrb-each (function list)
+  "Call function for each value of list"
   (while list
     (funcall function (car list))
     (setq list (cdr list))))
@@ -103,17 +106,19 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		(buffer-list)))
 
 (defun rrb-insert-input-string (src-buffer)
+  "Insert contents of src-buffer to current buffer"
   (insert (buffer-file-name src-buffer))
   (insert rrb-io-splitter)
   (insert-buffer-substring src-buffer)
   (insert rrb-io-splitter))
 
 (defun rrb-insert-modified-p (src-buffer)
+  "Insert if src-buffer is modified or not to current buffer"
   (insert (buffer-file-name src-buffer))
   (insert rrb-io-splitter)
   (insert (if (buffer-modified-p src-buffer)
-	      "modified"
-	    "not-modified"))
+	      rrb-modifier
+	    rrb-not-modifier))
   (insert rrb-io-splitter))
 
 (defun rrb-setup-buffer (proc buffer-list buffer)
@@ -127,7 +132,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     (insert rrb-io-splitter)))
 
 (defun rrb-clean-buffer (buffer)
-  "Clean temporary buffers"
+  "Clean buffer"
   (save-current-buffer
     (set-buffer buffer)
     (erase-buffer)))
@@ -184,6 +189,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	    (rrb-all-ruby-script-buffer))))
 
 (defun rrb-add-change-hook-to-all-ruby-script ()
+  "Add hook(before-change-function) to all ruby scripts"
   (save-current-buffer
     (rrb-each 
      (lambda (buffer)
@@ -194,6 +200,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
      (rrb-all-ruby-script-buffer))))
     
 (defun rrb-prepare-refactoring ()
+  "Call this function before Refactoring"
   (setq rrb-now-refactoring t)
   (rrb-add-change-hook-to-all-ruby-script)
   (save-current-buffer
@@ -202,38 +209,42 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		      rrb-input-buffer)))
 
 (defun rrb-terminate-refactoring ()
+  "Call this function after Refactoring"
   (setq rrb-now-refactoring nil))
 
 
 ;;;; operation for script-buffer
 
-(defun rrb-each-script-buffer (function buffer)
+(defun rrb-each-for-compound-buffer (function compound-buffer)
+  "Call function for each file included in compound buffer"
   (save-current-buffer
-    (set-buffer buffer)
+    (set-buffer compound-buffer)
     (let ((script-list (split-string (buffer-string) rrb-io-splitter)))
       (while (not (string= (car script-list) rrb-io-terminator))
 	(funcall function (car script-list) (cadr script-list))
 	(setq script-list (cddr script-list))))))
   
 
-(defun rrb-get-file-name-list (buffer)
+(defun rrb-get-file-name-list (compound-buffer)
+  "Get filename list from compound buffer"
   (let (file-name-list '())
-    (rrb-each-script-buffer 
+    (rrb-each-for-compound-buffer 
      (lambda (file-name file-content)
        (setq file-name-list (cons file-name file-name-list)))
-     buffer)
+     compound-buffer)
     file-name-list
     ))
 
-(defun rrb-get-buffer-list (buffer)
+(defun rrb-get-buffer-list (compound-buffer)
+  "Get buffer list visiting files included in compound-buffer"
   (mapcar 'get-file-buffer
-	  (rrb-get-file-name-list buffer)))
+	  (rrb-get-file-name-list compound-buffer)))
 
 
 (defun rrb-output-to-buffer-and-reset-point (alist)
   "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
   (save-current-buffer
-   (rrb-each-script-buffer 
+   (rrb-each-for-compound-buffer 
     (lambda (file-name file-content)
       (set-buffer (get-file-buffer file-name))
       (erase-buffer)
@@ -368,7 +379,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun rrb-undo-base (undo-file-name not-modified-file-name)
-  "Base of Undo and Redo of the last refactoring"
+  "Base of Undo and Redo of the previous refactoring"
   (if (file-readable-p undo-file-name)
       (progn 
 	(save-current-buffer
@@ -381,9 +392,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	    (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
 	    (rrb-clean-buffer rrb-output-buffer)
 	    (insert-file-contents not-modified-file-name)
-	    (rrb-each-script-buffer 
+	    (rrb-each-for-compound-buffer 
 	     (lambda (file-name file-contents)
-	       (if (string= file-contents "not-modified")
+	       (if (string= file-contents rrb-not-modifier)
 		   (progn
 		     (set-buffer (get-file-buffer file-name))
 		     (set-buffer-modified-p (not (car modified-list)))
@@ -395,17 +406,20 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       nil)))
 
 (defun rrb-make-undo-directory ()
+  "Make directory for temporary file for Undo, Redo"
   (if (not (file-exists-p rrb-undo-directory))
       (make-directory rrb-undo-directory))
   (file-accessible-directory-p rrb-undo-directory))
 
 (defun rrb-make-undo-files (buffer-list)
+  "Make temporary files for Undo, Redo"
   (if (rrb-make-undo-directory)
       (progn
 	(rrb-make-history-file buffer-list)
 	(rrb-make-modified-p-file buffer-list))))
 
 (defun rrb-make-history-file (buffer-list)
+  "Make temporary file which records previous states of each file"
   (save-current-buffer
     (set-buffer rrb-undo-buffer)
     (rrb-clean-buffer rrb-undo-buffer)
@@ -421,6 +435,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			  rrb-modified-p-buffer)))
 	
 (defun rrb-make-modified-p-file (buffer-list)
+  "Make temporary file which records if each files are modified or not"
   (save-current-buffer
     (set-buffer rrb-modified-p-buffer)
     (rrb-clean-buffer rrb-modified-p-buffer)
@@ -442,6 +457,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		    rrb-undo-directory))
 
 (defun rrb-delete-undo-files ()
+  "Delete temporary files for Undo, Redo"
   (and (file-exists-p rrb-undo-directory)
        (file-accessible-directory-p rrb-undo-directory)
        (progn
