@@ -7,9 +7,9 @@ alias __rrb_orig_require require
 def __rrb_search( file )
   $__rrb_load_path.each do |path|
     fname = File.join( path, file )
-    return fname if File.exist?( fname )
+    return fname if File.file?( fname )
     fname = File.join( path, file + ".rb" )
-    return fname if File.exist?( fname )
+    return fname if File.file?( fname )
   end
   return nil
 end
