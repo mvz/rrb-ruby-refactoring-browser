@@ -32,7 +32,15 @@ Enumerable
 
       ((|index|))は文字列、もしくは((<RRB::Namespace>))のインスタンスで
       なければならない。 
+      
+--- resolve_const( namespace, const )
+      定数の名前解決をする
 
+      ((|namespace|))という名前空間上にある((|const|))という定数が
+      実際にはどのネームスペースに属しているものであるのかを返す。
+      
+      返値は((<RRB::Namespace>))のインスタンスである。
+      
 = RRB::Replacer
 これを使ってソースの置換をする。
 
@@ -185,6 +193,11 @@ NullObjectパターンを参照
 --- name
       ノードの「名前」をIdInfo/ConstInfoで返す。
       クラス定義ならクラス名を、メソッド定義ならメソッド名をというように。
+
+--- range
+      そのノードの定義範囲(head_keywordからtail_keywordまで)を
+      あらわすオブジェクトを((<RRB::SyntaxRange>))の
+      インスタンスとして返す
       
 = RRB::MethodNode
 構文木のメソッドのノードを表わすクラス
@@ -290,6 +303,24 @@ NullObjectパターンを参照
 --- body
       その定数の「本体」(A::B::CならC)に対応する識別子((<RRB::IdInfo>))
       を返す
+
+= RRB::SyntaxRange
+あるノードの定義範囲、つまり定義開始予約語(classなど)と
+定義終了予約語(end)の対をあらわす。
+
+== method
+--- head
+      定義開始予約語(classなど)を((<RRB::IdInfo>))のインスタンスで返す
+
+--- tail
+      定義終了予約語(end)を((<RRB::IdInfo>))のインスタンスで返す
+
+--- contain?( range )
+      ((|range|))で指定した範囲がselfの範囲の中に含まれていれば真を、
+      なければ偽を返す
+
+--- out_of?( range )
+      引数で指定した範囲がselfの範囲と交わらなければ真を、交われば偽を返す
       
 = RRB::NodeNamespace
 Visitorで構文木をtraverseしているときに、visit_*に与えられる現在のノードの
@@ -332,3 +363,7 @@ hash,eql?が定義してあるのでSetの元やHashのキーとして利用できる
       
 --- ==
       等しいかどうかを判定する
+
+--- chop
+      一番末尾の部分を削ったものを返すメソッド
+      つまり、RRB::NS["A::B::C"] に対し RRB::NS["A::B"]を返す
