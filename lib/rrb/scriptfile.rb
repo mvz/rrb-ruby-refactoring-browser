@@ -11,7 +11,7 @@ module RRB
     def initialize( input, path )
       @input = input 
       @path = path
-      @tree = Parser.new.run( input )
+      @tree = Parser.new(input, path).run
       @new_script = nil
       @error_message = ""
     end
