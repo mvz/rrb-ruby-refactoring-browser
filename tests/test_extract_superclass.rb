@@ -87,6 +87,32 @@ CONST = 3
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
 EOS
 
+  OUTPUT_STR3 = <<EOS
+/home/heke/temp/file1.rb#{RRB::IO_SPLITTER}
+class A
+
+  class D
+    class E < A
+      def heke
+        p CONST
+      end
+    end
+  end
+end
+
+class P < ::A
+end
+class B < ::P
+  
+end
+
+class C < ::P
+end
+CONST = 3
+
+#{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
+EOS
+
   def test_extract_superclass?
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
     assert_equals( true,
@@ -180,6 +206,13 @@ EOS
                                '/home/heke/temp/file1.rb', 3 )
     result = ''; script.result_to_io(result)
     assert_equals( OUTPUT_STR2, result )
+
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script.extract_superclass( RRB::NS[''], 'P',
+                               [RRB::NS['B'],RRB::NS['C']],
+                               '/home/heke/temp/file1.rb', 12 )
+    result = ''; script.result_to_io(result)
+    assert_equals( OUTPUT_STR3, result )
   end
 
   NEW_SUPERCLASS_DEF = [
@@ -188,10 +221,8 @@ EOS
     "  end\n",
     "end\n",
   ]
-  
   def test_new_superclass_def
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
-    scriptfile = RRB::ScriptFile.new( "", "" )
     assert_equals( NEW_SUPERCLASS_DEF,
                    script.superclass_def( RRB::NS["A::D"],
                                           "NEW",
