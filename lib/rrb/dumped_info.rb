@@ -71,6 +71,13 @@ module RRB
       end
       self[methodname.namespace].real_method( methodname.bare_name )
     end
+
+    def real_class_method( methodname )
+      if methodname.instance_method?
+        raise
+      end
+      self[methodname.namespace].real_class_method( methodname.bare_name )
+    end
     
     def DumpedInfo.get_dumped_info( io )
       info_hash = Hash.new(NullDumpedClassInfo.instance)
