@@ -83,6 +83,10 @@ module RRB
     def class_info( class_name )
       @class_defs.find{|c| c.name == class_name }
     end
+
+    def classmethod_info(method_name)
+      @class_method_defs.find{|c| c.name == method_name}
+    end
     
     def name
       @name_id.name
