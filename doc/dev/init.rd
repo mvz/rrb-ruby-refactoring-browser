@@ -9,7 +9,10 @@
    rrb_ripper.soを適当な場所に置き、使えるようにする
    ripper.rb は 「require 'rrb/ripper'」でロードできる場所に置く。
    
-2. Ruby 1.6の場合はshimをインストールする。
+2. rrb/reflection以下を設定する
+   rrb/reflection に cd して、`ruby extconf.rb; make' を実行する。
+   
+3. Ruby 1.6の場合はshimをインストールする。
    shimとは1.8の機能を1.6である程度実現するためのライブラリであり、
    詳しくは((<URL:http://raa.ruby-lang.org/list.rhtml?name=shim-ruby16_18>))を
    参照してください。
