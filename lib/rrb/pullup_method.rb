@@ -16,18 +16,16 @@ module RRB
 
     attr_reader :result
 
+    def called_method(node, fcall)
+      @dumped_info.real_method(node.method_factory.new(@method_name.namespace,
+                                                       fcall.name))
+    end
+      
     def check_pullup_method(namespace, node)
       return unless @method_name.match_node?( namespace, node )
       
       node.fcalls.each do |fcall|
-        if @method_name.instance_method?
-          called_method =
-                @dumped_info.real_method( Method.new( @method_name.namespace,
-                                                      fcall.name ) ) 
-        elsif @method_name.class_method?
-          called_method =
-                @dumped_info.real_class_method( ClassMethod.new( @method_name.namespace,fcall.name))
-        end
+        called_method = called_method(node, fcall)
         unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
           @error_message = "#{@method_name.name} uses #{called_method.name}\n"
@@ -93,11 +91,8 @@ module RRB
         return false
       end
 
-      if method_name.instance_method?
-        super_method = get_dumped_info[old_namespace].superclass.real_method( method_name.bare_name )
-      elsif method_name.class_method?
-        super_method = get_dumped_info[old_namespace].superclass.real_class_method( method_name.bare_name )
-      end
+      superclass = get_dumped_info[old_namespace].superclass
+      super_method = get_dumped_info.real_method(method_name.ns_replaced(superclass.class_name))
       if super_method != nil
         @error_message = "#{super_method.name} is already defined\n"
         return false
