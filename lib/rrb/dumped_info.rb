@@ -28,6 +28,23 @@ module RRB
 
       result
     end
+
+    def resolve_const( namespace, const )
+      ns = namespace
+      
+      until ns == Namespace::Toplevel
+        return ns if self[ns].consts.include?( const )
+        ns = ns.chop
+      end
+      
+      classinfo = self[namespace].ancestors.find do |anc|
+        anc.consts.include?( const )
+      end
+      
+      return nil if classinfo == nil
+      return Namespace::Toplevel if classinfo.class_name == "Object"
+      return Namespace.new( classinfo.class_name ) 
+    end
     
     def DumpedInfo.get_dumped_info( io )
       info_hash = Hash.new(NullDumpedClassInfo.instance)
