@@ -6,8 +6,8 @@ module RRB
     def initialize(namespace, dumped_info, old_var)
       @old_var = old_var
       @dumped_info = dumped_info
-      @my_info = dumped_info[namespace.str]
-      @owner = namespace.str
+      @my_info = dumped_info[namespace]
+      @owner = namespace
     end
 
     attr_reader :owner
@@ -17,7 +17,7 @@ module RRB
       ancestor_names = @dumped_info[@owner].ancestor_names
       class_name = NodeNamespace.new( node, namespace ).str
       new_owner = ancestor_names.find{|anc| anc == class_name}
-      @owner = new_owner if new_owner
+      @owner = Namespace.new( new_owner ) if new_owner
     end
   end
 
@@ -34,7 +34,7 @@ module RRB
     attr_reader :result
     
     def check_namespace(namespace)
-      @dumped_info[namespace.str].subclass_of?(@owner)
+      @dumped_info[namespace.normal].subclass_of?(@owner)
     end
 
     def rename_class_var(namespace, node)
@@ -74,7 +74,7 @@ module RRB
     attr_reader :result
 
     def check_namespace(namespace)
-      @dumped_info[namespace.str].subclass_of?(@owner)
+      @dumped_info[namespace.normal].subclass_of?(@owner)
     end
 
     def rename_class_var?(namespace, node)
