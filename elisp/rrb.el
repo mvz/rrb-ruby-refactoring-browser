@@ -241,4 +241,29 @@ matches with rrb-ruby-file-name-regexp'"
 		 (rrb-comp-read-rename-instance-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
+
+;;;; Refactoring: Rename constant
+
+(defun rrb-complist-consts ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (goto-char (point-min))
+    (mapcar 'list
+	    (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
+
+(defun rrb-comp-read-rename-constant ()
+  "compleion read for rename constant"
+  (when (/= 0 (rrb-run-process "rrb_compinfo" "--constants"))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (list (completing-read "Old constant: " (rrb-complist-consts))
+	(read-from-minibuffer "New constant: ")))
   
+
+(defun rrb-rename-constant (old-const new-const)
+  "Refactor code: Rename constant"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-constant)))
+  (save-current-buffer
+    (rrb-do-refactoring "--rename-constant" old-const new-const)))
+	       
