@@ -9,6 +9,7 @@ if $0 == __FILE__ then
 Usage: rrb_compinfo INFOTYPE IOTYPE
 
   INFOTYPE
+    * --methods-local-vars
     * --methods
 
   IOTYPE
@@ -32,11 +33,16 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   end
 
   case infotype
-  when '--methods'
+  when '--methods-local-vars'
     script.refactable_methods.each do |method|
-      print method.name, ';'
+      print method.fullname, ';'
       print method.local_vars.to_a.join(",")
       print "\n"
     end
+  when '--methods'
+    Set.new( script.refactable_methods.map{|method| method.name} ).each do |method|
+      print method,","
+    end
+    print "\n"
   end
 end
