@@ -317,7 +317,6 @@ module RRB
   end
 
   class Namespace
-    extend Forwardable
     include Enumerable
     
     def initialize( ns )
@@ -372,6 +371,7 @@ module RRB
     end
     
     Toplevel = Namespace.new( [] )
+    Object = Namespace.new( ["Object"] )
   end
 
   # shortcut name
