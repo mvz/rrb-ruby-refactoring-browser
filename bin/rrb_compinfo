@@ -11,6 +11,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   INFOTYPE
     * --methods-local-vars
     * --methods
+    * --classes
     * --classes-instance-vars
     * --constants
   IOTYPE
@@ -45,6 +46,10 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
       print method,","
     end
     print "\n"
+  when '--classes'
+    script.refactable_classes.each do |klass|
+      print klass, ","
+    end
   when '--classes-instance-vars'
     script.refactable_classes_instance_vars.each do |classname,ivars|
       print classname, ';', ivars.to_a.join(','), "\n"
