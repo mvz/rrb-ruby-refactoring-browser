@@ -38,8 +38,7 @@
 (defvar rrb-error-buffer (get-buffer-create " *rrb-error*"))
 (defvar rrb-default-value-buffer (get-buffer-create " *rrb-default-value*"))
 (defvar rrb-undo-buffer (get-buffer-create " *rrb-undo*"))
-(defvar rrb-not-modified-file-buffer 
-  (get-buffer-create " *rrb-not-modified-file"))
+(defvar rrb-modified-p-buffer (get-buffer-create " *rrb-modified-p-file"))
 
 (defvar rrb-undo-count 0)
 (defvar rrb-now-refactoring nil)
@@ -151,7 +150,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (let ((buffer-point-alist (rrb-buffer-point-alist)))
     (if (/= (apply 'rrb-run-process "rrb" args) 0)
 	(error "fail to refactor: %s" (rrb-error-message)))
-    (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer))
+    (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
     (setq rrb-undo-count (+ rrb-undo-count 1))
     (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
@@ -378,7 +377,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (insert-file-contents undo-file-name)
 	  (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
 		 (modified-list (mapcar 'buffer-modified-p buffer-list)))
-	    (rrb-create-undo-file buffer-list)
+	    (rrb-make-undo-files buffer-list)
 	    (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
 	    (rrb-clean-buffer rrb-output-buffer)
 	    (insert-file-contents not-modified-file-name)
@@ -395,26 +394,42 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       (message "Nothing to do!")
       nil)))
 
-(defun rrb-create-undo-file (buffer-list)
+(defun rrb-make-undo-directory ()
   (if (not (file-exists-p rrb-undo-directory))
       (make-directory rrb-undo-directory))
-  (and (file-accessible-directory-p rrb-undo-directory)
-       (save-current-buffer
-	 (set-buffer rrb-undo-buffer)
-	 (rrb-clean-buffer rrb-undo-buffer)
-	 (rrb-setup-buffer 'rrb-insert-input-string 
-			   buffer-list
-			   rrb-undo-buffer)
-	 (write-region (point-min) (point-max)
-		       (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
-	 (set-buffer rrb-not-modified-file-buffer)
-	 (rrb-clean-buffer rrb-not-modified-file-buffer)
-	 (rrb-setup-buffer 'rrb-insert-modified-p
-			   buffer-list
-			   rrb-not-modified-file-buffer)
-	 (write-region (point-min) (point-max)
-		       (rrb-make-not-modified-file-name rrb-undo-count)
-		       nil 0 nil))))
+  (file-accessible-directory-p rrb-undo-directory))
+
+(defun rrb-make-undo-files (buffer-list)
+  (if (rrb-make-undo-directory)
+      (progn
+	(rrb-make-history-file buffer-list)
+	(rrb-make-modified-p-file buffer-list))))
+
+(defun rrb-make-history-file (buffer-list)
+  (save-current-buffer
+    (set-buffer rrb-undo-buffer)
+    (rrb-clean-buffer rrb-undo-buffer)
+    (rrb-setup-buffer 'rrb-insert-input-string 
+		      buffer-list
+		      rrb-undo-buffer)
+    (write-region (point-min) (point-max)
+		  (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
+    (set-buffer rrb-modified-p-buffer)
+    (rrb-clean-buffer rrb-modified-p-buffer)
+	(rrb-setup-buffer 'rrb-insert-modified-p
+			  buffer-list
+			  rrb-modified-p-buffer)))
+	
+(defun rrb-make-modified-p-file (buffer-list)
+  (save-current-buffer
+    (set-buffer rrb-modified-p-buffer)
+    (rrb-clean-buffer rrb-modified-p-buffer)
+    (rrb-setup-buffer 'rrb-insert-modified-p
+		      buffer-list
+			  rrb-modified-p-buffer)
+    (write-region (point-min) (point-max)
+		  (rrb-make-not-modified-file-name rrb-undo-count)
+		  nil 0 nil)))
 
 (defun rrb-make-undo-file-name (undo-count)
   (expand-file-name (number-to-string undo-count)
