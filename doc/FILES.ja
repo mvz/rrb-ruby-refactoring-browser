@@ -1,34 +1,47 @@
 ファイル一覧
 
+README.ja 日本語のREADME
+README.en 英語のREADME
+
 bin/   実行可能なファイル
+  artags        Ruby scriptのemacs用TAGSファイルを生成するコマンド
   rrb           emacsとのインターフェース
   rrb_compinfo  emacsでの補完のための情報を得るためのコマンド
-  artags        Ruby scriptのemacs用TAGSファイルを生成するコマンド
+  rrb_default_value  emacsでのデフォルト値を得るためのコマンド
+  rrb_marshal   高速化のためあらかじめソースをparseしておきそれをファイルに保存しておくコマンド
 
 lib/   RRBのライブラリ部分
-  rrb/   
+  rrb/
+    common_visitor.rb  複数のリファクタリングで使われるvisitorを定義
+    completion.rb      インターフェース側での補完のための情報を返すメソッドを定義
+    default.rb         ユーザがカスタマイズできる定数を定義
+    default_value.rb   インターフェース側でのデフォルト値の情報を返すメソッドを定義
     dump_modules.rb    リフレクションを使ってクラスのデータを集める
     dumped_info.rb     リフレクションを使って集めたデータを得る
     emacs_interface.rb emacsとのインターフェース  
+    extract_method.rb  リファクタリング: Extract method
+    extract_superclass.rb  リファクタリング: Extract superclass
+    move_method.rb     リファクタリング: Move method
     node.rb            パーサで作られる構文木の個々のノードを定義
     parser.rb          パーサ
-    script.rb          複数のスクリプトを束ねたclass Scriptを定義
-    scriptfile.rb      スクリプトファイル1つをあらわすclass ScriptFileを定義
-    utils.rb           その他(例外の定義や汎用的なメソッドを定義してる)
-    completion.rb      インターフェース側での補完のための情報を返すメソッドを定義
-    default.rb         ユーザがカスタマイズできる定数を定義
-    extract_method.rb  リファクタリング: Extract method
-    move_method.rb     リファクタリング: Move method
+    pullup_method.rb   リファクタリング: Pullup method
+    pushdown_method.rb  リファクタリング: Pushdown method
+    remove_parameter.rb  リファクタリング: Remove parameter
     rename_class_var.rb  リファクタリング: Rename class variable
+    rename_constant.rb  リファクタリング: Rename constant
     rename_global_var.rb  リファクタリング: Rename global variable
     rename_instance_var.rb  リファクタリング: Rename instance variable
     rename_local_var.rb  リファクタリング: Rename local variable
     rename_method.rb   リファクタリング: Rename method
     rename_method_all.rb  リファクタリング: Rename method all
+    script.rb          複数のスクリプトを束ねたclass Scriptを定義
+    scriptfile.rb      スクリプトファイル1つをあらわすclass ScriptFileを定義
+    utils.rb           その他(例外の定義や汎用的なメソッドを定義してる)
     
 ripper/  ripper(Rubyのパーサ)にパッチを当てたもの
-  README.ja  ripperのREADME
-  *
+  README.ja  ripperのREADME、日本語
+  README.en  ripperのREADME、英語
+  * その他ripper由来のファイル群
 
 reflection/  Rubyのリフレクション機能強化のための拡張ライブラリ
   rrb_reflection.c  ライブラリ本体
@@ -43,6 +56,14 @@ samples/  テスト用のサンプルスクリプト
   move_method_sample.rb
   move_method_sample_after.rb
   parser_sample.rb
+  pullup_method_sample.rb
+  pullup_method_sample_after.rb
+  pullup_method_sample_after2.rb
+  pushdown_method_sample.rb
+  pushdown_method_sample_after.rb
+  pushdown_method_sample_after2.rb
+  remove_parameter_sample.rb
+  remove_parameter_sample_after.rb
   rename_class_var_sample.rb
   rename_class_var_sample_after.rb
   rename_global_var_sample.rb
@@ -60,13 +81,24 @@ samples/  テスト用のサンプルスクリプト
 tests/  ユニットテスト
   all.rb  test_*.rbというスクリプトを実行するスクリプト
   test_completion.rb
+  test_default_value.rb
   test_dumped_info.rb
   test_extract_method.rb
+  test_extract_superclass.rb
   test_function.rb
   test_namespace.rb
   test_node.rb
   test_parser.rb
+  test_pullup_method.rb
+  test_pushdown_method.rb
+  test_remove_parameter.rb
+  test_rename_class_var.rb
+  test_rename_constant.rb
+  test_rename_global_var.rb
+  test_rename_instance_var.rb
+  test_rename_local_var.rb
   test_rename_method.rb
+  test_rename_method_all.rb
   test_script.rb
   test_scriptfile.rb
 
@@ -77,7 +109,9 @@ doc/  ドキュメント
 
   dev/  開発用ドキュメント
     init.rd  開発開始時に見るべきドキュメント
+    init.en.rd  init.rdの英語版
     ripper_memo.txt  ripperに関する覚え書き
     ripper_ref.rd  ripperのリファレンス
     rrb_memo.txt  rrbに関する覚え書き
     rrb_ref.rd  rrb開発者用リファレンス
+    
