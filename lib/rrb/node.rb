@@ -155,6 +155,15 @@ module RRB
       super
       accept_children( visitor, namespace )
     end
+
+    def instance_method?
+      true
+    end
+
+    def class_method?
+      false
+    end
+    
     attr_reader :args
     
   end
@@ -188,7 +197,14 @@ module RRB
       super
       accept_children( visitor, namespace )
     end
-    
+
+    def instance_method?
+      false
+    end
+
+    def class_method?
+      true
+    end
   end
 
   class SingletonClassNode < Node
@@ -526,15 +542,11 @@ module RRB
     end
 
     def instance_method?
-      if @node.kind_of?(MethodNode)
-        true
-      elsif @node.kind_of?(ClassMethodNode)
-        false
-      end
+      @node.instance_method?
     end
 
     def class_method?
-      not instance_method?
+      @node.class_method?
     end
 
     def self.new_toplevel
