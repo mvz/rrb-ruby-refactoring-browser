@@ -29,6 +29,9 @@ class TestClassB < TestClassA
   C3 = 1
   C1 = 3
 end
+class TestClassC < TestClassA
+  include Enumerable
+end
 EOS
 
 class TestDumpedInfo < RUNIT::TestCase
@@ -76,6 +79,14 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals( false, Object.new ==  RRB::NullDumpedClassInfo.new )
   end
 
+  def test_superclass
+    info = make_info
+    assert_equals( info[RRB::NS["TestClassA"]],
+                   info[RRB::NS["TestClassB"]].superclass )
+    assert_equals( info[RRB::NS["TestClassA"]],
+                   info[RRB::NS["TestClassC"]].superclass )
+  end
+  
   def make_info
     File.open(DUMPED_FILE_NAME) do |file|
       return RRB::DumpedInfo.get_dumped_info( file )
