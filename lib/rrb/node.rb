@@ -258,6 +258,7 @@ module RRB
     end
 
     def match?( namespace )
+      namespace = namespace.ary if namespace.kind_of?( Namespace )      
       @nodes.map{|c| c.name} == namespace
     end
 
@@ -270,5 +271,36 @@ module RRB
     end
     
   end
-  
+
+  class Namespace
+    extend Forwardable
+    
+    def initialize( ns )
+      case ns
+      when Array
+	@namespace = ns
+      when String
+	@namespace = ns.split('::')
+      else
+	raise TypeError, 'must be string or array'
+      end
+    end
+
+    def Namespace.[]( arg )
+      new( arg )
+    end
+    
+    def str
+      @namespace.join('::')
+    end
+
+    def ary
+      @namespace
+    end
+
+    def_delegators :@namespace, :map, :join
+  end
+
+  # shortcut name
+  NS = Namespace
 end
