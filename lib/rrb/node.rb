@@ -14,6 +14,9 @@ module RRB
 
     def visit_node( namespace, node )
     end
+
+    def visit_singleton_method( namespace, node )
+    end
     
   end
 
@@ -27,10 +30,12 @@ module RRB
       @local_vars = scope.local_vars
       @method_calls = scope.method_calls
       @fcalls = scope.fcalls
+      @singleton_method_defs = scope.singleton_method_defs
+      @class_method_defs = scope.class_method_defs
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
-    attr_reader :fcalls
+    attr_reader :fcalls, :singleton_method_defs, :class_method_defs
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
@@ -51,6 +56,8 @@ module RRB
     def accept_children( visitor, namespace )
       @class_defs.each{|i| i.accept( visitor, namespace ) }
       @method_defs.each{|i| i.accept( visitor, namespace ) }
+      @singleton_method_defs.each{|i| i.accept( visitor, namespace ) }
+      @class_method_defs.each{|i| i.accept( visitor, namespace ) }
     end
     
   end
@@ -99,6 +106,22 @@ module RRB
     
   end
 
+  class SingletonMethodNode < Node
+
+    def initialize( s_obj, method_name, scope )
+      @s_obj = s_obj
+      super method_name, scope
+    end
+    
+    def accept( visitor, namespace )
+      visitor.visit_singleton_method( namespace, self )
+      super
+      accept_children( visitor, namespace )
+    end
+
+    attr_reader :s_obj
+  end
+  
   class IdInfo
 
     def initialize( type, lineno, pointer, name )

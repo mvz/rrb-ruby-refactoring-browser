@@ -13,8 +13,11 @@ module RRB
 	@method_calls = []
 	@local_vars = []
 	@fcalls = []
+	@singleton_method_defs = []
+	@class_method_defs = []
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
+      attr_reader :singleton_method_defs, :class_method_defs
     end
 
     # parse and return tree
@@ -69,6 +72,16 @@ module RRB
     end
 
     def on__class( class_name, stmts, superclass )
+
+      @scope_stack.last.singleton_method_defs.delete_if do |sdef|
+	if sdef.s_obj.name == class_name.name then
+	  @scope_stack.last.class_method_defs << sdef
+	  true
+	else
+	  false
+	end
+      end
+      
       @scope_stack[-2].class_defs << ClassNode.new( class_name,
 						   @scope_stack.last )
     end
@@ -83,6 +96,12 @@ module RRB
 	MethodNode.new( name, @scope_stack.last )	
     end
 
+    def on__sdef( s_obj, method_name, arglist, stmts )
+      s_obj = IdInfo.new( :nil, 0, 0, "" ) if s_obj == nil
+      @scope_stack[-2].singleton_method_defs <<
+	SingletonMethodNode.new( s_obj, method_name, @scope_stack.last )
+    end
+    
     def on__call( receiver, method, args )
       @scope_stack.last.method_calls << method
     end
@@ -112,6 +131,7 @@ module RRB
       elsif var.type == :id
 	@scope_stack.last.fcalls << var
       end
+      var
     end
 
     def on__add_eval_string( context, str )
