@@ -32,25 +32,27 @@ module RRB
       end
     end
 
-    
     def add_new_superclass( namespace, new_class, old_superclass, dumped_info )
-      0.upto( namespace.ary.size-1 ) do |i|
-        @new_script << " " * (INDENT_LEVEL*i)
-        @new_script << "class "
-        @new_script << namespace.ary[i]
-        @new_script << "\n"
+      @new_script << new_superclass_def(namespace, new_class, old_superclass, dumped_info ).join("\n")
+    end
+
+    def new_superclass_def( namespace, new_class, old_superclass, dumped_info )
+      result = [ "class #{new_class} < ::#{old_superclass.class_name}", "end" ]
+
+      ns = namespace
+      until ns == Namespace::Toplevel
+        result = indent_lines( result )
+        result.unshift( "#{dumped_info[ns].type} #{ns.ary[-1]}" )
+        result.push( "end" )
+        ns = ns.chop
       end
 
-      @new_script << " " * (INDENT_LEVEL*namespace.ary.size)
-      @new_script << "class #{new_class} < ::#{old_superclass.class_name}\n"
-      @new_script << " " * (INDENT_LEVEL*namespace.ary.size)
-      @new_script << "end\n"
-
-      (namespace.ary.size-1).downto(0) do |i|
-        @new_script << " " * (INDENT_LEVEL*i)
-        @new_script << "end\n"
-      end
-      
+      result.push("")
+      result
+    end
+    
+    def indent_lines( lines, lv = 1 )
+      lines.map{|line| " " * ( INDENT_LEVEL * lv ) + line }
     end
   end
   
