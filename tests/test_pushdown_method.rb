@@ -126,7 +126,10 @@ end
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 'hoge', RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 3))
-    assert_equals("Specify where to push down method\n", script.error_message)
+    assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+    assert_equals(false,
+                  script.pushdown_method?(RRB::NS['Base'], 'hoge', RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 6))
+    assert_equals("Specify which definition to push down method to\n", script.error_message)
 
   end
 
