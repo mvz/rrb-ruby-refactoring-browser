@@ -77,6 +77,10 @@ module RRB
     /^@[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
   end
 
+  def valid_class_var?( id )
+    /^@@[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
+  end
+
   def valid_global_var?( id ) 
     /^\$[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
   end
