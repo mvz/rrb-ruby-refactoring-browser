@@ -203,7 +203,6 @@ module RRB
     def on__const_get( lconst, const_id )
       return nil unless lconst.kind_of?( ConstInfo )
       const = ConstInfo.new_colon2( const_id, lconst )
-      @scope_stack.last.consts.delete( lconst )
       @scope_stack.last.consts << const
       return const
     end
