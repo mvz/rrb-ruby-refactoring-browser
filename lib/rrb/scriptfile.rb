@@ -1,5 +1,7 @@
 require 'rrb/parser'
 require 'rrb/default'
+require 'fileutils'
+require 'stringio'
 
 module RRB
 
