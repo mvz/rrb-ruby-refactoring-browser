@@ -63,6 +63,9 @@ module RRB
                                       new_namespace, 
                                       ignore_new_namespace, specified_lineno)
       @tree.accept( visitor )
+      if method_name.class_method?
+        pushdowned_method.gsub!(/^((\s)*def\s+)(.*)\./) {|s| $1 + new_namespace.name + '.'}
+      end
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
                                    visitor.delete_range, pushdowned_method, true)
     end
