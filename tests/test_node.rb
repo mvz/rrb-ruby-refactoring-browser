@@ -15,7 +15,7 @@ class TestNode < RUNIT::TestCase
     end
       
     def visit_method( namespace, method_node )
-      @methods << [ namespace.last.name, method_node.name ]
+      @methods << [ namespace.last, method_node.name ]
     end
     
     def visit_class( namespace, class_node )
@@ -34,7 +34,7 @@ class TestNode < RUNIT::TestCase
     attr_reader :classes
     
     def visit_class( namespace, class_node )
-      @classes << [ namespace.map{|i| i.name}, class_node.name ]
+      @classes << [ namespace, class_node.name ]
     end
     
   end
@@ -56,7 +56,7 @@ class TestNode < RUNIT::TestCase
 
     attr_reader :nodes
     def visit_node( namespace, node )
-      @nodes << namespace.map{|i| i.name}.push( node.name )
+      @nodes << [namespace, node.name]
     end
 
     
@@ -68,7 +68,7 @@ class TestNode < RUNIT::TestCase
     end
 
     def visit_singleton_method( namespace, node )
-      @singleton_methods << [ namespace.map{|i| i.name}, node.name ]
+      @singleton_methods << [ namespace, node.name ]
     end
     attr_reader :singleton_methods
   end
@@ -79,7 +79,7 @@ class TestNode < RUNIT::TestCase
     end
 
     def visit_class_method( namespace, node )
-      @class_methods << [ namespace.map{|i| i.name}, node.name ]
+      @class_methods << [ namespace, node.name ]
     end
     attr_reader :class_methods
   end
@@ -107,11 +107,11 @@ class TestNode < RUNIT::TestCase
     # test visit_class and namespace
     visitor2 = Visitor2.new
     tree.accept( visitor2 )
-    assert_equals( [ [[], 'TestClassA'],
-		    [['TestClassA'],'TestClassB'],
-		    [['TestClassA','TestClassB'],'TestClassC'],
-		    [['TestClassA'],'TestModuleA'],
-		    [['TestClassA','TestModuleA'],'TestModuleB'],
+    assert_equals( [ [RRB::NS[''], 'TestClassA'],
+		    [RRB::NS['TestClassA'],'TestClassB'],
+		    [RRB::NS['TestClassA::TestClassB'],'TestClassC'],
+		    [RRB::NS['TestClassA'],'TestModuleA'],
+		    [RRB::NS['TestClassA::TestModuleA'],'TestModuleB'],
 		  ],
 		  visitor2.classes )
 
@@ -123,33 +123,33 @@ class TestNode < RUNIT::TestCase
     # test visit_node
     visitor4 = Visitor4.new
     tree.accept( visitor4 )    
-    assert_equals( [['toplevel'],
-		    ['TestClassA'],
-		    ['TestClassA','method_1'],
-		    ['TestClassA','method_2'],
-		    ['TestClassA','method_3'],
-		    ['TestClassA','TestClassB'],
-		    ['TestClassA','TestClassB','method_4'],
-		    ['TestClassA','TestClassB','TestClassC'],
-		    ['TestClassA','TestModuleA'],
-		    ['TestClassA','TestModuleA','TestModuleB'],
-		    ['TestClassA','TestModuleA','TestModuleB','method_5'],
-		    ['TestClassA','method_6'],
-		    ['TestClassA','method_7'],
-		    ['TestClassA', '[sclass]' ],
-		    ['TestClassA', '[sclass]', 'method_8' ],
+    assert_equals( [[RRB::NS[''],'toplevel'],
+		    [RRB::NS[''],'TestClassA'],
+		    [RRB::NS['TestClassA'],'method_1'],
+		    [RRB::NS['TestClassA'],'method_2'],
+		    [RRB::NS['TestClassA'],'method_3'],
+		    [RRB::NS['TestClassA'],'TestClassB'],
+		    [RRB::NS['TestClassA::TestClassB'],'method_4'],
+		    [RRB::NS['TestClassA::TestClassB'],'TestClassC'],
+		    [RRB::NS['TestClassA'],'TestModuleA'],
+		    [RRB::NS['TestClassA::TestModuleA'],'TestModuleB'],
+		    [RRB::NS['TestClassA::TestModuleA::TestModuleB'],'method_5'],
+		    [RRB::NS['TestClassA'],'method_6'],
+		    [RRB::NS['TestClassA'],'method_7'],
+		    [RRB::NS['TestClassA'], '[sclass]' ],
+		    [RRB::NS['TestClassA::[sclass]'], 'method_8' ],
 		  ].sort, visitor4.nodes.sort )
 
     # test visit_singleton_method
     visitor5 = Visitor5.new
     tree.accept( visitor5 )
-    assert_equals( [ [['TestClassA'],'method_6'] ].sort,
+    assert_equals( [ [RRB::NS['TestClassA'],'method_6'] ].sort,
 		  visitor5.singleton_methods.sort )
 
     # test visit_class_method
     visitor6 = Visitor6.new
     tree.accept( visitor6 )
-    assert_equals( [ [['TestClassA'],'method_7'] ].sort,
+    assert_equals( [ [RRB::NS['TestClassA'],'method_7'] ].sort,
 		  visitor6.class_methods.sort )
 
   end

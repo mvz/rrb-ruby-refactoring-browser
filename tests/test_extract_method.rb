@@ -18,7 +18,7 @@ class TestScriptFile_ExtractMethod < RUNIT::TestCase
     File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
       script_file = RRB::ScriptFile.new( file.read, file.path )
       assert_equals( RRB::NS["B"],
-                    script_file.get_class_on_region( 11..14 ).normal )
+                    script_file.get_class_on_region( 11..14 ) )
     end
   end
 
