@@ -21,7 +21,7 @@ module RRB
     def warning_piece( namespace, num_spaces )
       
       "def #{@old_method}(*arg); \
-raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
+raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
 	" "*num_spaces
     end
 
@@ -68,7 +68,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     
     def visit_method( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @method } then
-	@classes << Namespace.new( namespace.str )
+	@classes << Namespace.new( namespace.name )
       end
     end
 
@@ -121,7 +121,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     def rename_method?( base_classes, old_method, new_method )
       return false unless RRB.valid_method?( new_method )
       classes_respond_to( base_classes, old_method ).each do |ns|
-	if get_dumped_info[ns.str].has_method?( new_method ) then
+	if get_dumped_info[ns.name].has_method?( new_method ) then
 	  return false
 	end
       end

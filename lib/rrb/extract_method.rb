@@ -141,7 +141,7 @@ module RRB
         namespace = scriptfile.get_emethod_namespace(start_lineno, end_lineno)
       end
       return false unless namespace
-      return false if get_dumped_info[namespace.str].has_method?(new_method)
+      return false if get_dumped_info[namespace.name].has_method?(new_method)
       
       return true
     end

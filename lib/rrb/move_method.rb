@@ -6,8 +6,8 @@ module RRB
     
     def initialize(method_name, old_namespace, new_namespace)
       @method_name = method_name
-      @str_old_namespace = old_namespace.str
-      @str_new_namespace = new_namespace.str
+      @str_old_namespace = old_namespace.name
+      @str_new_namespace = new_namespace.name
       @result = true
     end
     
@@ -22,7 +22,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      str_namespace = NodeNamespace.new(node, namespace).str
+      str_namespace = NodeNamespace.new(node, namespace).name
       if @str_old_namespace == str_namespace
         unless class_include_the_method? (node)
           @result = false 

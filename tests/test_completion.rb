@@ -37,7 +37,7 @@ end
   def test_refactable_methods
     scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     methods = scriptfile.refactable_methods.map do |method|
-      [ method.fullname, method.local_vars ]
+      [ method.name, method.local_vars ]
     end
     assert_equals( [[ 'A#method_1', Set[ 'arg1', 'arg2', 'var' ] ],
 		    [ 'A#method_2', Set[]],
@@ -107,7 +107,7 @@ end
   def test_refactable_methods
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
     methods = script.refactable_methods.map do |method|
-      [ method.fullname, method.local_vars ]
+      [ method.name, method.local_vars ]
     end
     assert_equals( [ [ 'B#method_1', Set[ 'arg1', 'arg3' ] ],
 		      [ 'A#method_1', Set[ 'arg1', 'arg2', 'var' ] ],

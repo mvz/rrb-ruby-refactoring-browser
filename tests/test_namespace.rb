@@ -9,8 +9,8 @@ class TestNamespace < RUNIT::TestCase
   end
   
   def test_str
-    assert_equals( "A::B::C", RRB::Namespace.new(['A','B','C']).str )
-    assert_equals( "A::B::C", RRB::Namespace['A::B::C'].str )
+    assert_equals( "A::B::C", RRB::Namespace.new(['A','B','C']).name )
+    assert_equals( "A::B::C", RRB::Namespace['A::B::C'].name )
   end
 
   def test_EQ

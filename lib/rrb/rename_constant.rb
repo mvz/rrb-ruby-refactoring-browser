@@ -14,7 +14,7 @@ module RRB
         if ans == Namespace::Toplevel then
           return "::#{const}"
         else
-          return "::#{ans.str}::#{const}"
+          return "::#{ans.name}::#{const}"
         end
       end
     end
@@ -53,10 +53,10 @@ module RRB
     attr_reader :result
     
     def visit_node(namespace, node)
-      ns = namespace.str
+      ns = namespace.name
       #if node isn't method definition..
       if ModuleNode === node || SingletonClassNode === node
-        ns << '::' unless namespace.str==""
+        ns << '::' unless namespace.name==""
         ns << node.name_id.name
       end
       
@@ -77,7 +77,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      if resolve_const(@dumped_info, namespace.str, node.name_id.name) == @old_const
+      if resolve_const(@dumped_info, namespace.name, node.name_id.name) == @old_const
         @result << Replacer.new_from_id( node.name_id, @new_const_body )
       end
     end
