@@ -35,7 +35,6 @@ module RRB
       end
 
       #error...
-      puts "can't resolve '#{const}' in '#{ns}'"
       return nil
     end
 
