@@ -66,24 +66,42 @@ module RRB
       end
     end
 
+    def main_script_path( dir_path )
+      File.join( dir_path, @files[0].path )
+    end
+
+    def find_dir( path )
+      dirs = []
+      Find.find( path ) do |filepath|
+	dirs << filepath if FileTest.directory?( filepath )
+      end
+      dirs 
+    end
+    
+    def mk_run_file( work_dir_path, script_dir_path )
+
+      run_file_path = File.join( work_dir_path, 'rrb_dump.rb' )
+      run_file = File.open( run_file_path, "w" ) 
+      find_dir( script_dir_path ).each do |dirpath|
+	run_file << "$:.unshift '#{dirpath}'\n"
+      end
+      run_file << "require '#{main_script_path( script_dir_path )}'\n"
+      run_file << IO.read(File.join( File.dirname(__FILE__),"dump_modules.rb"))
+      run_file.close
+      
+      run_file_path
+    end
+    
     def get_dumped_info
       work_dir_path = RRB.mk_work_dir
       begin
+	script_dir_path = File.join( work_dir_path, 'scripts' )
 	@files.each do |scriptfile|
-	  scriptfile.write_source_to( work_dir_path )
+	  scriptfile.write_source_to( script_dir_path )
 	end
-	dirs = []
-	Find.find( work_dir_path ) do |filepath|
-	  dirs << filepath if FileTest.directory?( filepath )
-	end
-	run_file_path = File.join( work_dir_path, 'rrb_dump.rb' )
-	run_file = File.open( run_file_path, "w" ) 
-	dirs.each do |dirpath|
-	  run_file << "$:.unshift '#{dirpath}'\n"
-	end
-	run_file << "require '#{@files[0].path[1..-1]}'\n"
-	run_file << IO.read(File.join( File.dirname(__FILE__),"dump_modules.rb"))
-	run_file.close
+
+	run_file_path = mk_run_file( work_dir_path, script_dir_path )
+	
 	IO.popen("ruby #{run_file_path}") do |io|
 	  return DumpedInfo.get_dumped_info( io )
 	end
