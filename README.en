@@ -1,7 +1,7 @@
-Ruby Refactoring Browser(RRB)
+Ruby Refactoring Browser
 
-= What's RRB?
-RRB is a development tool working on Emacs that allow you to refactor
+= What's this?
+This software is a development tool working on Emacs that allow you to refactor
 Ruby code.
 This is alpha version and no detailed installation and documents are
 available.
