@@ -89,6 +89,7 @@ class TestParser < RUNIT::TestCase
     # test superclass
     assert_equals( 'TestClassA::TestClassB',
 		  parsed_info.class_info("TestClassD").superclass.name )
+    assert_nil( class_info.superclass )
   end
   
 end
