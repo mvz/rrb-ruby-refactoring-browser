@@ -10,6 +10,7 @@ require 'rrb/extract_method'
 require 'rrb/move_method'
 require 'rrb/pullup_method'
 require 'rrb/pushdown_method'
+require 'rrb/remove_parameter'
 
 module RRB
 
@@ -27,8 +28,9 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --extract-method path new_method start_lineno end_lineno
     * --rename-method \"old-class1 old-class2...\" old_method new_method
     * --rename-constant old_const new_const
-    * --pullup-method old_class method new_class
-    * --pushdown-method old_class method new_class
+    * --pullup-method old_class#method new_class
+    * --pushdown-method old_class#method new_class
+    * --remove-parameter class#method parameter
 
   io-type
     * --stdin-stdout
@@ -139,6 +141,14 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @refactoring_method = :pushdown_method
       @check_method = :pushdown_method?
     end
+
+    def parse_argv_remove_parameter(argv)
+      namespace, method_name = split_method_name argv.shift
+      target_parameter = argv.shift
+      @args = [namespace, method_name, target_parameter]
+      @refactoring_method = :remove_parameter
+      @check_method = :remove_parameter?
+    end
     
     def parse_argv( argv )
 
@@ -166,6 +176,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
         parse_argv_pullup_method(argv)
       when '--pushdown-method'
         parse_argv_pushdown_method(argv)
+      when '--remove-parameter'
+        parse_argv_remove_parameter(argv)
       else
 	raise RRBError, "Unknown refactoring"
       end
