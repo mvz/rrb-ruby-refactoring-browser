@@ -378,73 +378,73 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun rrb-undo-base (undo-file-name not-modified-file-name)
-  "Base of Undo and Redo of the previous refactoring"
-  (if (file-readable-p undo-file-name)
-      (progn 
-	(save-current-buffer
-	  (set-buffer rrb-output-buffer)
-	  (rrb-clean-buffer rrb-output-buffer)
-	  (insert-file-contents undo-file-name)
-	  (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
-		 (modified-list (mapcar 'buffer-modified-p buffer-list)))
-	    (rrb-make-undo-files buffer-list)
-	    (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
-	    (rrb-clean-buffer rrb-output-buffer)
-	    (insert-file-contents not-modified-file-name)
-	    (rrb-each-for-compound-buffer 
-	     (lambda (file-name file-contents)
-	       (if (string= file-contents rrb-not-modifier)
-		   (progn
-		     (set-buffer (get-file-buffer file-name))
-		     (set-buffer-modified-p (not (car modified-list)))
-		     (setq modified-list (cdr modified-list)))))
-	     rrb-output-buffer))
-	t))
-    (progn 
-      (message "Nothing to do!")
-      nil)))
 
-(defun rrb-make-undo-directory ()
-  "Make directory for temporary file for Undo, Redo"
-  (if (not (file-exists-p rrb-undo-directory))
-      (make-directory rrb-undo-directory))
-  (file-accessible-directory-p rrb-undo-directory))
+(defun rrb-undo-base (undo-file-name modified-p-file-name)
+  "Base of Undo and Redo of the previous refactoring"
+  (defun rrb-read-undo-file ()
+    (save-current-buffer
+      (set-buffer rrb-output-buffer)
+      (rrb-clean-buffer rrb-output-buffer)
+      (insert-file-contents undo-file-name)
+      (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
+	     (modified-list (mapcar 'buffer-modified-p buffer-list)))
+	(rrb-make-undo-files buffer-list)
+	(rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
+	modified-list)))
+  (defun rrb-read-modified-p-file (modified-list)
+    (save-current-buffer
+      (set-buffer rrb-output-buffer)
+      (rrb-clean-buffer rrb-output-buffer)
+      (insert-file-contents modified-p-file-name)
+      (rrb-each-for-compound-buffer
+       (lambda (file-name file-contents)
+	 (if (string= file-contents rrb-not-modifier)
+	     (progn
+	       (set-buffer (get-file-buffer file-name))
+	       (set-buffer-modified-p (not (car modified-list)))
+	       (setq modifed-list (cdr modified-list)))))
+       rrb-output-buffer)))
+  (if (file-readable-p undo-file-name)
+      (let* ((modified-list (rrb-read-undo-file)))
+	(rrb-read-modified-p-file modified-list)
+	t)
+    (message "Nothing to do!")
+    nil))
+
 
 (defun rrb-make-undo-files (buffer-list)
   "Make temporary files for Undo, Redo"
+  (defun rrb-make-undo-file ()
+    "Make temporary file which records previous states of each file"
+    (save-current-buffer
+      (set-buffer rrb-undo-buffer)
+      (rrb-clean-buffer rrb-undo-buffer)
+      (rrb-setup-buffer 'rrb-insert-input-string 
+			buffer-list
+			rrb-undo-buffer)
+      (write-region (point-min) (point-max)
+		    (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
+      (set-buffer rrb-modified-p-buffer)
+      (rrb-clean-buffer rrb-modified-p-buffer)
+      (rrb-setup-buffer 'rrb-insert-modified-p
+			buffer-list
+			rrb-modified-p-buffer)))
+  (defun rrb-make-modified-p-file ()
+    "Make temporary file which records if each files are modified or not"
+    (save-current-buffer
+      (set-buffer rrb-modified-p-buffer)
+      (rrb-clean-buffer rrb-modified-p-buffer)
+      (rrb-setup-buffer 'rrb-insert-modified-p
+			buffer-list
+			rrb-modified-p-buffer)
+      (write-region (point-min) (point-max)
+		    (rrb-make-not-modified-file-name rrb-undo-count)
+		    nil 0 nil)))
   (if (rrb-make-undo-directory)
       (progn
-	(rrb-make-history-file buffer-list)
-	(rrb-make-modified-p-file buffer-list))))
-
-(defun rrb-make-history-file (buffer-list)
-  "Make temporary file which records previous states of each file"
-  (save-current-buffer
-    (set-buffer rrb-undo-buffer)
-    (rrb-clean-buffer rrb-undo-buffer)
-    (rrb-setup-buffer 'rrb-insert-input-string 
-		      buffer-list
-		      rrb-undo-buffer)
-    (write-region (point-min) (point-max)
-		  (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
-    (set-buffer rrb-modified-p-buffer)
-    (rrb-clean-buffer rrb-modified-p-buffer)
-	(rrb-setup-buffer 'rrb-insert-modified-p
-			  buffer-list
-			  rrb-modified-p-buffer)))
+	(rrb-make-undo-file)
+	(rrb-make-modified-p-file))))
 	
-(defun rrb-make-modified-p-file (buffer-list)
-  "Make temporary file which records if each files are modified or not"
-  (save-current-buffer
-    (set-buffer rrb-modified-p-buffer)
-    (rrb-clean-buffer rrb-modified-p-buffer)
-    (rrb-setup-buffer 'rrb-insert-modified-p
-		      buffer-list
-			  rrb-modified-p-buffer)
-    (write-region (point-min) (point-max)
-		  (rrb-make-not-modified-file-name rrb-undo-count)
-		  nil 0 nil)))
 
 (defun rrb-make-undo-file-name (undo-count)
   (expand-file-name (number-to-string undo-count)
@@ -455,6 +455,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			    (number-to-string undo-count)
 			    "nmod")
 		    rrb-undo-directory))
+
+(defun rrb-make-undo-directory ()
+  "Make directory for temporary file for Undo, Redo"
+  (if (not (file-exists-p rrb-undo-directory))
+      (make-directory rrb-undo-directory))
+  (file-accessible-directory-p rrb-undo-directory))
 
 (defun rrb-delete-undo-files ()
   "Delete temporary files for Undo, Redo"
