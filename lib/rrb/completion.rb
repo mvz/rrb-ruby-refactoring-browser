@@ -67,6 +67,20 @@ module RRB
     attr_reader :classes
   end
 
+  class RefactableClassesCVarsVisitor < Visitor
+    def initialize
+      @classes = Hash.new
+    end
+
+    def visit_class(namespace, node)
+      class_name = NodeNamespace.new(node, namespace).str
+      @classes[class_name] ||= Set.new
+      @classes[class_name].merge(node.class_vars.map{|cvar| cvar.name})
+    end
+
+    attr_reader :classes
+  end
+
   class RefactableGlobalVarsVisitor < Visitor
 
     def initialize
@@ -127,6 +141,12 @@ module RRB
       visitor.classes
     end
 
+    def refactable_classes_class_vars
+      visitor = RefactableClassesCVarsVisitor.new
+      @tree.accept(visitor)
+      visitor.classes
+    end
+
     def refactable_global_vars
       visitor = RefactableGlobalVarsVisitor.new
       @tree.accept( visitor )
@@ -166,6 +186,17 @@ module RRB
 	end
       end
 
+      result
+    end
+
+    def refactable_classes_class_vars
+      result = Hash.new
+      @files.each do |scriptfile|
+        scriptfile.refactable_classes_class_vars.each do |name, cvars|
+          result[name] ||= Set.new
+          result[name].merge(cvars)
+        end
+      end
       result
     end
 
