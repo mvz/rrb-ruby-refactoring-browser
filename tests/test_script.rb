@@ -165,6 +165,7 @@ end
     assert_equals( false, script.rename_method_all?( 'foo', 'baz' ) )
     assert_equals( false, script.rename_method_all?( 'foo', 'Foo' ) )
     assert_equals( false, script.rename_method_all?( 'foo', 'hek' ) )
+    assert_equals( false, script.rename_method_all?( 'send', 'foobar' ) )
   end
 
   def test_rename_method_all
