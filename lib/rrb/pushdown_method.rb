@@ -87,6 +87,12 @@ module RRB
         @error_message = "#{new_namespace.name} already has #{method_name}\n"
         return false
       end
+
+      unless check_namespace_defined(filename, new_namespace)
+        @error_message = "No Definition of #{new_namespace.name} in #{filename}\n"
+        return false
+      end
+
       @files.each do |scriptfile|
         unless scriptfile.pushdown_method?(get_dumped_info, old_namespace,
                                            method_name, new_namespace)
