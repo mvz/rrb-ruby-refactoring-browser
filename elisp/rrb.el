@@ -18,8 +18,16 @@
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name to use error log file")
 
-(defvar rrb-undo-file-base (format "%s_%d" "rrbundo" (emacs-pid)
-  "*Base file name for undo file"))
+(defvar rrb-undo-file-base "rrbundo"
+  "*Base file name for undo file")
+
+(defvar rrb-undo-directory 
+  (file-name-as-directory
+   (make-temp-name
+    (expand-file-name rrb-undo-file-base
+		      temporary-file-directory)))
+  "Directory that stores undo files")
+
 
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
@@ -310,7 +318,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-get-value-on-cursor (args)
   (save-current-buffer
     (rrb-setup-buffer rrb-default-value-buffer (list (current-buffer)))
-    (if (/= (rrb-run-process "rrb_default_value" (buffer-file-name) (number-to-string (rrb-current-line)) args) 0)
+    (if (/= (rrb-run-process "rrb_default_value"
+			     (buffer-file-name) 
+			     (number-to-string (rrb-current-line)) args) 0)
 	""
       (set-buffer rrb-output-buffer)
       (buffer-substring (point-min) (point-max)))))
@@ -341,20 +351,25 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     (rrb-clean-buffer rrb-undo-buffer)
     (rrb-setup-buffer rrb-undo-buffer buffer-list)
     (set-buffer rrb-undo-buffer)
-    (write-region (point-min) (point-max) (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
+    (if (not (file-exists-p rrb-undo-directory))
+	(make-directory rrb-undo-directory))
+    (if (file-accessible-directory-p rrb-undo-directory)
+	(write-region (point-min) (point-max)
+		      (rrb-make-undo-file-name rrb-undo-count) nil 0 nil))))
 
 (defun rrb-make-undo-file-name(undo-count)
-  (format "%s_%d"
-	  (expand-file-name rrb-undo-file-base temporary-file-directory)
-	  undo-count))
+  (expand-file-name (number-to-string undo-count)
+		    rrb-undo-directory))
 
 (defun rrb-delete-undo-files ()
   (let ((sub-files 
-	 (directory-files temporary-file-directory t rrb-undo-file-base)))
+	 (directory-files rrb-undo-directory t)))
     (while (not (null sub-files))
       (let ((sub-file (car sub-files)))
-	(delete-file sub-file))
-      (setq sub-files (cdr sub-files)))))
+	(if (not (file-directory-p sub-file))
+	    (delete-file sub-file)))
+      (setq sub-files (cdr sub-files))))
+  (delete-directory rrb-undo-directory))
 
 ;;;
 ;;; Undo
@@ -384,7 +399,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
-  (rrb-comp-read-type-4 "--methods" (rrb-get-value-on-cursor "--method") "Refactored method: " "--local-vars" "Old variable: " "New variable: "))
+  (rrb-comp-read-type-4 "--methods" (rrb-get-value-on-cursor "--method") 
+			"Refactored method: " "--local-vars" "Old variable: "
+			"New variable: "))
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
@@ -589,7 +606,8 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (list (completing-read "Location: " (rrb-complist-type-2) nil nil 
 			 (rrb-get-value-on-cursor "--class"))
 	(read-from-minibuffer "New Class: ")
-	(rrb-comp-read-recursively "--classes" "" "Targets(type just RET to finish): ")))
+	(rrb-comp-read-recursively "--classes" ""
+				   "Targets(type just RET to finish): ")))
 
 
 
