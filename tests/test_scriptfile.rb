@@ -37,6 +37,9 @@ class TestScriptFile < RUNIT::TestCase
       assert_equals( false, script_file.rename_local_var?( ['Rename'],
 							 'method_1',
 							  'z', 'print' ) )
+      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+							 'method_1',
+							  'z', 'super' ) )
     end
     
   end
