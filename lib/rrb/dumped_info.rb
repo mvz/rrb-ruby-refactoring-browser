@@ -105,6 +105,9 @@ module RRB
     def subclass_of?(classname)
       false
     end
-    
+
+    def ==(other)
+      other.class == self.class
+    end
   end
 end
