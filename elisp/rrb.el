@@ -109,12 +109,20 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (insert-buffer-substring src-buffer)
   (insert rrb-io-splitter))
 
-(defun rrb-setup-buffer (buffer buffer-list)
+(defun rrb-insert-modified-p (src-buffer)
+  (insert (buffer-file-name src-buffer))
+  (insert rrb-io-splitter)
+  (insert (if (buffer-modified-p src-buffer)
+	      "modified"
+	    "not-modified"))
+  (insert rrb-io-splitter))
+
+(defun rrb-setup-buffer (proc buffer-list buffer)
   "Generate input string on \" *rrb-input*\""
   (save-current-buffer
     (set-buffer buffer)
     (erase-buffer)
-    (mapcar 'rrb-insert-input-string
+    (mapcar proc
 	    buffer-list)
     (insert rrb-io-terminator)
     (insert rrb-io-splitter)))
@@ -190,7 +198,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (setq rrb-now-refactoring t)
   (rrb-add-change-hook-to-all-ruby-script)
   (save-current-buffer
-    (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))))
+    (rrb-setup-buffer 'rrb-insert-input-string
+		      (rrb-all-ruby-script-buffer)
+		      rrb-input-buffer)))
 
 (defun rrb-terminate-refactoring ()
   (setq rrb-now-refactoring nil))
@@ -340,7 +350,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;    
 (defun rrb-get-value-on-cursor (args)
   (save-current-buffer
-    (rrb-setup-buffer rrb-default-value-buffer (list (current-buffer)))
+    (rrb-setup-buffer 'rrb-insert-input-string 
+		      (list (current-buffer))
+		      rrb-default-value-buffer)
     (if (/= (rrb-run-process "rrb_default_value"
 			     (buffer-file-name) 
 			     (number-to-string (rrb-current-line)) args) 0)
@@ -364,15 +376,20 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (set-buffer rrb-output-buffer)
 	  (rrb-clean-buffer rrb-output-buffer)
 	  (insert-file-contents undo-file-name)
-	  (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer))
-	  (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
-	  (rrb-clean-buffer rrb-output-buffer)
-	  (insert-file-contents not-modified-file-name)
-	  (rrb-each-script-buffer 
-	   (lambda (file-name file-contents)
-	     (set-buffer (get-file-buffer file-name))
-	     (set-buffer-modified-p nil))
-	   rrb-output-buffer)
+	  (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
+		 (modified-list (mapcar 'buffer-modified-p buffer-list)))
+	    (rrb-create-undo-file buffer-list)
+	    (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
+	    (rrb-clean-buffer rrb-output-buffer)
+	    (insert-file-contents not-modified-file-name)
+	    (rrb-each-script-buffer 
+	     (lambda (file-name file-contents)
+	       (if (string= file-contents "not-modified")
+		   (progn
+		     (set-buffer (get-file-buffer file-name))
+		     (set-buffer-modified-p (not (car modified-list)))
+		     (setq modified-list (cdr modified-list)))))
+	     rrb-output-buffer))
 	t))
     (progn 
       (message "Nothing to do!")
@@ -381,23 +398,23 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-create-undo-file (buffer-list)
   (if (not (file-exists-p rrb-undo-directory))
       (make-directory rrb-undo-directory))
-  (if (file-accessible-directory-p rrb-undo-directory)
-      (progn
-	(save-current-buffer
-	  (set-buffer rrb-undo-buffer)
-	  (rrb-clean-buffer rrb-undo-buffer)
-	  (rrb-setup-buffer rrb-undo-buffer buffer-list)
-	  (write-region (point-min) (point-max)
-			(rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
-	  (set-buffer rrb-not-modified-file-buffer)
-	  (rrb-clean-buffer rrb-not-modified-file-buffer)
-	  (rrb-setup-buffer rrb-not-modified-file-buffer
-			    (rrb-find-all
-			     (lambda (buffer) (not (buffer-modified-p buffer)))
-			     buffer-list))
-	  (write-region (point-min) (point-max)
-			(rrb-make-not-modified-file-name rrb-undo-count)
-			nil 0 nil)))))
+  (and (file-accessible-directory-p rrb-undo-directory)
+       (save-current-buffer
+	 (set-buffer rrb-undo-buffer)
+	 (rrb-clean-buffer rrb-undo-buffer)
+	 (rrb-setup-buffer 'rrb-insert-input-string 
+			   buffer-list
+			   rrb-undo-buffer)
+	 (write-region (point-min) (point-max)
+		       (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
+	 (set-buffer rrb-not-modified-file-buffer)
+	 (rrb-clean-buffer rrb-not-modified-file-buffer)
+	 (rrb-setup-buffer 'rrb-insert-modified-p
+			   buffer-list
+			   rrb-not-modified-file-buffer)
+	 (write-region (point-min) (point-max)
+		       (rrb-make-not-modified-file-name rrb-undo-count)
+		       nil 0 nil))))
 
 (defun rrb-make-undo-file-name (undo-count)
   (expand-file-name (number-to-string undo-count)
@@ -410,15 +427,15 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		    rrb-undo-directory))
 
 (defun rrb-delete-undo-files ()
-  (if (and (file-exists-p rrb-undo-directory)
-	   (file-accessible-directory-p rrb-undo-directory))
-      (progn
-	(rrb-each 
-	 (lambda (sub-file)
-	   (if (not (file-directory-p sub-file))
-	       (delete-file sub-file)))
-	 (directory-files rrb-undo-directory t))
-	(delete-directory rrb-undo-directory)))
+  (and (file-exists-p rrb-undo-directory)
+       (file-accessible-directory-p rrb-undo-directory)
+       (progn
+	 (rrb-each 
+	  (lambda (sub-file)
+	    (if (not (file-directory-p sub-file))
+		(delete-file sub-file)))
+	  (directory-files rrb-undo-directory t))
+	 (delete-directory rrb-undo-directory)))
   (setq rrb-undo-count 0))
 
 (defun rrb-notify-file-changed (start end)
