@@ -23,7 +23,7 @@ module RRB
       @scope_stack.push Scope.new
       self.parse( file )
 
-      TopLevelNode.new( 'toplevel', @scope_stack[0] )
+      TopLevelNode.new( @scope_stack[0] )
     end
 
     # on constant
