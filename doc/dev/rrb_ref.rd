@@ -9,7 +9,9 @@ RRBの開発用リファレンスです。
 
 == method
 --- get_dumped_info
-
+      リファクタリングの対象となるソースの情報をリフレクション機能を
+      利用して得たものを((<RRB::DumpedInfo>))のインスタンスとして返す
+      
 = RRB::ScriptFile
 リファクタリングの対象となる個々のファイルを表わすクラス
 
@@ -23,6 +25,13 @@ Enumerable
 --- classes_having_method( method )
       ((|method|))という名前のメソッドを持つクラス全てをDumpedClassInfoの
       配列として返す。
+
+--- [](index)
+      ((|index|))という名前のクラスの情報を((<RRB::DumpedClassInfo>))の
+      インスタンスとして返す
+
+      ((|index|))は文字列、もしくは((<RRB::Namespace>))のインスタンスで
+      なければならない。 
 
 = RRB::Replacer
 これを使ってソースの置換をする。
@@ -73,6 +82,9 @@ Enumerable
 --- subclass_of?(classname)
       selfが((|classname|))という名前のクラスのサブクラスであれば真を、
       なければ偽を返す。
+
+      ((|classname|))は文字列か((<RRB::Namespace>))のインスタンス
+      でなければならない
       
 = RRB::NullDumpedClassInfo
 ((<RRB::DumpedClassInfo>))のダミーとなるオブジェクトを作るクラス
@@ -292,8 +304,13 @@ Visitorで構文木をtraverseしているときに、visit_*に与えられる現在のノードの
       ((<RRB::Namespace>))との一致判定をする。
       ((|ns|))は RRB::Namespace のインスタンスである必要がある。
 
+--- normal
+      selfに対応する((<RRB::Namespace>))のインスタンスを返す
+      
 = RRB::Namespace
 名前空間(A::Bなど)を表わすクラス
+
+hash,eql?が定義してあるのでSetの元やHashのキーとして利用できる
 
 == class method
 --- new( ns )
