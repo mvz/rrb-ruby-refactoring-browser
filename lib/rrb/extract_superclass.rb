@@ -124,9 +124,10 @@ module RRB
     
     def extract_superclass?( namespace, new_class, targets, path, lineno )
       # check namespace exists?
-      unless namespace == RRB::Namespace::Toplevel then
+      if namespace != RRB::Namespace::Toplevel &&
+         get_dumped_info[namespace].invalid?
         @error_message = "#{namespace.name}: No such namespace\n"
-        return false if get_dumped_info[namespace] == NullDumpedClassInfo.instance
+        return false
       end
       # check all targets exist?
       targets.each do |klass|
