@@ -25,12 +25,14 @@ class TestScriptFile < RUNIT::TestCase
       assert_equals( true, script_file.rename_local_var?( ['Rename'],
 							 'method_1',
 							 'z', 'bb' ) )
+      # collision with other variable
       assert_equals( false, script_file.rename_local_var?( ['Rename'],
 							 'method_1',
 							 'z', 'x' ) )
       assert_equals( false, script_file.rename_local_var?( ['Rename'],
 							 'method_1',
 							  'z', 'i' ) )
+      # invalid identifier 
       assert_equals( false, script_file.rename_local_var?( ['Rename'],
 							 'method_1',
 							  'z', 'Z' ) )
@@ -54,6 +56,22 @@ class TestScriptFile < RUNIT::TestCase
 		    script_file.new_script )
     end
     
+  end
+
+  def test_rename_method_all?
+    
+    File.open('samples/rename_method_sample.rb') do |file|
+      script_file = RRB::ScriptFile.new( file, file.path )
+      assert_equals( true, script_file.rename_method_all?( 'foo', 'feefoo' ) )
+      assert_equals( true, script_file.rename_method_all?( 'foo', 'foo?' ) )
+      # collision with local variable
+      assert_equals( false, script_file.rename_method_all?( 'baz', 'hek' ) )
+      # invalid method name 
+      assert_equals( false, script_file.rename_method_all?( 'foo', 'Foo' ) )
+      assert_equals( false, script_file.rename_method_all?( 'foo', 'foo=' ) )
+      assert_equals( false, script_file.rename_method_all?( 'foo', 'when' ) )
+      assert_equals( false, script_file.rename_method_all?( 'foo', 'foo?fee' ))
+    end
   end
   
 end
