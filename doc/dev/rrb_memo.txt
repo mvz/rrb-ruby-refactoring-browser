@@ -2,6 +2,21 @@
   Moduleクラスのインスタンス(==module object)にこれを呼ぶと、
   継承元の特異メソッドも含まれていることに注意
 
+    class A
+      def A.x
+      end
+    end
+
+    class B
+      def B.y
+      end
+    end
+
+  としたとき、B.singleton_methodsでは["x","y"]が返ってくる。
+  しかし、class <<B; public_instance_methods; end を評価すると ["y"]が
+  返ってくる。こちらを利用すべきだろう。
+
+  
 * 関数のように見えるメソッド
   class Object の private method として定義される
 
