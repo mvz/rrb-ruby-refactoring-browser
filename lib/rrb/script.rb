@@ -51,18 +51,17 @@ module RRB
     
     def mk_run_file( work_dir_path, script_dir_path )
       run_file_path = File.join( work_dir_path, 'rrb_dump.rb' )
-      run_file = File.open( run_file_path, "w" ) 
-      find_dir( script_dir_path ).each do |dirpath|
-	run_file << "$:.unshift '#{dirpath}'\n"
-      end
+      run_file = File.open( run_file_path, "w" )
       run_file << "require 'rrb_reflection'\n"
       run_file << "$rrb_run_for_reflection = true\n"
+      run_file << DEFINE_LOAD_SCRIPT
+      
+      find_dir( script_dir_path ).each do |dirpath|
+	run_file << "$__rrb_load_path.unshift '#{dirpath}'\n"
+      end
+      
       @files.each do |scriptfile|
-        run_file << "if /.*\\\.(rb|so)/.match('#{scriptfile.path}') then\n"
-	run_file << "require '#{File.join( script_dir_path, scriptfile.path )}'\n"
-        run_file << "else\n"
-        run_file << "load '#{File.join( script_dir_path, scriptfile.path )}'\n"        
-        run_file << "end\n"
+	run_file << "__rrb_load '#{File.basename( scriptfile.path )}'\n"
       end
       run_file << DUMP_MODULES_SCRIPT
       run_file.close
