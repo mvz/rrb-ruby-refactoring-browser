@@ -10,22 +10,25 @@ module RRB
       @end_lineno = end_lineno
       @method_lineno = 1
       @args = []
+      @assigned = []
       @result = []
     end
 
-    attr_reader :method_lineno, :args, :result
+    attr_reader :method_lineno, :args, :assigned, :result
     
     def visit_node( namespace, node )
       vars = node.local_vars.map{|i| i.name}
       out_vars = []
       in_vars = []
       node.local_vars.each do |id|
-        out_vars << id.name unless (@start_lineno..@end_lineno) === id.lineno
-        in_vars << id.name if (@start_lineno..@end_lineno) === id.lineno
+        out_vars << id unless (@start_lineno..@end_lineno) === id.lineno
+        in_vars << id if (@start_lineno..@end_lineno) === id.lineno
       end
       return if in_vars.empty?
 
-      @args = out_vars & in_vars
+      @args = out_vars.map{|i| i.name} & in_vars.map{|i| i.name}
+      @assigned = (node.assigned & in_vars).map{|i| i.name} & out_vars.map{|i| i.name}
+      
       if node.name_id.name == 'toplevel'
         @method_lineno = @start_lineno
       else
@@ -45,17 +48,27 @@ module RRB
 
     attr_reader :result
 
+    def toplevel?(node)
+      return node.name_id.type == :toplevel
+    end
+
+    def in_lines?(node)
+      return node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
+    end
+    def out_lines?(node)      
+      return @end_lineno < node.head_keyword.lineno || node.tail_keyword.lineno < @start_lineno
+
+    end
+
+
     def visit_toplevel(namespace, node)
       @str_namespace = get_namespace(node)
     end
 
     def visit_node(namespace, node)
-      return if node.name_id.type == :toplevel
-      start_lineno = node.head_keyword.lineno
-      end_lineno = node.tail_keyword.lineno
-      return if start_lineno < @start_lineno && @end_lineno < end_lineno
-      return if @end_lineno < start_lineno
-      return if end_lineno < @start_lineno
+      return if toplevel?(node)
+      return if in_lines?(node)
+      return if out_lines?(node)
       @result = false
     end
 
@@ -78,7 +91,7 @@ module RRB
         node.class_defs.each do |class_def|
           str_namespace = get_namespace(class_def)
           unless str_namespace.nil?
-            if node.name_id.type == :toplevel
+            if toplevel?(node)
               return str_namespace
             else
               return node.name +  '::' + str_namespace
@@ -86,16 +99,16 @@ module RRB
           end
         end
       else
-        start_lineno = node.head_keyword.lineno
-        end_lineno = node.tail_keyword.lineno
-        if start_lineno < @start_lineno && @end_lineno < end_lineno
+        if toplevel?(node)
+          return ""
+        elsif in_lines?(node)
           return node.name
         end
       end
     end
   end
 
-  def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args)
+  def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
     dst = ''
 
     lines = src.readlines
@@ -119,10 +132,17 @@ module RRB
         for i in start_lineno..end_lineno
           dst << "\s" * offset_space_num + lines[i]
         end
+        unless assigned.empty?
+          dst << "\s" * imp_space_num + "return " + assigned.join(", ") + "\n"
+        end
         dst << "\s" * def_space_num + "end\n"
       end
       if lineno == end_lineno
-        dst << "\s" * call_space_num + "#{new_method}("
+        dst << "\s" * call_space_num
+        unless assigned.empty?
+          dst << assigned.join(", ") + " = " 
+        end
+        dst << "#{new_method}("
         dst << args.join(", ")
         dst << ")\n"
       end
@@ -139,7 +159,7 @@ module RRB
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
-      @new_script = RRB.extract_method( StringIO.new(@new_script), new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args)
+      @new_script = RRB.extract_method( StringIO.new(@new_script), new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
     end
 
     def extract_method?(new_method, start_lineno, end_lineno)
