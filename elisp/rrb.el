@@ -74,12 +74,6 @@
   (+ (count-lines (point-min) (point))
      (if (= (current-column) 0) 1 0)))
 
-(defun rrb-each (function list)
-  "Call function for each value of list"
-  (while list
-    (funcall function (car list))
-    (setq list (cdr list))))
-
 ;;;; Compatibility (for old emacs)
 
 ;;;point-at-bol => line-beginning-position
@@ -156,13 +150,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     
 (defun rrb-do-refactoring (&rest args)
   "Do refactoring"
-  (let ((buffer-point-alist (rrb-buffer-point-alist)))
-    (if (/= (apply 'rrb-run-process "rrb" 
-		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
-	(error "fail to refactor: %s" (rrb-error-message)))
-    (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
-    (setq rrb-undo-count (+ rrb-undo-count 1))
-    (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
+  (if (/= (apply 'rrb-run-process "rrb" 
+		 (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
+      (error "fail to refactor: %s" (rrb-error-message)))
+  (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
+  (setq rrb-undo-count (+ rrb-undo-count 1))
+  (rrb-output-to-buffer rrb-output-buffer))
 
 ;;
 ;; Run rrb_compinfo
@@ -171,7 +164,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;
 (defun rrb-run-comp-info (&rest args)
   "Run rrb_compinfo"
-  (save-excursion
+  (save-current-buffer
     (if (/= (apply 'rrb-run-process "rrb_compinfo" 
 		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
 	(error "rrb_compinfo: fail to get information %s" (rrb-error-message)))
@@ -183,9 +176,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 (defun rrb-run-default-value (&rest args)
   "Run rrb_default_value"
-  (if (/= (apply 'rrb-run-process "rrb_default_value" 
-		 (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
-      ""))  
+  (save-current-buffer
+    (if (/= (apply 'rrb-run-process "rrb_default_value" 
+		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
+	""
+      (set-buffer rrb-output-buffer)
+      (buffer-substring (point-min) (point-max)))))
+
 
 (defun rrb-make-temp-name (base)
   (make-temp-name (expand-file-name base temporary-file-directory)))
@@ -227,17 +224,10 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       (delete-file tmpfile)
       error-code)))
 
-(defun rrb-buffer-point-alist ()
-  (save-current-buffer
-    (mapcar (lambda (buf)
-	      (set-buffer buf)
-	      (cons buf (point)))
-	    (rrb-all-ruby-script-buffer))))
-
 (defun rrb-add-change-hook-to-all-ruby-script ()
   "Add hook(before-change-function) to all ruby scripts"
   (save-current-buffer
-    (rrb-each 
+    (mapc 
      (lambda (buffer)
        (set-buffer buffer)
        (make-local-hook 'before-change-functions)
@@ -249,12 +239,15 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defmacro rrb-declare-refactoring (&rest body)
   `(progn
      (setq rrb-now-refactoring t)
-     (rrb-each #'(lambda (exp) (eval exp)) ',body)
+     (mapc #'(lambda (exp) (eval exp)) ',body)
      (setq rrb-now-refactoring nil)))
 
 
 (defmacro rrb-setup-refactoring (&rest body)
   (defun rrb-make-marshal-file ()
+    (rrb-setup-buffer 'rrb-insert-input-string
+		      (rrb-all-ruby-script-buffer)
+		      rrb-input-buffer)
     (setq rrb-marshal-file-name (rrb-make-temp-name rrb-marshal-file-base))
     (if (/= (apply 'rrb-run-process-region "rrb_marshal" 
 		   (list "--stdin-fileout" rrb-marshal-file-name)) 0)
@@ -264,16 +257,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (defun rrb-prepare-refactoring ()
     "Call this function before Refactoring"
     (rrb-add-change-hook-to-all-ruby-script)
-    (rrb-setup-buffer 'rrb-insert-input-string
-		      (rrb-all-ruby-script-buffer)
-		      rrb-input-buffer)
     (rrb-make-marshal-file))
   (defun rrb-terminate-refactoring ()
     "Call this function after Refactoring"
     (rrb-delete-marshal-file))
   `(rrb-declare-refactoring
     (rrb-prepare-refactoring)
-    (rrb-each #'(lambda (exp) (eval exp)) ',body)
+    (mapc #'(lambda (exp) (eval exp)) ',body)
     (rrb-terminate-refactoring)))
     
 
@@ -306,17 +296,17 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (rrb-get-file-name-list compound-buffer)))
 
 
-(defun rrb-output-to-buffer-and-reset-point (alist)
-  "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
+(defun rrb-output-to-buffer (buffer)
+  "Rewrite all ruby script buffer from buffer and reset cursor point"
   (save-current-buffer
-   (rrb-each-for-compound-buffer 
-    (lambda (file-name file-content)
-      (set-buffer (get-file-buffer file-name))
-      (erase-buffer)
-      (insert file-content)
-      (goto-char (cdr (assq (current-buffer) alist))))
-    rrb-output-buffer)))
-  
+    (rrb-each-for-compound-buffer 
+     (lambda (file-name file-content)
+       (set-buffer (get-file-buffer file-name))
+       (let ((before-point (point)))
+	 (erase-buffer)
+	 (insert file-content)
+	 (goto-char before-point)))
+       buffer)))
 
 ;;;; Completion
 
@@ -334,22 +324,21 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;
 (defun rrb-comp-read-move-method (compinfo-arg1 prompt1 compinfo-arg2 default-arg2 prompt2)
   "completion read for Pull up method, etc.."
-  (let ((old-class-method 
-	 (completing-read prompt1 (rrb-run-comp-info compinfo-arg1))))
-    (list old-class-method
-	  (completing-read prompt2 (rrb-run-comp-info compinfo-arg2) nil nil default-arg2))))
+  (list (completing-read prompt1 (rrb-run-comp-info compinfo-arg1))
+	(completing-read prompt2 (rrb-run-comp-info compinfo-arg2) nil nil default-arg2)))
 
 ;;;
 ;;; completion for Rename variable defined at some namespace
 ;;
 (defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
   "completion read for rename instance variable, etc.."
-
-  (let ((retval-1 (completing-read prompt1 (rrb-run-comp-info compinfo-arg1) nil nil default-arg1)))
-    (list retval-1
-	  (completing-read prompt2
-			   (rrb-run-comp-info compinfo-arg2 "--target" retval-1))
-	  (read-from-minibuffer prompt3))))
+  (let ((result (completing-read prompt1 
+			 (rrb-run-comp-info compinfo-arg1) nil nil default-arg1)))
+    (list 
+     result
+     (completing-read prompt2
+		      (rrb-run-comp-info compinfo-arg2 "--target" result))
+     (read-from-minibuffer prompt3))))
 
 
 
@@ -373,11 +362,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;; default value
 ;;    
 (defun rrb-get-value-on-cursor (args)
-  (save-current-buffer
-    (rrb-run-default-value (buffer-file-name) (number-to-string (rrb-current-line)) args)
-    (set-buffer rrb-output-buffer)
-    (buffer-substring (point-min) (point-max))))
-
+  (rrb-run-default-value (buffer-file-name) (number-to-string (rrb-current-line)) args))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -397,7 +382,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
 	     (modified-list (mapcar 'buffer-modified-p buffer-list)))
 	(rrb-make-undo-files buffer-list)
-	(rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
+	(rrb-output-to-buffer rrb-output-buffer)
 	modified-list)))
   (defun rrb-read-modified-p-file (modified-list)
     (save-current-buffer
@@ -470,7 +455,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (and (file-exists-p rrb-undo-directory)
        (file-accessible-directory-p rrb-undo-directory)
        (progn
-	 (rrb-each 
+	 (mapc 
 	  (lambda (sub-file)
 	    (if (not (file-directory-p sub-file))
 		(delete-file sub-file)))
@@ -531,16 +516,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;;
 (defun rrb-comp-read-rename-method ()
   "completion read for rename method, etc.."
-  (let ((compound-result 
-	 (rrb-comp-read-recursively
+  (let ((compound-result (rrb-comp-read-recursively
 	  "--classes"
 	  (rrb-get-value-on-cursor "--class")
 	  "Refactored classes(type just RET to finish): ")))
-    (list compound-result
-	  (completing-read 
-	   "Old method: "
-	   (rrb-run-comp-info "--bare-methods" "--target" compound-result))
-	  (read-from-minibuffer "New method: "))))
+    (list
+     compound-result
+     (completing-read 
+      "Old method: "
+      (rrb-run-comp-info "--bare-methods" "--target" compound-result))
+     (read-from-minibuffer "New method: "))))
 
 
 (defun rrb-rename-method-impl (classes old-method new-method)
@@ -709,9 +694,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			(rrb-get-value-on-cursor "--class") "New class: "))
 
 (defun rrb-pushdown-method-impl (old-method new-class)
-     (rrb-do-refactoring "--pushdown-method" old-method new-class 
-			 (buffer-file-name)
-			 (number-to-string (rrb-current-line))))
+  (rrb-do-refactoring "--pushdown-method" old-method new-class 
+		      (buffer-file-name)
+		      (number-to-string (rrb-current-line))))
 
 (defun rrb-pushdown-method ()
   "Refactor code: Push down method"
