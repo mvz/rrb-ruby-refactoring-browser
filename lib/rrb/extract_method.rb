@@ -43,7 +43,8 @@ module RRB
 
     attr_reader :method_lineno, :args, :assigned 
 
-    def visit_node( namespace, node )
+    def visit_method( namespace, node )
+      return unless node.range.head.lineno < @start_lineno && @end_lineno < node.range.tail.lineno
       vars = node.local_vars.map{|i| i.name}
       out_vars = []
       in_vars = []
@@ -51,7 +52,6 @@ module RRB
         out_vars << id unless (@start_lineno..@end_lineno) === id.lineno
         in_vars << id if (@start_lineno..@end_lineno) === id.lineno
       end
-      return if in_vars.empty?
 
       in_assigned = (node.assigned & in_vars)
       in_var_ref = in_vars - in_assigned
@@ -70,7 +70,6 @@ module RRB
       end
       @args.uniq!
 
-      
       if node.name_id.name == 'toplevel'
         @method_lineno = @start_lineno
       else
