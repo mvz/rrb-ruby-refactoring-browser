@@ -39,9 +39,6 @@ module RRB
       end
     end
 
-    def main_script_path( dir_path )
-      File.join( dir_path, @files[0].path )
-    end
 
     def find_dir( path )
       dirs = []
@@ -59,7 +56,9 @@ module RRB
 	run_file << "$:.unshift '#{dirpath}'\n"
       end
       run_file << "require 'rrb_reflection'\n"
-      run_file << "require '#{main_script_path( script_dir_path )}'\n"
+      @files.each do |scriptfile|
+	run_file << "require '#{File.join( script_dir_path, scriptfile.path )}'\n"
+      end
       run_file << DUMP_MODULES_SCRIPT
       run_file.close
       
