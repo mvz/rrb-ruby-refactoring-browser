@@ -6,6 +6,7 @@ require 'rrb/rename_local_var'
 require 'rrb/rename_instance_var'
 require 'rrb/rename_class_var'
 require 'rrb/rename_method_all'
+require 'rrb/pullup_method'
 
 class TestScript < RUNIT::TestCase
 
@@ -221,6 +222,24 @@ end
     assert_equals( RENAME_METHOD_ALL_OUTPUT, dst )
   end
   
+  def test_pullup_method?
+    script = RRB::Script.new_from_filenames("samples/pullup_method_sample.rb")
+    assert_equals(true, script.pullup_method?('bar', RRB::NS['Derived'], RRB::NS['Base']))
+    assert_equals(false, script.pullup_method?('foo', RRB::NS['Derived'], RRB::NS['Base']))
+    assert_equals(false, script.pullup_method?('hoge', RRB::NS['Derived'], RRB::NS['Base']))
+    assert_equals(false, script.pullup_method?('hoge', RRB::NS['Base'], RRB::NS['Derived']))
+  end
+
+  def test_pullup_method
+    script = RRB::Script.new_from_filenames("samples/pullup_method_sample.rb")
+    script.pullup_method('bar', RRB::NS['Derived'], RRB::NS['Base'])
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals( File.open( 'samples/pullup_method_sample_after.rb' ).read,
+		    dst )
+
+  end
+
   def test_dump
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
     info = script.get_dumped_info
