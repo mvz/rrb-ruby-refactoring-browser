@@ -12,7 +12,7 @@ module RRB
 
     def visit_toplevel(namespace, node)
       @namespace = namespace
-2    end
+    end
     
     def visit_class(namespace, node)
       if node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
