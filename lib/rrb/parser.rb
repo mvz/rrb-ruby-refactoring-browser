@@ -21,12 +21,16 @@ module RRB
 	@class_method_defs = []
 	@singleton_class_defs = []
 	@assigned = []
+	@attr_readers = []
+	@attr_writers = []
+	@attr_accessors = []
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
       attr_reader :global_vars, :instance_vars, :class_vars, :consts
       attr_reader :singleton_method_defs, :class_method_defs
       attr_reader :singleton_class_defs
       attr_reader :assigned
+      attr_reader :attr_readers, :attr_writers, :attr_accessors
     end
 
     # parse and return tree
@@ -129,8 +133,21 @@ module RRB
       @scope_stack.last.method_calls << method
     end
 
+    def add_attr( function, args )
+      return unless args.kind_of?(Array) 
+      case function.name
+      when 'attr_reader'
+	@scope_stack.last.attr_readers.concat args
+      when 'attr_writer'
+	@scope_stack.last.attr_writers.concat args	  
+      when 'attr_accessor'
+	@scope_stack.last.attr_accessors.concat args
+      end
+    end
+    
     def on__fcall( function, args )
       @scope_stack.last.fcalls << function
+      add_attr( function, args )
     end
 
     def on__varcall( method, arg )
@@ -190,7 +207,25 @@ module RRB
       @scope_stack.last.consts << const
       return const
     end
+
+    def on__symbol( id )
+      IdInfo.new( :symbol, id.lineno, id.pointer, id.name )
+    end
     
+    def on__argstart
+      Array.new
+    end
+
+    def on__argadd( args, arg )
+      return nil unless args.kind_of?( Array )
+      return nil unless arg.kind_of?( IdInfo )
+      args << arg
+    end
+
+    def on__argadd_value( args, arg )
+      on__argadd( args, arg )
+    end
+
     def on__add_eval_string( context, str )
       @eval_str = str
     end
