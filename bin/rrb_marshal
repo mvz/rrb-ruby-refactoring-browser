@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'rrb/script'
+require 'rrb/utils'
 
 if $0 == __FILE__ then
   
