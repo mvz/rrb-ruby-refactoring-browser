@@ -198,11 +198,11 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;
 ;;; completion type-3
 ;;
-(defun rrb-comp-read-type-3 (compinfo-arg1 prompt1 compinfo-arg2 prompt2)
+(defun rrb-comp-read-type-3 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2)
   "completion read for Pull up method, etc.."
   (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((old-class-method (completing-read prompt1 (rrb-complist-type-2))))
+  (let ((old-class-method (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1)))
     (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2) 0)
       (error "rrb_info: fail to get information %s" (rrb-error-message)))
     (list old-class-method
@@ -227,7 +227,7 @@ matches with rrb-ruby-file-name-regexp'"
   (interactive)
   (save-current-buffer
     (rrb-setup-input-buffer (list (current-buffer)))
-    (message (rrb-get-value-on-cursor "--method"))))
+    (rrb-get-value-on-cursor "--method")))
 
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
@@ -357,7 +357,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pullup-method ()
   "completion read for pull up method"
-  (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods-fullname" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
 
 (defun rrb-pullup-method (old-method new-class)
   "Refactor code: Pull up method"
@@ -371,7 +371,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pushdown-method ()
   "completion read for push down method"
-  (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods-fullname" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
 
 (defun rrb-pushdown-method (old-method new-class)
   "Refactor code: Push down method"
