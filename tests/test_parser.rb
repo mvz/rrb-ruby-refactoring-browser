@@ -39,6 +39,16 @@ class TestParser < RUNIT::TestCase
 		  method_1_info.local_vars.map{|info| info.name} )
     assert_equals( %w(c rest block call call),
 		  method_2_info.local_vars.map{|info| info.name} )
+
+    # test singleton method
+    method_5_info = class_info.class_method_defs.find{|x| x.name == "method_5"}
+    assert_equals( %w(x y x y),
+		  method_5_info.local_vars.map{|info| info.name} )
+
+    method_6_info = class_info.singleton_method_defs.find{|x|
+      x.name == "method_6"
+    }
+    assert_not_nil( method_6_info )
     
   end
   
