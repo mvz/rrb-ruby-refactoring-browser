@@ -59,6 +59,12 @@
   "Make temporary file/directory name and return it."
   (make-temp-name (expand-file-name base temporary-file-directory)))
 
+(defun rrb-times (count proc)
+  (let ((i count))
+    (while (> i 0)
+      (funcall proc)
+      (setq i (1- i)))))
+
 ;;;; Compatibility (for old emacs)
 
 ;;;point-at-bol => line-beginning-position
@@ -355,11 +361,8 @@
     (defun rrb-do-undo (count)
       (unless (= count 0)
         (undo)
-        (let ((last-command 'undo)
-              (i (1- count)))
-          (while (> i 0)
-            (undo)
-            (setq i (1- i)))))))
+        (let ((last-command 'undo))
+          (rrb-times (1- count) 'undo)))))
 
 (if (>= emacs-major-version 21)
     (defun rrb-do-undo (count)
