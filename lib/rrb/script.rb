@@ -113,6 +113,10 @@ module RRB
       return new( files )
     end
 
+    def Script.new_from_marshal(filename)
+      return Marshal.load(File.open(filename))
+    end
+
     attr_reader :error_message
     
   end
