@@ -36,10 +36,10 @@ EOS
 
 
   REPLACE_INFO = [
-    RRB::Replacer.new( 5, 6, 'zz', 'c' ),
-    RRB::Replacer.new( 6, 6, 'zz', 'c' ),
-    RRB::Replacer.new( 9, 12, 'zz', 'c' ),
-    RRB::Replacer.new( 9, 19, 'zz', 'c' ),
+    RRB::Replacer.new( 5, 4, 'zz', 'c' ),
+    RRB::Replacer.new( 6, 4, 'zz', 'c' ),
+    RRB::Replacer.new( 9, 10, 'zz', 'c' ),
+    RRB::Replacer.new( 9, 17, 'zz', 'c' ),
   ]
 
   def test_replace_str

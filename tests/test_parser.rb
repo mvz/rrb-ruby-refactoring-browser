@@ -84,7 +84,7 @@ class TestParser < RUNIT::TestCase
                    class_info.class_method_defs.map{|cm| cm.name} )
 
     # test head_keyword and tail_keyword
-    assert_equals( 5, method_1_info.head_keyword.pointer )
+    assert_equals( 2, method_1_info.head_keyword.column )
     assert_equals( 7, method_1_info.head_keyword.lineno )
     assert_equals( "def", method_1_info.head_keyword.name )
     assert_equals( 12 , method_1_info.tail_keyword.lineno )
