@@ -12,6 +12,8 @@
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
   "*Regular expression matched ruby script file name")
+(defvar rrb-first-line-of-ruby-file-regexp "^#!.*ruby.*$"
+  "*Regular expression matched first line of ruby script")
 
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name to use error log file")
@@ -59,13 +61,19 @@
      
 ;;;; Main functions
 
+(defun rrb-ruby-script-p (buffer)
+  (and (buffer-file-name buffer)
+       (or (string-match rrb-ruby-file-name-regexp (buffer-file-name buffer))
+	   (save-current-buffer
+	     (save-excursion
+	       (set-buffer buffer)
+	       (goto-char (point-min))
+	       (looking-at rrb-first-line-of-ruby-file-regexp))))))
+
 (defun rrb-all-ruby-script-buffer ()
   "Return all ruby script buffer,`ruby script buffer' means `its file name
-matches with rrb-ruby-file-name-regexp'"
-  (rrb-find-all (lambda (buffer)
-		  (and (buffer-file-name buffer) 
-		       (string-match rrb-ruby-file-name-regexp
-				     (buffer-file-name buffer))))
+matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
+  (rrb-find-all 'rrb-ruby-script-p
 		(buffer-list)))
 
 (defun rrb-insert-input-string (src-buffer)
