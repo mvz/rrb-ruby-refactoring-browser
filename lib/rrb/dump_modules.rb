@@ -17,10 +17,8 @@ def __rrb_load( file )
 
   fname = __rrb_search( file )
   if fname == nil
-    #STDERR.print "R:", file.inspect, "\n"
-    return __rrb_orig_require file
+    return __rrb_orig_require( file )
   end
-  #STDERR.print "L:", fname.inspect, "\n"
   unless $__rrb_loaded.member?( fname ) 
     load fname
     $__rrb_loaded << fname
