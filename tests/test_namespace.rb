@@ -39,6 +39,14 @@ class TestNamespace < RUNIT::TestCase
     assert_equals( RRB::Namespace.new(""), RRB::Namespace.new("Heke").chop )
     assert_equals( nil, RRB::Namespace.new("").chop )
   end
+
+  def test_contain?
+    assert( RRB::Namespace.new("A").contain?(RRB::Namespace.new("A::B::C")) )
+    assert( !RRB::Namespace.new("A").contain?(RRB::Namespace.new("B::C")) )
+    assert( RRB::Namespace.new("").contain?(RRB::Namespace.new("B::C")) )
+    assert( RRB::Namespace.new("A").contain?(RRB::Namespace.new("A")) )
+    assert( !RRB::Namespace.new("A::B").contain?(RRB::Namespace.new("A")) )
+  end
 end
 
 if $0 == __FILE__
