@@ -20,13 +20,13 @@ module RRB
 	@singleton_method_defs = []
 	@class_method_defs = []
 	@singleton_class_defs = []
-	@first_assign = []
+	@assigned = []
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
       attr_reader :global_vars, :instance_vars, :class_vars, :consts
       attr_reader :singleton_method_defs, :class_method_defs
       attr_reader :singleton_class_defs
-      attr_reader :first_assign
+      attr_reader :assigned
     end
 
     # parse and return tree
@@ -155,9 +155,7 @@ module RRB
 
     def on__assignable( var, arg )
       return unless var.kind_of?( IdInfo )
-      unless @scope_stack.last.local_vars.find{|i| i.name == var.name } then
-	@scope_stack.last.first_assign << var
-      end
+      @scope_stack.last.assigned << var
       add_var( var )
     end
 
