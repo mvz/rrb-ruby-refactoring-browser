@@ -16,6 +16,8 @@ class A
     @var = 1
     $b = 1
   end
+  def A.method_3(arg1, arg2)
+  end
 end
 
 class B < A
@@ -24,25 +26,38 @@ class B < A
     @var = uhe
     @var2 = heke
   end
+  def B.method_3(arg1, arg3)
+  end
 end
 class C < A
   module D
-    def method_3
+    def method_4
       p @var3 
     end
   end
 end
 "
   
-  def test_refactable_methods
+  def test_refactable_instance_methods
     scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
-    methods = scriptfile.refactable_methods.map do |method|
+    methods = scriptfile.refactable_instance_methods.map do |method|
       [ method.name, method.local_vars ]
     end
     assert_equals( [[ 'A#method_1', Set[ 'arg1', 'arg2', 'var' ] ],
 		    [ 'A#method_2', Set[]],
 		    [ 'B#method_1', Set[ 'arg1', 'arg3' ] ],
-		    [ 'C::D#method_3', Set[] ]
+		    [ 'C::D#method_4', Set[] ]
+		  ],
+		  methods )
+  end
+
+  def test_refactable_class_methods
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
+    methods = scriptfile.refactable_class_methods.map do |method|
+      [ method.name, method.local_vars ]
+    end
+    assert_equals( [[ 'A.method_3', Set[ 'arg1', 'arg2' ] ],
+		    [ 'B.method_3', Set[ 'arg1', 'arg3' ] ],
 		  ],
 		  methods )
   end
@@ -88,6 +103,8 @@ class B < A
     print arg1, $x, $y
     @var = 3
   end
+  def B.method_3(arg1)
+  end
   @var2 = 4
 end
 \C-a/tmp/test2.rb\C-a
@@ -101,12 +118,14 @@ class A
   def method_2
     $y = 2
   end
+  def A.method_3(arg1)
+  end
 end
 \C-a-- END --\C-a
 "
-  def test_refactable_methods
+  def test_refactable_instance_methods
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
-    methods = script.refactable_methods.map do |method|
+    methods = script.refactable_instance_methods.map do |method|
       [ method.name, method.local_vars ]
     end
     assert_equals( [ [ 'B#method_1', Set[ 'arg1', 'arg3' ] ],
@@ -114,6 +133,17 @@ end
 		      [ 'A#method_2', Set[] ] ],
 		  methods )
   end
+
+  def test_refactable_class_methods
+    script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
+    methods = script.refactable_class_methods.map do |method|
+      [ method.name, method.local_vars ]
+    end
+    assert_equals( [ [ 'B.method_3', Set[ 'arg1' ] ],
+                    [ 'A.method_3', Set[ 'arg1' ] ] ],
+		  methods )
+  end
+
 
   def test_refactable_classes
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
