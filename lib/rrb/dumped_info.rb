@@ -10,6 +10,10 @@ module RRB
     def [](index)
       @classes[index]
     end
+
+    def each( &block )
+      @classes.each_value( &block )
+    end
     
     def DumpedInfo.get_dumped_info( io )
       info_hash = {}
