@@ -12,6 +12,10 @@ module X
       @c = 0
     end
   end
+end
+samples/rename_instance_var_sample2.rb
+require 'samples/rename_instance_var_sample'
+module X
   class C < A
     def method_1
       @f = 0
