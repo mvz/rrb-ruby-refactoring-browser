@@ -7,7 +7,7 @@ require 'rrb/rename_method_all'
 require 'rrb/rename_constant'
 require 'rrb/extract_method'
 require 'rrb/move_method'
-
+require 'rrb/pullup_method'
 
 module RRB
 
@@ -123,6 +123,15 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @refactoring_method = :rename_constant
       @check_method = :rename_constant?
     end
+
+    def parse_argv_pullup_method(argv)
+      method_name = argv.shift
+      old_namespace = Namespace.new(argv.shift)
+      new_namespace = Namespace.new(argv.shift)
+      @args = [method_name, old_namespace, new_namespace]
+      @refactoring_method = :pullup_method
+      @check_method = :pullup_method?
+    end
     
     def parse_argv( argv )
 
@@ -146,6 +155,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
         parse_argv_rename_method(argv)
       when '--rename-constant'
         parse_argv_rename_constant(argv)
+      when '--pullup-method'
+        parse_argv_pullup_method(argv)
       else
 	raise RRBError, "Unknown refactoring"
       end
