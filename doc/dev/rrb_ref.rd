@@ -215,7 +215,7 @@ NullObjectパターンを参照
 構文木のクラス定義のノードを表わすクラス
 
 == super class
-((<RRB:Module:Node>))
+((<RRB::ModuleNode>))
 
 == method
 --- superclass
