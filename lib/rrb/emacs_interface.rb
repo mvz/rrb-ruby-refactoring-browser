@@ -49,18 +49,23 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     def split_method_name( str )
       if str['#']
         a, b = str.split( /#/ )
-        return Namespace.new(a), MethodName.new(b)
+        namespace = Namespace.new(a)
+        method_name = MethodName.new(namespace, b)
+        return method_name
       elsif str['.']
         a, b = str.split( '.' )
-        return Namespace.new(a), ClassMethodName.new(b)
+        namespace = Namespace.new(a)
+        method_name = MethodName.new(namespace, b)
+        return method_name
       end
     end
 
+
     def parse_argv_rename_local_variable(argv)
-      namespace, method_name = split_method_name argv.shift
+      method_name = split_method_name argv.shift
       old_var = argv.shift
       new_var = argv.shift
-      @args = [ namespace, method_name, old_var, new_var ]
+      @args = [ method_name, old_var, new_var ]
       @refactoring_method = :rename_local_var
       @check_method = :rename_local_var?
     end
@@ -103,9 +108,10 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 
     def parse_argv_rename_method(argv)
       classes = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
-      old_method = MethodName.new(argv.shift)
+      str_old_method = argv.shift
+      old_methods = classes.map{|klass| MethodName.new(klass, str_old_method)}
       new_method = argv.shift
-      @args = [ classes, old_method, new_method ]
+      @args = [ old_methods, new_method ]
       @refactoring_method = :rename_method
       @check_method = :rename_method?
     end
@@ -136,21 +142,21 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def parse_argv_pullup_method(argv)
-      old_namespace, method_name = split_method_name argv.shift
+      method_name = split_method_name argv.shift
       new_namespace = Namespace.new(argv.shift)
       path = argv.shift
       lineno = argv.shift.to_i
-      @args = [old_namespace, method_name, new_namespace, path, lineno]
+      @args = [ method_name, new_namespace, path, lineno]
       @refactoring_method = :pullup_method
       @check_method = :pullup_method?
     end
 
     def parse_argv_pushdown_method(argv)
-      old_namespace, method_name = split_method_name argv.shift
+      method_name = split_method_name argv.shift
       new_namespace = Namespace.new(argv.shift)
       path = argv.shift
       lineno = argv.shift.to_i
-      @args = [old_namespace, method_name, new_namespace, path, lineno]
+      @args = [ method_name, new_namespace, path, lineno]
       @refactoring_method = :pushdown_method
       @check_method = :pushdown_method?
     end
