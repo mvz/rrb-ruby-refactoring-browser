@@ -174,34 +174,52 @@ module FreeRIDE
     class RenameDialog < RefactorDialog
       def initialize(plugin, title)
         super(plugin, title)
-        txt_field = FXHorizontalFrame.new(self, LAYOUT_FILL_X)
-        FXLabel.new(txt_field, "Enter new name: ", nil, JUSTIFY_LEFT|LAYOUT_CENTER_Y)
-        @txt_new_variable = FXTextField.new(txt_field, 12, nil, 0, (FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_CENTER_Y))
-        @txt_new_variable.setFocus
+        old_txt_field = FXHorizontalFrame.new(self, LAYOUT_FILL_X)
+        FXLabel.new(old_txt_field, "Old name: ", nil, JUSTIFY_LEFT|LAYOUT_CENTER_Y)
+        @txt_old_value = FXTextField.new(old_txt_field, 12, nil, 0, (FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_CENTER_Y))
+        new_txt_field = FXHorizontalFrame.new(self, LAYOUT_FILL_X)
+        FXLabel.new(new_txt_field, "New name: ", nil, JUSTIFY_LEFT|LAYOUT_CENTER_Y)
+        @txt_new_value = FXTextField.new(new_txt_field, 12, nil, 0, (FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_CENTER_Y))
+        @txt_new_value.setFocus
         
         @old_value =  get_word_on_cursor
-        @txt_new_variable.text = @old_value
+        @txt_old_value.text = @old_value
+        @txt_new_value.text = @old_value
 
         self.create
         self.show(PLACEMENT_OWNER)
         @app.runModalFor(self)
       end
 
+      def is_delimiter(char)
+        if char =~ /\s/ || char == '(' || char == ')' || char == "\n"
+          return true
+        else
+          return false
+        end
+      end
+
       def get_word_on_cursor
         ext_obj = @current_pane['actions/get_ext_object'].invoke
         current_pos = ext_obj.current_pos
         text_length = ext_obj.get_text_length
-        buffer = ext_obj.get_text(text_length)
+        buffer = ext_obj.get_text(text_length + 1)
 
         left = current_pos
         loop do
-          break if left == 0 || buffer[left - 1, 1] =~ /\s/
+          left_char = buffer[left - 1, 1]
+          break if left <= 0 || is_delimiter(left_char)
           left -= 1 
         end
 
-        right = current_pos - 1
+        if current_pos == 0
+          right = 0
+        else
+          right = current_pos - 1
+        end
         loop do
-          break if right == text_length || buffer[right + 1, 1] =~ /\s/
+          right_char = buffer[right + 1, 1]
+          break if right >= text_length || is_delimiter(right_char)
           right += 1 
         end
         buffer[left..right]
@@ -216,7 +234,7 @@ module FreeRIDE
       def setup_args
         method = @script.get_method_on_cursor(@filename, @cursor_line).name
         method_name = ::RRB::Method[method]
-        return [method_name, @old_value, @txt_new_variable.text]        
+        return [method_name, @txt_old_value.text, @txt_new_value.text]        
       end
 
       def enable_refactor?
@@ -233,14 +251,17 @@ module FreeRIDE
         super(plugin, "Rename Instance Variable")
       end
 
-      def enable_refactor?
+      def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-        return @script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
+        return [namespace, @txt_old_value.text, @txt_new_value.text]
+      end
+
+      def enable_refactor?
+        return @script.rename_instance_var?(*setup_args)
       end
 
       def refactor
-        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-        @script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
+        @script.rename_instance_var(*setup_args)
       end
     end
 
@@ -251,7 +272,7 @@ module FreeRIDE
 
       def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-        return [namespace, @old_value, @txt_new_variable.text]
+        return [namespace, @txt_old_value.text, @txt_new_value.text]
       end
 
       def enable_refactor?
@@ -269,7 +290,7 @@ module FreeRIDE
       end
 
       def setup_args
-        [@old_value, @txt_new_variable.text]
+        [@txt_old_value.text, @txt_new_value.text]
       end
 
       def enable_refactor?
@@ -287,10 +308,10 @@ module FreeRIDE
       end
 
       def setup_args
-        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-        old_methods = [::RRB::Method.new(namespace, @old_value)]
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line-1)
+        old_methods = [::RRB::Method.new(namespace, @txt_old_value.text)]
 
-        return [old_methods, @txt_new_variable.text]
+        return [old_methods, @txt_new_value.text]
       end
 
       def enable_refactor?
@@ -309,8 +330,8 @@ module FreeRIDE
 
       def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-        old_const = namespace.name + '::' + @old_value
-        return [old_const, @txt_new_variable.text]
+        old_const = namespace.name + '::' + @txt_old_value.text
+        return [old_const, @txt_new_value.text]
       end
 
       def enable_refactor?
