@@ -1,6 +1,8 @@
 samples/pushdown_method_sample.rbclass A
   def a
   end
+  def A.a
+  end
 end
 
 class B < A
@@ -10,6 +12,9 @@ class B < A
   def z
   end
   def w
+  end
+  def B.x
+    a
   end
 
   private :z
