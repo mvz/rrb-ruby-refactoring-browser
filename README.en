@@ -29,6 +29,7 @@ can enjoy refactoring with it.
 = How to use
 On Emacs, type M-x rrb-rename-local-variable(or rrb-rename-instance-variable, etc)
 and input required information such as the name of variable.
+Completion is available with [TAB] key.
 And you can undo one refactoring to type M-x rrb-undo.
 
 = Documentation
