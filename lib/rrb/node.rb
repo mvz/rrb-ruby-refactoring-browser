@@ -294,6 +294,7 @@ module RRB
       else
 	raise TypeError, 'must be string or array'
       end
+      @namespace.freeze
     end
 
     def Namespace.[]( arg )
@@ -310,6 +311,14 @@ module RRB
 
     def ==(other)
       ary == other.ary
+    end
+
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      ary.hash
     end
     
   end
