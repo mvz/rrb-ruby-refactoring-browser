@@ -2,7 +2,7 @@ require 'rrb/node'
 
 module RRB
 
-  class GetTargetMethodVisitor < Visitor
+  class GetStringOfMethodVisitor < Visitor
     def initialize(namespace, method_name)
       @method_name = method_name
       @namespace = namespace
@@ -62,6 +62,29 @@ module RRB
           @namespace = nil
         end
       end
+    end
+  end
+
+  class ScriptFile
+    def get_string_of_method(namespace, method_name)
+      visitor = GetStringOfMethodVisitor.new(namespace, method_name)
+      @tree.accept(visitor)
+      range = visitor.result_range
+      if range
+        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
+      else
+        return nil
+      end
+    end
+  end
+
+  class Script
+    def get_string_of_method(namespace, method_name)
+      str_of_method = nil
+      @files.each do |scriptfile|
+        str_of_method = str_of_method || scriptfile.get_string_of_method(namespace, method_name)
+      end
+      str_of_method
     end
   end
 end
