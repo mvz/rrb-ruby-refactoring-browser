@@ -80,7 +80,7 @@ module RRB
     end
     attr_reader :method
 
-    def visit_method(namespace, node)
+    def get_method_on_region(namespace, node)
       if node.range.contain?( @range ) then
         @method = NodeMethod.new(namespace, node)
       else
@@ -89,6 +89,14 @@ module RRB
         end
       end
     end
+
+    def visit_method(namespace, node)
+      get_method_on_region(namespace, node)
+    end
+    def visit_class_method(namespace, node)
+      get_method_on_region(namespace, node)
+    end
+
   end
 
   class GetNamespaceOnLineVisitor < Visitor
