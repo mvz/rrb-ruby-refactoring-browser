@@ -60,6 +60,7 @@ module RRB
       find_dir( script_dir_path ).each do |dirpath|
 	run_file << "$:.unshift '#{dirpath}'\n"
       end
+      run_file << "require 'rrb_reflection'\n"
       run_file << "require '#{main_script_path( script_dir_path )}'\n"
       run_file << DUMP_MODULES_SCRIPT
       run_file.close

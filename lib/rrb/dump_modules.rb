@@ -55,9 +55,16 @@ ObjectSpace.each_object( Module ) do |mod|
       end
     end
   end
+
+  print '#'
+  
+  # 6 constants
+  mod.constants_not_inherited_too.each do |const_name|
+    print const_name, ";"
+  end
   
   print "\n"
-  
+
 end
 
 EOS
