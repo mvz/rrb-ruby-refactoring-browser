@@ -15,7 +15,7 @@
 
 ;;;; Keybind for test new undo
 (global-unset-key "\C-cu")
-(global-set-key "\C-cu" 'rrb-undo-1)
+(global-set-key "\C-cu" 'rrb-undo)
 
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
@@ -39,8 +39,8 @@
 
 (defvar rrb-marshal-file-name "")
 
-(defvar rrb-undo-1-list nil)
-(defvar rrb-pending-undo-1-list nil)
+(defvar rrb-undo-list nil)
+(defvar rrb-pending-undo-list nil)
 
 ;;;; Utility functions
 (defun rrb-find-all (prec list)
@@ -219,18 +219,18 @@
   (if (file-readable-p rrb-marshal-file-name)
       (delete-file rrb-marshal-file-name)))
 
-(defun rrb-undo-1-set-undo-mark ()
+(defun rrb-undo-set-undo-mark ()
   (save-current-buffer
-    (setq rrb-undo-1-list
+    (setq rrb-undo-list
           (cons (mapcar (lambda (buffer)
                           (set-buffer buffer)
                           (undo-boundary)
                           (list buffer buffer-undo-list))
                         (rrb-all-ruby-script-buffer))
-                rrb-undo-1-list))))
+                rrb-undo-list))))
            
 (defun rrb-prepare-refactoring ()
-  (rrb-undo-1-set-undo-mark)
+  (rrb-undo-set-undo-mark)
   (rrb-make-marshal-file))
 
 (defun rrb-terminate-refactoring ()
@@ -339,8 +339,8 @@
 (defun rrb-get-value-on-cursor (args)
   (rrb-run-default-value (buffer-file-name) (number-to-string (rrb-current-line)) args))
 
-;;;; Undo-1
-(defun rrb-undo-1-count (undo-list undo-mark)
+;;;; undo
+(defun rrb-undo-count (undo-list undo-mark)
   (let ((count 0)
         (l undo-list))
     (while (not (or (eq l undo-mark) (eq l nil)))
@@ -351,26 +351,26 @@
         count
       0)))
 
-(defun rrb-undo-1-buffer (undo-markar)
+(defun rrb-undo-buffer (undo-markar)
   (set-buffer (car undo-markar))
   (undo-boundary)
   (let ((redo-markar buffer-undo-list))
-    (undo (rrb-undo-1-count buffer-undo-list (cadr undo-markar)))
+    (undo (rrb-undo-count buffer-undo-list (cadr undo-markar)))
     (undo-boundary)
     (list (current-buffer) redo-markar)))
     
-(defun rrb-undo-1 ()
+(defun rrb-undo ()
   (interactive)
   (save-current-buffer
-    (unless (eq last-command 'rrb-undo-1)
-      (setq rrb-pending-undo-1-list rrb-undo-1-list))
-    (if (eq rrb-pending-undo-1-list nil)
+    (unless (eq last-command 'rrb-undo)
+      (setq rrb-pending-undo-list rrb-undo-list))
+    (if (eq rrb-pending-undo-list nil)
         (error "Can't undo"))
-    (setq rrb-undo-1-list (cons (mapcar 'rrb-undo-1-buffer
-                                        (car rrb-pending-undo-1-list))
-                                rrb-undo-1-list))
-    (setq this-command 'rrb-undo-1)
-    (setq rrb-pending-undo-1-list (cdr rrb-pending-undo-1-list))))
+    (setq rrb-undo-list (cons (mapcar 'rrb-undo-buffer
+                                        (car rrb-pending-undo-list))
+                                rrb-undo-list))
+    (setq this-command 'rrb-undo)
+    (setq rrb-pending-undo-list (cdr rrb-pending-undo-list))))
             
 ;;;; Refactoring
 
