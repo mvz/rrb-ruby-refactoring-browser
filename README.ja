@@ -19,6 +19,9 @@ doc/dev/init.rdを参照してください。
 ユーザ向けのドキュメントは用意していません。開発者向けのものがdoc/dev/に置い
 てあります。
 
+= ライセンス
+Ruby's
+
 = 開発者
 大林一平 <ohai@kmc.gr.jp>
 原悠 <yhara@kmc.gr.jp>
