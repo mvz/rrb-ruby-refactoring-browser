@@ -37,6 +37,8 @@ class TestClassD
   class TestClassE < TestClassA
   end
 end
+class TestClassF < TestClassB
+end  
 EOS
 
 class TestDumpedInfo < RUNIT::TestCase
@@ -137,6 +139,9 @@ class TestDumpedInfo < RUNIT::TestCase
     info = make_info
     assert_equals(RRB::MN['TestClassB#pub'], info.real_method( RRB::MN['TestClassB#pub']))
     assert_equals(RRB::MN['TestClassA#pubA'], info.real_method( RRB::MN['TestClassB#pubA']))
+    assert_equals(RRB::MN['TestClassB.sing'], info.real_method( RRB::MN['TestClassB.sing'] ))
+    assert_equals(RRB::MN['TestClassB.sing'], info.real_method( RRB::MN['TestClassF.sing'] ))
+    assert_nil(info.real_method(RRB::MN['TestClassD.sing']))
   end
   
   def make_info
