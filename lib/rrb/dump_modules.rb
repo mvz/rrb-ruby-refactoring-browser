@@ -42,8 +42,10 @@ ObjectSpace.each_object( Module ) do |mod|
   print "#"
 
   # 5 singleton_methods
-  mod.singleton_methods.each do |method_name|
-    print method_name, ";"
+  class << mod
+    public_instance_methods.each do |method_name|
+      print method_name, ";"
+    end
   end
 
   print "\n"
