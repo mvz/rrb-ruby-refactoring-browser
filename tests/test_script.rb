@@ -3,6 +3,7 @@ require 'runit/cui/testrunner'
 
 require 'rrb/script.rb'
 require 'rrb/rename_local_var'
+require 'rrb/rename_instance_var'
 require 'rrb/rename_method_all'
 
 class TestScript < RUNIT::TestCase
