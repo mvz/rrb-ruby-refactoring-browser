@@ -29,6 +29,11 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   end
 
   infotype = ARGV.shift
+  
+  if ARGV[0] == '--target' then
+    ARGV.shift
+    target = ARGV.shift
+  end
 
   case ARGV.shift
   when '--stdin-stdout'
@@ -43,6 +48,24 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
       print method.name, ';'
       print method.local_vars.to_a.join(",")
       print "\n"
+    end
+  when '--local-vars'
+    script.refactable_methods.each do |method|
+      if method.name == target
+        print method.local_vars.to_a.join(",")
+      end
+    end
+  when '--instance-vars'
+    script.refactable_classes_instance_vars.each do |classname,ivars|
+      if classname == target
+        print ivars.to_a.join(','), "\n"
+      end
+    end
+  when '--class-vars'
+    script.refactable_classes_class_vars.each do |classname, cvars|
+      if classname == target
+        print cvars.to_a.join(','), "\n"
+      end
     end
   when '--bare-methods'
     script.refactable_methods.each do |method|
