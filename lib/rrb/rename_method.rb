@@ -96,20 +96,15 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
 	end
       end
       classes_call_method( methodname ).each do |classname|
-	basis.each do |namespace|
-	  if get_dumped_info[namespace.str].subclass_of?(classname)
-	    classes << classname
-	  end
+	if basis.find{|ns| get_dumped_info[ns.str].subclass_of?(classname)} then
+	  classes << classname
 	end
       end
       
 
       get_dumped_info.each do |classinfo|
-	classes.each do |classname|
-	  if classinfo.subclass_of?(classname) then
-	    result << Namespace.new( classinfo.class_name )
-	    break
-	  end
+	if classes.find{|classname| classinfo.subclass_of?(classname)} then
+	  result << Namespace.new( classinfo.class_name )
 	end
       end
 
