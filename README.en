@@ -18,6 +18,8 @@ Type these lines on command line to install core libraries:
   $ ruby setup.rb setup
   # ruby setup.rb install
 
+You can customize how RRB works with ~/.rrbrc (see doc/rrbrc.sample)
+
 = Installation / Emacs interface
 Copy elisp/rrb.el in load-path.
 
