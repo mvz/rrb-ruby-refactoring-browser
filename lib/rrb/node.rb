@@ -271,7 +271,7 @@ module RRB
     def match?( namespace )
       @nodes.map{|c| c.name} == namespace.ary
     end
-
+    
     # this methods exist for test_node
     def_delegators :@nodes, :map, :last
     
@@ -319,6 +319,10 @@ module RRB
 
     def hash
       ary.hash
+    end
+
+    def inspect
+      "#<RRB::NS: #{str}>"
     end
     
   end
