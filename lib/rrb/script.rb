@@ -101,7 +101,7 @@ module RRB
       return new( files )
     end
 
-    def Script.new_from_filenames( filenames )
+    def Script.new_from_filenames( *filenames )
       files = []
       filenames.each do |filename|
 	files << ScriptFile.new( File.open(filename), filename )
