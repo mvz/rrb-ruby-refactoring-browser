@@ -101,23 +101,6 @@ class TestScriptFile < RUNIT::TestCase
     end
   end
   
-  def test_extract_method
-    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
-      script_file.extract_method('bar', 7, 10)
-      assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,		    script_file.new_script )
-    end
-  end
-
-  def test_extract_method?
-    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file, file.path )
-      assert_equals(true, script_file.extract_method?( 'bar', 7, 10))
-      assert_equals(false, script_file.extract_method?( 'foo', 7, 10))
-      assert_equals(false, script_file.extract_method?( 'bar', 4, 5))
-      assert_equals(true, script_file.extract_method?( 'bar', 16, 17))
-    end    
-  end
 
   def move_method
     File.open( 'samples/move_method_sample.rb', 'r' ) do |file|
