@@ -68,8 +68,9 @@ class TestClassMethod < RUNIT::TestCase
   end
 
   def test_match_node?
-    parser = RRB::Parser.new
-    tree = parser.run File.open( "samples/visitor_sample.rb", "r" )
+    parser = RRB::Parser.new(File.open("samples/visitor_sample.rb", "r"),
+                             "samples/visitor_sample.rb")
+    tree = parser.run
 
     test_class_a = RRB::Namespace.new("TestClassA")
     method_2 = tree.class_info("TestClassA").method_info("method_2")

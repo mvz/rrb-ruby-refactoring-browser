@@ -10,8 +10,8 @@ class TestParser < RUNIT::TestCase
   TEST_SCRIPT_NAME = 'samples/parser_sample.rb'
   
   def test_parse
-    parser = RRB::Parser.new
-    parsed_info = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+    parser = RRB::Parser.new(File.open( TEST_SCRIPT_NAME, "r" ))
+    parsed_info = parser.run
 
     class_info = parsed_info.class_info("TestClassA")
 

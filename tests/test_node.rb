@@ -86,8 +86,8 @@ class TestNode < RUNIT::TestCase
   
   def test_accept
 
-    parser = RRB::Parser.new
-    tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+    parser = RRB::Parser.new(File.open(TEST_SCRIPT_NAME, "r"), TEST_SCRIPT_NAME)
+    tree = parser.run
 
     # test visit_class and visit_method
     visitor1 = Visitor1.new
@@ -155,8 +155,8 @@ class TestNode < RUNIT::TestCase
   end
 
   def test_range
-    parser = RRB::Parser.new
-    tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+    parser = RRB::Parser.new(File.open(TEST_SCRIPT_NAME, "r"), TEST_SCRIPT_NAME)
+    tree = parser.run
 
     def_range = tree.class_info( "TestClassA" ).range
     assert_equals( 2, def_range.head.lineno )
@@ -175,8 +175,8 @@ class TestConstInfo < RUNIT::TestCase
 
   TEST_SCRIPT_NAME = 'samples/parser_sample.rb'
   def test_body
-    parser = RRB::Parser.new
-    tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+    parser = RRB::Parser.new(File.open(TEST_SCRIPT_NAME, "r"), TEST_SCRIPT_NAME)
+    tree = parser.run
     consts = tree.class_info("TestClassA").method_info("method_9").consts
     assert_equals( [ "Const1",
 		    "Const2", "Const1",
@@ -202,8 +202,9 @@ class TestNodeMethod < RUNIT::TestCase
     end
   end
   def test_name
-    parser = RRB::Parser.new
-    tree = parser.run File.open( "samples/parser_sample.rb", "r" )
+    parser = RRB::Parser.new(File.open( "samples/parser_sample.rb", "r" ),
+                             "samples/parser_sample.rb")
+    tree = parser.run
 
     # test visit_class and visit_method
     visitor1 = Visitor1.new
