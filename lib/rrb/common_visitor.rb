@@ -2,7 +2,7 @@ require 'rrb/node'
 
 module RRB
   class GetTargetMethodVisitor < Visitor
-    def initialize(method_name, namespace)
+    def initialize(namespace, method_name)
       @method_name = method_name
       @namespace = namespace
       @result_range = nil

@@ -8,7 +8,7 @@ module RRB
   
   class PullupMethodVisitor < Visitor
 
-    def initialize(method_name, old_namespace, new_namespace)
+    def initialize(old_namespace, method_name, new_namespace)
       @method_name = method_name
       @old_namespace = old_namespace
       @new_namespace = new_namespace
@@ -33,7 +33,7 @@ module RRB
   end
 
   class PullupMethodCheckVisitor < Visitor
-    def initialize(dumped_info, method_name, old_namespace, new_namespace)
+    def initialize(dumped_info, old_namespace, method_name, new_namespace)
       @dumped_info = dumped_info
       @method_name = method_name
       @old_namespace = old_namespace
@@ -77,8 +77,8 @@ module RRB
 
   class ScriptFile
 
-    def get_targetmethod(method_name, namespace)
-      visitor = GetTargetMethodVisitor.new(method_name, namespace)
+    def get_targetmethod(namespace, method_name)
+      visitor = GetTargetMethodVisitor.new(namespace, method_name)
       @tree.accept(visitor)
       range = visitor.result_range
       if range
@@ -88,36 +88,36 @@ module RRB
       end
     end
 
-    def pullup_method(method_name, old_namespace, new_namespace, pullupped_method)
-      visitor = PullupMethodVisitor.new(method_name, old_namespace, new_namespace)
+    def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
+      visitor = PullupMethodVisitor.new(old_namespace, method_name,  new_namespace)
       @tree.accept( visitor )
       @new_script = RRB.pullup_method(@input, visitor.superclass_lineno, visitor.subclass_range, pullupped_method)
     end
 
-    def pullup_method?(dumped_info, method_name, old_namespace, new_namespace)
-      visitor = PullupMethodCheckVisitor.new(dumped_info, method_name, old_namespace, new_namespace)
+    def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
+      visitor = PullupMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
       @tree.accept(visitor)
       return visitor.result
     end
   end
 
   class Script
-    def pullup_method(method_name, old_namespace, new_namespace)
+    def pullup_method(old_namespace, method_name, new_namespace)
       pullupped_method = nil
       @files.each do |scriptfile|
-        pullupped_method = pullupped_method || scriptfile.get_targetmethod(method_name, old_namespace)
+        pullupped_method = pullupped_method || scriptfile.get_targetmethod(old_namespace, method_name)
       end
       @files.each do |scriptfile|
-	scriptfile.pullup_method(method_name, old_namespace, new_namespace, pullupped_method)
+	scriptfile.pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
       end      
     end
 
-    def pullup_method?(method_name, old_namespace, new_namespace)
+    def pullup_method?(old_namespace, method_name, new_namespace)
       return false unless get_dumped_info[old_namespace].has_method?(method_name, false)
       return false if get_dumped_info[new_namespace].has_method?(method_name)
 
       @files.each do |scriptfile|
-        unless scriptfile.pullup_method?(get_dumped_info, method_name, old_namespace, new_namespace)
+        unless scriptfile.pullup_method?(get_dumped_info, old_namespace, method_name, new_namespace)
           return false
         end
       end

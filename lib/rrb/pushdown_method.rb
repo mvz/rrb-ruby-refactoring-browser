@@ -8,7 +8,7 @@ module RRB
   
   class PushdownMethodVisitor < Visitor
 
-    def initialize(method_name, old_namespace, new_namespace)
+    def initialize(old_namespace, method_name, new_namespace)
       @method_name = method_name
       @old_namespace = old_namespace
       @new_namespace = new_namespace
@@ -33,7 +33,7 @@ module RRB
   end
 
   class PushdownMethodCheckVisitor < Visitor
-    def initialize(dumped_info, method_name, old_namespace, new_namespace)
+    def initialize(dumped_info, old_namespace, method_name, new_namespace)
       @dumped_info = dumped_info
       @method_name = method_name
       @old_namespace = old_namespace
@@ -88,8 +88,8 @@ module RRB
 
   class ScriptFile
 
-    def get_targetmethod(method_name, namespace)
-      visitor = GetTargetMethodVisitor.new(method_name, namespace)
+    def get_targetmethod(namespace, method_name)
+      visitor = GetTargetMethodVisitor.new(namespace, method_name)
       @tree.accept(visitor)
       range = visitor.result_range
       if range
@@ -99,35 +99,35 @@ module RRB
       end
     end
 
-    def pushdown_method(method_name, old_namespace, new_namespace, pushdowned_method)
-      visitor = PushdownMethodVisitor.new(method_name, old_namespace, new_namespace)
+    def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
+      visitor = PushdownMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
       @new_script = RRB.pushdown_method(@input, visitor.superclass_range, visitor.subclass_lineno, pushdowned_method)
     end
 
-    def pushdown_method?(dumped_info, method_name, old_namespace, new_namespace)
-      visitor = PushdownMethodCheckVisitor.new(dumped_info, method_name, old_namespace, new_namespace)
+    def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)
+      visitor = PushdownMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
       @tree.accept(visitor)
       return visitor.result
     end
   end
 
   class Script
-    def pushdown_method(method_name, old_namespace, new_namespace)
+    def pushdown_method(old_namespace, method_name, new_namespace)
       pushdowned_method = nil
       @files.each do |scriptfile|
-        pushdowned_method = pushdowned_method || scriptfile.get_targetmethod(method_name, old_namespace)
+        pushdowned_method = pushdowned_method || scriptfile.get_targetmethod(old_namespace, method_name)
       end
       @files.each do |scriptfile|
-	scriptfile.pushdown_method(method_name, old_namespace, new_namespace, pushdowned_method)
+	scriptfile.pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
       end      
     end
 
-    def pushdown_method?(method_name, old_namespace, new_namespace)
+    def pushdown_method?(old_namespace, method_name, new_namespace)
       return false unless get_dumped_info[old_namespace].has_method?(method_name, false)
       return false if get_dumped_info[new_namespace].has_method?(method_name, false)
       @files.each do |scriptfile|
-        unless scriptfile.pushdown_method?(get_dumped_info, method_name, old_namespace, new_namespace)
+        unless scriptfile.pushdown_method?(get_dumped_info, old_namespace, method_name, new_namespace)
           return false
         end
       end
