@@ -5,6 +5,7 @@ Providing that you install RRB on '~/rrb/'.
 (1) Extract source from tarball or CVS.
 (2) Setup rrb/ripper
       Please see '~/rrb/ripper/README'.
+      After compiling ripper, you should copy ripper.rb to ~/rrb/lib/rrb.
 (3) Setup rrb/reflection
       'cd ~/rrb/reflection' and `ruby extconf.rb; make'
 (4) Install shim if you use ruby 1.6.x
