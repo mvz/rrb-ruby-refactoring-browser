@@ -62,13 +62,19 @@ class TestDumpedInfo < RUNIT::TestCase
   def test_has_method?
     info = make_info["TestClassB"]
 
-    assert_equals( true, info.has_method?( RRB::MN.new("pub") ) )
-    assert_equals( true, info.has_method?( RRB::MN.new("pubA") ) )
-    assert_equals( false, info.has_method?( RRB::CMN.new("pubA") ) )
-    assert_equals( true, info.has_method?( RRB::MN.new("id") ) )
-    assert_equals( false, info.has_method?( RRB::MN.new("nothing") ) ) 
+    assert_equals( true, info.has_method?( "pub" ) )
+    assert_equals( true, info.has_method?( "pubA" ) )
+    assert_equals( true, info.has_method?( "id" ) )
+    assert_equals( false, info.has_method?( "nothing")  )
   end
 
+  def test_has_class_method?
+    info = make_info["TestClassB"]
+
+    assert_equals( true, info.has_class_method?( "sing" ) )
+    assert_equals( false, info.has_class_method?( "pub" ) )
+  end
+  
   def test_subclass_of?
     info = make_info
 
@@ -109,6 +115,22 @@ class TestDumpedInfo < RUNIT::TestCase
                    info.resolve_const( RRB::NS[""], "TestClassA" ) )
     assert_equals( nil,
                    info.resolve_const( RRB::NS[""], "C1" ) )
+  end
+
+  def test_exist?
+    info = make_info
+    assert_equals( true,
+                   info.exist?( RRB::MN['TestClassA#pubA'] ) )
+    assert_equals( true,
+                   info.exist?( RRB::MN['TestClassB.sing'] ) )
+    assert_equals( false,
+                   info.exist?( RRB::MN['TestClassA#pub'] ) )
+    assert_equals( false,
+                   info.exist?( RRB::MN['TestClassA#sing'] ) )
+    assert_equals( true,
+                   info.exist?( RRB::MN['TestClassA#pubA'], false ) )
+    assert_equals( false,
+                   info.exist?( RRB::MN['TestClassB#pubA'], false ) )
   end
   
   def make_info

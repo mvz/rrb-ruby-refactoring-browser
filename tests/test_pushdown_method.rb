@@ -1,6 +1,8 @@
 require 'runit/testcase'
 require 'runit/cui/testrunner'
 
+require 'rrb/pushdown_method'
+
 class TestScriptFile_PushdownMethod < RUNIT::TestCase
   
 end
@@ -10,36 +12,25 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     filename = "samples/pushdown_method_sample.rb"
 
     script = RRB::Script.new_from_filenames(filename)
-    assert_equals(true, script.pushdown_method?(RRB::NS['B'], 
-                                                RRB::MN.new('x'),
+    assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'x'),
                                                 RRB::NS['C'], filename, 23))
-    assert_equals(false, script.pushdown_method?(RRB::NS['B'],
-                                                 RRB::MN.new('y'),
+    assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'],'z'),
                                                  RRB::NS['C'], filename, 23))
-    assert_equals("B#y calls private function \"z\"\n", script.error_message)
-    assert_equals(false, script.pushdown_method?(RRB::NS['B'],
-                                                 RRB::MN.new('z'),
+    assert_equals("B calls B#z", script.error_message)
+    assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'w'),
                                                  RRB::NS['C'], filename, 23))
-    assert_equals("B#z: called by other function\n", script.error_message)
-    assert_equals(false, script.pushdown_method?(RRB::NS['B'], 
-                                                 RRB::MN.new('w'),
-                                                 RRB::NS['C'], filename, 23))
-    assert_equals("w: already defined at C\n", script.error_message)
-    assert_equals(false, script.pushdown_method?(RRB::NS['C'],
-                                                 RRB::MN.new('w'),
+    assert_equals("B#w: already defined at C\n", script.error_message)
+    assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'w'),
                                                  RRB::NS['B'], filename, 7))    
     assert_equals("B is not the subclass of C\n", script.error_message)
-    assert_equals(false, script.pushdown_method?(RRB::NS['C'],
-                                                 RRB::MN.new('asdf'),
+    assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'asdf'),
                                                  RRB::NS['B'], filename, 7))    
-    assert_equals("asdf: no definition in C\n", script.error_message)
-    assert_equals(false, script.pushdown_method?(RRB::NS['A'], 
-						 RRB::MN.new('a'),
+    assert_equals("C#asdf: no definition in C\n", script.error_message)
+    assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                  RRB::NS['C'], filename, 23))
-    assert_equals("Other subclass calls A#a\n", script.error_message)
+    assert_equals("B calls A#a", script.error_message)
 
-    assert_equals(true, script.pushdown_method?(RRB::NS['A'], 
-                                                RRB::MN.new('a'),
+    assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                 RRB::NS['B'], filename, 7))
   end
 
@@ -47,16 +38,14 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     filename = "samples/pushdown_method_sample.rb"
     lineno = 10
     script = RRB::Script.new_from_filenames(filename)
-    script.pushdown_method(RRB::NS['B'], 
-                           RRB::MN.new('x'),
+    script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
                            RRB::NS['C'], filename, lineno)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
                    dst )    
     script = RRB::Script.new_from_filenames(filename)
-    script.pushdown_method(RRB::NS['B'], 
-                           RRB::MN.new('x'),
+    script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
                            RRB::NS['C::D'], filename, lineno)
     dst = ''
     script.result_to_io(dst)
@@ -169,36 +158,30 @@ end
   def test_pushdown_method_plural_files?
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     assert_equals(true,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge'),
+                  script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
 
     assert_equals(true,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::CMN.new('hoge'),
+                  script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
 
     assert_equals(false,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge'),
+                  script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
     assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
 
     assert_equals(false,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::CMN.new('hoge'),
+                  script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
     assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
 
     assert_equals(false,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge'),
+                  script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
 
     assert_equals(false,
-                  script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::CMN.new('hoge'),
+                  script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
 
@@ -207,8 +190,7 @@ end
 
   def test_pushdown_method_plural_files
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge'),
+    script.pushdown_method(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 10)
     dst = ''
@@ -216,8 +198,7 @@ end
     assert_equals(OUTPUT_STR1, dst)
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge'),
+    script.pushdown_method(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 13)
     dst = ''
@@ -225,8 +206,7 @@ end
     assert_equals(OUTPUT_STR2, dst)
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge'),
+    script.pushdown_method(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test2.rb', 5)
     dst = ''
@@ -234,8 +214,7 @@ end
     assert_equals(OUTPUT_STR3, dst)
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.pushdown_method(RRB::NS['Base'], 
-                           RRB::CMN.new('hoge'),
+    script.pushdown_method(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 10)
     dst = ''
@@ -247,8 +226,8 @@ end
 
 if $0 == __FILE__
   suite = RUNIT::TestSuite.new
-  suite.add_test( TestScriptFile_PushdownMethod )
-  suite.add_test( TestScript_PushdownMethod )
+  suite.add_test( TestScriptFile_PushdownMethod.suite )
+  suite.add_test( TestScript_PushdownMethod.suite )
   RUNIT::CUI::TestRunner.run(suite)
 end
 

@@ -1,6 +1,7 @@
 require 'runit/testcase'
 require 'runit/cui/testrunner'
 require 'rrb/common_visitor'
+require 'rrb/extract_method'
 
 class TestScriptFile_ExtractMethod < RUNIT::TestCase
 

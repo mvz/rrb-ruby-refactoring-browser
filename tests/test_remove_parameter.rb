@@ -7,48 +7,48 @@ class TestScript_RemoveParameter < RUNIT::TestCase
 
   def test_get_parameter_index
     script = RRB::Script.new_from_filenames('samples/remove_parameter_sample.rb')
-    assert_equals(0, script.get_parameter_index(RRB::NS.new('Derived'),
-                                                RRB::MN.new('target_function'),
+    assert_equals(0, script.get_parameter_index(RRB::MN.new(RRB::NS.new('Derived'),
+                                                            'target_function'),
                                                 'heke'))
-    assert_equals(0, script.get_parameter_index(RRB::NS.new('Derived'),
-                                                RRB::MN.new('using_parameter_function'),
+    assert_equals(0, script.get_parameter_index(RRB::MN.new(RRB::NS.new('Derived'),
+                                                            'using_parameter_function'),
                                                 'heke'))
-    assert_equals(1, script.get_parameter_index(RRB::NS.new('Derived'),
-                                                RRB::MN.new('using_parameter_function'),
+    assert_equals(1, script.get_parameter_index(RRB::MN.new(RRB::NS.new('Derived'),
+                                                            'using_parameter_function'),
                                                 'doga'))
   end
 
   def test_remove_parameter?
     script = RRB::Script.new_from_filenames('samples/remove_parameter_sample.rb')
     assert_equals(true,
-                  script.remove_parameter?(RRB::NS.new('Derived'), 
-                                           RRB::MN.new('target_function'),
+                  script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
+                                                       'target_function'),
                                            'heke'))
     assert_equals(false,
-                  script.remove_parameter?(RRB::NS.new('Derived'), 
-                                           RRB::MN.new('target_function'),
+                  script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
+                                                       'target_function'),
                                            'hoge'))
     assert_equals("hoge: no such parameter\n", script.error_message)
     assert_equals(false,
-                  script.remove_parameter?(RRB::NS.new('Derived'), 
-                                           RRB::MN.new('using_parameter_function'),
+                  script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
+                                                       'using_parameter_function'),
                                            'heke'))
     assert_equals("heke is used\n",
                   script.error_message)
 
     assert_equals(false,
-                  script.remove_parameter?(RRB::NS.new('Derived'), 
-                                           RRB::MN.new('base_function'),
+                  script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
+                                                       'base_function'),
                                            'heke'))
-    assert_equals("base_function isn't defined at Derived\n",
+    assert_equals("Derived#base_function isn't defined\n",
                   script.error_message)
 
   end
 
   def test_remove_parameter
     script = RRB::Script.new_from_filenames('samples/remove_parameter_sample.rb')
-    script.remove_parameter(RRB::NS.new('Derived'),
-                            RRB::MN.new('target_function'),
+    script.remove_parameter(RRB::MN.new(RRB::NS.new('Derived'),
+                                        'target_function'),
                             'heke')
     result = ''
     script.result_to_io( result )
