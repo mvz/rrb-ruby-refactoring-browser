@@ -6,36 +6,17 @@ module RRB
   module ConstResolver
     def resolve_const(dumped_info,ns,const)
       return const if const[0,2]=="::"
-      
-      defined_classes = []
-      dumped_info.each do |klass|
-        if klass.consts.include?(const.split('::')[0])
-          defined_classes <<  klass.class_name
+
+      ans = dumped_info.resolve_const( Namespace.new(ns), const.split('::')[0] )
+      if ans == nil then
+        return nil
+      else
+        if ans == Namespace::Toplevel then
+          return "::#{const}"
+        else
+          return "::#{ans.str}::#{const}"
         end
       end
-        
-      #nest
-      a = ns.split('::')
-      (a.size).downto(1) do |n|
-        klass = a[0,n].join('::')
-        return '::'+klass+'::'+const if defined_classes.include? klass
-      end
-
-      #inherit
-      unless ns==""
-        dumped_info[ns].ancestor_names.each do |name|
-          next if name=="Object"
-          return '::'+name+'::'+const if defined_classes.include? name
-        end
-      end
-
-      #toplevel
-      if dumped_info["Object"].consts.include?(const.split('::')[0])
-        return '::'+const
-      end
-
-      #error...
-      return nil
     end
 
     def class_of(constname)
