@@ -57,7 +57,7 @@ module RRB
       end
 
       node.fcalls.each do|fcall|
-        called = MethodName.new( namespace, fcall.name )
+        called = Method.new( namespace, fcall.name )
         real_called = @dumped_info.real_method( called )
         if real_called == @method_name
           remove_fcall_parameter(fcall)

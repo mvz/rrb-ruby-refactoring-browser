@@ -23,7 +23,7 @@ module RRB
       return unless @dumped_info[namespace].subclass_of?(@old_namespace)
       return if @dumped_info[namespace].subclass_of?(@new_namespace)
       return unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
-      called_method = MethodName.new( namespace, @method_name.bare_name )
+      called_method = Method.new( namespace, @method_name.bare_name )
       if @dumped_info.real_method( called_method ) == @method_name
         @result = false
         @error_message = "#{namespace.name} calls #{@method_name.name}"

@@ -3,13 +3,13 @@ require 'runit/cui/testrunner'
 
 require 'rrb/node.rb'
 
-class TestMethodName < RUNIT::TestCase
+class TestMethod < RUNIT::TestCase
 
   def test_name
     assert_equals( "A::B#me",
-                   RRB::MethodName.new(RRB::Namespace.new("A::B"), 'me').name)
+                   RRB::Method.new(RRB::Namespace.new("A::B"), 'me').name)
     assert_equals( "#method",
-                   RRB::MethodName.new(RRB::Namespace::Toplevel, 'method').name)
+                   RRB::Method.new(RRB::Namespace::Toplevel, 'method').name)
   end
 
   def test_EQ
@@ -24,24 +24,24 @@ class TestMethodName < RUNIT::TestCase
   end
 
   def test_inspect
-    assert_equals( '#<RRB::MethodName A::B#me>',
+    assert_equals( '#<RRB::Method A::B#me>',
                    RRB::MN.new(RRB::NS.new("A::B"), 'me').inspect )
   end
   
   def test_s_AREF
     assert_equals( RRB::MN.new(RRB::NS.new("A::B"), 'me'),
-                   RRB::MethodName['A::B#me'] )
+                   RRB::Method['A::B#me'] )
     assert_equals( RRB::MN.new(RRB::NS::Toplevel, 'me'),
-                   RRB::MethodName['#me'] )
+                   RRB::Method['#me'] )
     assert_equals( RRB::CMN.new(RRB::NS.new("A::B"), 'me'),
-                   RRB::MethodName['A::B.me'] )
+                   RRB::Method['A::B.me'] )
   end
 end
 
-class TestClassMethodName < RUNIT::TestCase
+class TestClassMethod < RUNIT::TestCase
   def test_name
     assert_equals( "A::B.me",
-                   RRB::ClassMethodName.new(RRB::Namespace.new("A::B"), 'me').name)
+                   RRB::ClassMethod.new(RRB::Namespace.new("A::B"), 'me').name)
   end
 
   def test_EQ
@@ -52,7 +52,7 @@ class TestClassMethodName < RUNIT::TestCase
   end
 
   def test_inspect
-    assert_equals( '#<RRB::ClassMethodName A::B.me>',
+    assert_equals( '#<RRB::ClassMethod A::B.me>',
                    RRB::CMN.new(RRB::NS.new("A::B"), 'me').inspect )
   end
   

@@ -81,7 +81,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
     
     def visit_method( namespace, node )
       node.fcalls.each do |fcall|
-        @result.add MethodName.new( namespace, fcall.name )
+        @result.add Method.new( namespace, fcall.name )
       end
     end
   end
@@ -104,7 +104,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
     def supermethods( method )
       get_dumped_info[method.namespace].ancestors.find_all do |ancestor|
         ancestor.has_method?( method.bare_name, false ) 
-      end.map{|klass| MethodName.new( klass.class_name, method.bare_name ) } +
+      end.map{|klass| Method.new( klass.class_name, method.bare_name ) } +
           [ method ]
     end
     
@@ -120,7 +120,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
       get_dumped_info.each do |classinfo|
         basis.each do |basemethod|
           if classinfo.subclass_of?( basemethod.namespace )
-            result.add MethodName.new( classinfo.class_name, basemethod.bare_name )
+            result.add Method.new( classinfo.class_name, basemethod.bare_name )
           end
         end
       end

@@ -387,7 +387,7 @@ module RRB
   # shortcut name
   NS = Namespace
 
-  class MethodName
+  class Method
     def initialize( namespace, bare_name )
       @namespace = namespace
       @bare_name = bare_name
@@ -404,7 +404,7 @@ module RRB
     end
 
     def ==(other)
-      return false unless other.kind_of?( MethodName )
+      return false unless other.kind_of?( Method )
       return false unless @bare_name == other.bare_name
       return false unless @namespace == other.namespace
       return true
@@ -433,12 +433,12 @@ module RRB
       @namespace.hash ^ @bare_name.hash
     end
     
-    def MethodName.[](str)
+    def Method.[](str)
       case str
       when /\A([^#.]*)#([^#.]+)\Z/
-        MethodName.new( Namespace.new( $1 ), $2 )
+        Method.new( Namespace.new( $1 ), $2 )
       when /\A([^#.]*).([^#.]+)\Z/
-        ClassMethodName.new( Namespace.new( $1 ), $2 )
+        ClassMethod.new( Namespace.new( $1 ), $2 )
       else
         raise Error, "#{str} is invalid as method name"
       end
@@ -446,7 +446,7 @@ module RRB
 
   end
 
-  class ClassMethodName
+  class ClassMethod
     def initialize( namespace, bare_name )
       @namespace = namespace
       @bare_name = bare_name
@@ -463,7 +463,7 @@ module RRB
     end
 
     def ==(other)
-      return false unless other.instance_of?( ClassMethodName )
+      return false unless other.instance_of?( ClassMethod )
       return false unless @bare_name == other.bare_name
       return false unless @namespace == other.namespace
       return true
@@ -483,8 +483,8 @@ module RRB
   end
   
   # shortcut name
-  MN = MethodName
-  CMN = ClassMethodName
+  MN = Method
+  CMN = ClassMethod
   
   class NodeMethod
 

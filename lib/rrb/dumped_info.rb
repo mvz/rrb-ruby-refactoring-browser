@@ -132,11 +132,11 @@ module RRB
 
     def real_method( methodname )
       if has_method?( methodname, false )
-        return MethodName.new( self.class_name, methodname )
+        return Method.new( self.class_name, methodname )
       end
       @ancestors.each do |ancestor|
         if ancestor.has_method?( methodname, false )
-          return MethodName.new( ancestor.class_name, methodname )
+          return Method.new( ancestor.class_name, methodname )
         end
       end
       nil

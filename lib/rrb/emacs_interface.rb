@@ -30,7 +30,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --rename-method \"old-class1 old-class2...\" old_method new_method
     * --rename-constant old_const new_const
     * --pullup-method old_class#method new_class path lineno
-    * --pushdown-method old_class#method new_class path lineno
+    * --pushdown-method old_cla<ss#method new_class path lineno
     * --remove-parameter class#method parameter
     * --extract-superclass namespace new_class \"target-class1 target-class2...\" path lineno
 
@@ -50,12 +50,12 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       if str['#']
         a, b = str.split( /#/ )
         namespace = Namespace.new(a)
-        method_name = MethodName.new(namespace, b)
+        method_name = Method.new(namespace, b)
         return method_name
       elsif str['.']
         a, b = str.split( '.' )
         namespace = Namespace.new(a)
-        method_name = MethodName.new(namespace, b)
+        method_name = Method.new(namespace, b)
         return method_name
       end
     end
@@ -109,7 +109,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     def parse_argv_rename_method(argv)
       classes = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
       str_old_method = argv.shift
-      old_methods = classes.map{|klass| MethodName.new(klass, str_old_method)}
+      old_methods = classes.map{|klass| Method.new(klass, str_old_method)}
       new_method = argv.shift
       @args = [ old_methods, new_method ]
       @refactoring_method = :rename_method

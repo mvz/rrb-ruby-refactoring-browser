@@ -21,7 +21,7 @@ module RRB
       
       node.fcalls.each do |fcall|
         called_method =
-              @dumped_info.real_method( MethodName.new( @method_name.namespace,
+              @dumped_info.real_method( Method.new( @method_name.namespace,
                                                         fcall.name ) ) 
         unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
