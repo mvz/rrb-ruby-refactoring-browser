@@ -14,16 +14,9 @@ module RRB
     attr_reader :owner
    
     def visit_class(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if str_namespace.empty?
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      
-      return false unless node.class_vars.map{|i| i.name}.include?(@old_var)
+      return false unless node.class_vars.find{|i| i.name == @old_var}
       ancestor_names = @dumped_info[@owner].ancestor_names
-      index = ancestor_names.index(str_namespace)
+      index = ancestor_names.index( NodeNamespace.new( node, namespace ).str )
       if index
         @owner = ancestor_names[index]
       end
@@ -61,23 +54,15 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      rename_class_var(str_namespace, node)
+      rename_class_var(namespace.str, node)
     end
 
     def visit_class_method(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      rename_class_var(str_namespace, node)
+      rename_class_var(namespace.str, node)
     end
 
     def visit_class(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if namespace.empty?
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      rename_class_var(str_namespace, node)
+      rename_class_var(NodeNamespace.new( node, namespace ).str, node)
     end
   end
 
@@ -113,27 +98,19 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if !rename_class_var?(str_namespace, node)
+      if !rename_class_var?(namespace.str, node)
         @result = false
       end
     end
 
     def visit_class_method(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if !rename_class_var?(str_namespace, node)
+      if !rename_class_var?(namespace.str, node)
         @result = false
       end
     end
 
     def visit_class(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if namespace.empty?
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      if !rename_class_var?(str_namespace, node)
+      if !rename_class_var?(NodeNamespace.new( node, namespace ).str, node)
         @result = false
       end
     end
