@@ -1,5 +1,5 @@
 require 'rrb/script'
-require 'rrb/default_value'
+require 'rrb/common_visitor'
 
 module RRB
 
