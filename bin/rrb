@@ -56,6 +56,10 @@ if $0 == __FILE__ then
       new_method = ARGV.shift
       start_lineno = ARGV.shift.to_i
       end_lineno = ARGV.shift.to_i
+    when '--move-method'
+      method_name = ARGV.shift
+      old_namespace = RRB::Namespace.new( ARGV.shift )
+      new_namespace = RRB::Namespace.new( ARGV.shift )
     end
 
     case ARGV.shift
@@ -113,6 +117,13 @@ if $0 == __FILE__ then
         exit 1
       end
       script.extract_method(new_method, start_lineno, end_lineno)
+      output.call
+    when '--move-method'
+      unless script.move_method?(method_name, old_namespace, new_namespace)
+        STDERR << "REJECTED\n"
+        exit 1
+      end
+      script.move_method(method_name, old_namespace, new_namespace)
       output.call
     end
     
