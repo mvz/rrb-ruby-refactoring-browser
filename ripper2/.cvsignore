@@ -1,0 +1,11 @@
+Makefile
+mkmf.log
+ripper.c
+ripper.y
+ripper.o
+ripper.so
+ripper.E
+eventids1.c
+lex.c
+ids1
+ids2

@@ -1,0 +1,11 @@
+- ruby 1.8 base grammer
+- dispatch all scan events
+- ensure not to throw Qundef to Ruby world (especially `none')
+- all terminals should have VALUE
+- ensure all dispatch*(..._new) is disp0
+* ruby sample/getembdoc.rb /usr/local/lib/ruby/1.8/optparse.rb fails
+* freeze event IDs.
+* check dispatch names
+* do not segv if a source string is modified in parser actions
+* snapshot
+* dispatch trailer

@@ -1,0 +1,750 @@
+Mon Aug  9 12:38:24 2004  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: merge CVS HEAD rev 1.329.
+
+	* parse.y (BITSTACK_LEXPOP): fix paren bug.
+
+	* parse.y: new parser event blockvar_{new,add_star,add_block}.
+
+	* parse.y: parser event block_var removed.
+
+	* parse.y (ripper_value): valid prototype.
+
+	* test/src.rb: add test case.
+
+Sun Jul 18 21:20:47 2004  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: fix hanging bug.  This patch is contributed by Charles
+	  Lowell.
+
+Mon May 17 22:15:00 2004  Mark Sparshatt <msparshatt@yahoo.co.uk>
+
+	* genast.rb: added callback methods supplied by Marek Janukowicz
+	
+Tue Apr 27 02:30:07 2004  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: merge parse.y rev 1.321.
+
+	* depend: always use -v option for bison.
+
+	* eventids2.c: new token tCHAR and scan event CHAR.
+
+	* test/test_scanner_events.rb: add test for __end__ and CHAR.
+
+	* test/src.rb: add test cases.
+
+Fri Apr 21 15:26:00 2004  Mark Sparshatt <msparshatt@yahoo.co.uk>
+
+	* lib/ripper/genast.rb: added support for regexps, case/when
+	  blocks, rescue modifiers. Added comments
+	
+Thu Apr 22 01:15:44 2004  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: some semantic values need escape_Qundef.
+
+	* parse.y: dispatch __END__ as scan event.
+
+	* eventids2.c: new token k__END__ and scan event __end__.
+
+	* test/src.rb: add test cases.
+
+Wed Apr 21 16:26:00 2004  Mark Sparshatt <msparshatt@yahoo.co.uk>
+
+	* parse.y: replaced undef test for arrays, hashes to escape_Qundef
+	  macro, added calls to escape_Qundef opt_rescue & bodystmt sections
+
+	* lib/ripper/genast.rb: generates abstract syntax tree
+
+	* lib/ripper/ast.rb: classes used by genast.rb
+
+	* samples/ast.rb: parses code and displays ast
+	
+Sun Apr 18 14:38:00 2004  Mark Sparshatt <msparshatt@yahoo.co.uk>
+
+	* parse.y: was calling the function on__while for until blocks, fixed
+
+Fri Apr 16 21:01:00 2004  Mark Sparshatt <msparshatt@yahoo.co.uk>
+
+	* sample/methodcalls.rb: new file
+	
+Tue Dec 30 22:00:00 2003  Chad Fowler  <chad@chadfowler.com>
+
+        * Added compile time error message if user doesn't have bison installed.
+
+	* Removed redundancy in bison grammar that caused newer versions of bison to fail.
+
+Sun Dec 14 16:11:35 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: new target `ids1', `ids2'.
+
+	* ripper.rb.in: add lexer events template.
+
+	* tools/generate-ripper_rb.rb: handle lexer events.
+
+	* tools/list-scan-event-ids.rb: new file.
+
+	* .cvsignore: add ids1, ids2.
+
+Sun Dec 14 16:09:54 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/strip-comment.rb: new file.
+
+Sun Dec 14 15:27:25 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y (struct ripper_params): new member current_position.
+
+	* parse.y (struct ripper_params): new member current_column.
+
+	* parse.y (ripper_dispatch_space): advance
+	  current_position/column.
+
+	* parse.y (ripper_dispatch_nonspace): ditto.
+
+	* parse.y (ripper_nextc): clear current_column on new line.
+
+	* parse.y: remove method Ripper#pointer.
+
+	* parse.y: new method Ripper#pos.
+
+	* parse.y: new method Ripper#column.
+
+	* parse.y (ripper_lineno): was not work.
+
+Sat Nov 22 17:05:55 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/lex.rb: print tokens on each line.
+
+Fri Nov 21 22:24:04 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: ripper_rb_compile_error is not an event, but and
+	  message.
+
+	* ripper.rb.in: add #compile_error.
+
+Fri Nov 21 22:19:57 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: hook rb_compile_error().
+
+	* test/test_scanner_events.rb: ignore Ripper#compile_error.
+
+	* test/test_scanner_events.rb: test heredoc_*.
+
+Fri Nov 21 21:54:05 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: dispatch new scan events: heredoc_beg, _content, _end.
+
+	* parse.y: new function ripper_clear_token().
+
+	* eventids2.c: new event heredoc_beg.
+
+	* eventids2.c: new event heredoc_content.
+
+	* eventids2.c: new event heredoc_end.
+
+	* test/test_scanner_events.rb: test heredoc_* (method is still
+	  empty).
+
+Fri Nov 21 21:51:49 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/getembdoc.rb: first argument of method_missing is method
+	  ID.
+
+	* sample/lex.rb: new option -e.
+
+	* sample/restruct.rb: rewrite for latest version.
+
+Fri Nov 21 20:49:04 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/getembdoc.rb: rewritten for latest version.
+
+Fri Nov 21 20:46:50 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/count.rb: removed.
+
+	* sample/count-if.rb: new file.  rewritten for latest version of
+	  ripper.
+
+Fri Nov 21 20:41:22 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: does not call #gets after EOF reached.
+
+Fri Nov 21 20:14:31 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y (nextc): does not remove \r ifdef ripper.
+
+	* test/test_scanner_events.rb: reduce FIXMEs.
+
+Fri Nov 21 20:03:47 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test/test_scanner_events.rb: test all events.
+
+Fri Nov 21 19:43:32 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (test): pass $RUBY to check-event-coverage.sh.
+
+	* test/check-event-coverage.sh: use $RUBY instead of hard coded
+	  "ruby".
+
+Fri Nov 21 19:37:07 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (test): run check-scanner-event-coverage.rb.
+
+	* test/check-scanner-event-coverage.rb: new file.
+
+Fri Nov 21 19:21:55 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y (yylex:'#'): comments were not dispatched when it is
+	  just before EOF.
+
+	* eventids2.c: ' ' dispatches words_sep scanner event.
+
+	* test/test_scanner_events.rb: R.extract -> R.scan.
+
+	* test/test_scanner_events.rb: add many tests.
+
+Fri Nov 21 18:55:24 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/lex.rb: new file.
+
+Tue Oct 28 04:23:21 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: Ripper#parse is not reentrant.
+
+Tue Oct 28 04:11:55 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test/test_parser_events.rb: test more.
+
+Tue Oct 28 04:11:31 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test/check-event-coverage.rb: exit 1 on fail.
+
+Tue Oct 28 03:59:51 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: remove $RUBY declaration; there's already exists.
+
+Tue Oct 28 03:58:24 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (test): run unit test.
+
+Tue Oct 28 03:55:46 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: dispatch arglist_new event on "m()".
+
+	* parse.y: dispatch arglist_add_block event on "m(&block)".
+
+	* test/test_parser_events.rb: test more.
+
+	* test/dummyparser.rb: modify some actions.
+
+Tue Oct 28 02:41:44 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test/test_parser_events.rb: new file.
+
+	* test/dummyparser.rb: new file.
+
+Tue Oct 28 02:41:09 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: follow last change: varref -> var_ref
+
+Tue Oct 28 01:33:48 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: new parser event: program
+
+	* parse.y: rename parser event: stmt_new -> stmts_new
+
+	* parse.y: rename parser event: stmt_add -> stmts_add
+
+	* parse.y: rename parser event: varref -> var_ref
+
+	* parse.y (ripper_parse): explicitly returns parser->result.
+
+	* parse.y (validate_object): returns argument.
+
+Tue Oct 28 01:31:39 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test/validate.rb: check result of #parse.
+
+Tue Oct 28 01:30:47 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: recompile if depend/extconf.rb is modified.
+
+Tue Oct 28 01:29:54 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/list-parse-event-ids.rb: wrote usage.
+
+Sun Oct 26 23:29:48 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/strip.rb: rewrite.
+
+Sun Oct 26 23:29:22 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: remove toplevel_p().
+
+Sun Oct 26 23:29:05 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: need -a.
+
+Sun Oct 26 22:48:13 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* extconf.rb: add RIPPER_DEBUG if -debug flag given.
+
+	* parse.y: deos not define RIPPER_DEBUG here.
+
+Sun Oct 26 22:47:11 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: use bison -t.
+
+Sun Oct 26 22:46:50 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/generate-eventids1.rb: beautify.
+
+Sun Oct 26 22:31:27 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* merge ruby_1_8_import branch.
+	  (target tag: ruby_1_8_import_merge1)
+
+Sun Oct 26 22:29:11 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* sample/count.rb: update.
+
+	* sample/comment.rb: update.
+
+Sun Oct 26 22:28:48 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y (ripper_lex_get_generic): forgot first arg.
+
+Sun Oct 26 22:15:01 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* eventids2.c: add id "scan".
+
+	* tools/list-event-ids.rb: remove "scan".
+
+Sun Oct 26 22:14:21 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: forgot to change filename.
+
+	* depend: ditto.
+
+Sun Oct 26 22:10:01 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: adjust filenames.
+
+	* depend: ditto.
+
+	* token2eventid.c -> eventids2.c
+
+	* tools/extract-ids.rb -> tools/list-event-ids.rb
+
+	* tools/generate-id_[ch].rb -> tools/generate-eventids1.rb
+
+	* test.rb -> test/validate.rb
+
+	* tools/validate-events.rb -> test/check-event-arity.rb
+
+	* tools/called-events.rb -> test/list-called-events.rb
+
+	* src -> test/src.rb
+
+	* tools/check-event-coverage.sh -> test/check-event-coverage.sh
+
+	* sample/restruct.rb: update.
+
+Sun Oct 26 21:35:07 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y (struct ripper_params): space_head -> old_lex_p.
+
+	* parse.y (ripper_yylex): remove useless code.
+
+	* parse.y (yylex/' '): forgot to increment space_seen.
+
+	* parse.y (yylex/\n): dispatch tIGNORED_NL only when given out of
+	  comments.
+
+	* test.rb: count comment.
+
+Sun Oct 26 21:06:08 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: new macro dispatch_s().
+
+	* parse.y: new function ripper_dispatch_scan_event().
+
+	* parse.y: remove macro sdispatch().
+
+	* parse.y: remove macro return_if_ripper().
+
+	* parse.y: dispatch embedded document events.
+
+	* test.rb: catch embedded document events to count lineno.
+
+	* token2eventid.c: add pseudo events: embdoc_{beg,end}, embdoc,
+	  sp.
+
+	* token2eventid.c: add ' ' token.
+
+Sun Oct 26 21:01:49 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: add regexp option.
+
+Sun Oct 26 20:07:54 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (ripper.o): depend on token2eventid.c.
+
+Sun Oct 26 19:57:15 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: #include'ed file name was wrong.
+
+	* parse.y (yylex): forgot pushback.
+
+Sun Oct 26 19:51:40 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: simplify comment.
+
+Sun Oct 26 19:51:23 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test.rb: works if ripper is production mode.
+
+Sun Oct 26 19:50:39 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* token2eventid.c: new file.
+
+Sun Oct 26 19:49:45 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/generate-id_c.rb: change function name.
+
+Sun Oct 26 19:49:09 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/extract-ids.rb: reject ripper_dispatchN call.
+
+Sun Oct 26 19:48:02 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: dispatch scan events, strategy #1. (incomplete)
+
+Sun Oct 26 15:47:52 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* extconf.rb: add $cleanfiles.
+
+Sun Oct 26 15:41:55 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/called-events.rb: new file.
+
+	* depend: now called-events.rb is in tools/.
+
+Sun Oct 26 15:40:03 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* lib/ruby/parser.rb: new file.
+
+Sun Oct 26 15:39:15 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/check-event-coverage.sh: new file.
+
+	* depend: made mistake on filename.
+
+Sun Oct 26 15:36:34 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: cover all events.
+
+Sun Oct 26 15:36:13 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: mrhs_* events were wrongly defined as mlhs_*.
+
+	* parse.y (string_content): forgot to set lex_strterm.
+
+	* parse.y: new attribute method Ripper.yydebug.
+
+Sun Oct 26 15:01:33 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/extract-events.rb: allow multiple events on a line.
+
+Sun Oct 26 14:56:56 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: unify some events.
+
+Sun Oct 26 14:56:26 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (test): validate events.
+
+Sun Oct 26 14:55:40 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: add more cases.
+
+Sun Oct 26 14:55:13 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/validate-events.rb: exit(1) if check failed.
+
+Sun Oct 26 14:20:59 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test.rb: explicitly ignore #warn/#warning.
+
+Sun Oct 26 14:19:44 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test.rb: validate arguments using #validate_object.
+
+Sun Oct 26 14:18:27 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: unify event names.
+
+Sun Oct 26 14:17:05 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: cover almost all syntaxes.
+
+Sun Oct 26 14:16:46 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/validate-events.rb: reject ripper_dispatchN.
+
+Sun Oct 26 13:17:41 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: new functions ripper_dispatchN().
+
+	* parse.y: on__scan always takes 1 arg.
+
+	* parse.y: ID2SYM('.') not allowed, should be ripper_id2sym('.').
+
+	* parse.y: bare ID returned on some reserved words.
+
+	* parse.y: yylval.val is always a VALUE.
+
+	* parse.y (ripper_id2sym): correctly handles kXXXX.
+
+	* parse.y (ripper_warn*): pass printf arguments separately.
+
+	* parse.y: new debugging method Kernel#validate_object.
+
+Sun Oct 26 13:09:22 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* src: add many syntax patterns.
+
+Sun Oct 26 13:08:47 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/extract-ids.rb: simplified.
+
+	* tools/extract-ids.rb: reject ripper_dispatchN().
+
+Sun Oct 26 10:19:53 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test.rb: check arguments by #assert_Qundef and #rawVALUE.
+
+Sun Oct 26 10:19:20 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: velify arity of dispatchN.
+
+	* parse.y: ban ripper_ruby_debug_lines.
+
+	* parse.y: new function obj_respond_to. (rb_respond_to() returns
+	  true for also private methods)
+
+	* parse.y (ripper_initialize): parser->value was wrongly
+	  reinitialized.
+
+	* parse.y (all methods): check if receiver has been initialized.
+
+	* parse.y: new debugging method Kernel#rawVALUE.
+
+Sun Oct 26 10:13:58 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/validate-events.rb: new file.
+
+	* tools/extract-ids.rb: output ID and its arity.
+
+	* tools/generate-id_c.rb: follow extract-ids.rb's change.
+
+	* tools/generate-id_h.rb: ditto.
+
+	* tools/generate-ripper_rb.rb: ditto.
+
+	* ripper.rb.in: specify method arguments.
+
+Sun Oct 26 07:47:07 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* test.rb: adjust arguments for new feature.
+
+Sun Oct 26 07:46:41 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: ban all warnings.
+
+Sun Oct 26 07:35:54 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: ban almost all warnings.
+
+	* parse.y: new method Kernel#assert_Qundef (for debug).
+
+Sun Oct 26 07:34:47 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (lex.c): prefix is rb_, not rip_.
+
+Sun Oct 26 06:11:05 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/extract-ids.rb: forgot #uniq.
+
+	* tools/generate-id_c.rb: forgot #strip.
+
+	* tools/generate-ripper_rb.rb: forgot #strip.
+
+Sun Oct 26 06:09:45 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: pass cc.
+
+Sun Oct 26 05:40:36 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: enum lex_state -> lex_state_e, to prevent macro
+	  substitution.
+
+	* keywords: ditto.
+
+Sun Oct 26 05:39:00 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: define all members in union tmpyystype.
+
+	* parse.y: define ripper_* function.
+
+	* parse.y: forward yylex() and yyerror() to ripper functions using
+	  macro.
+
+Sun Oct 26 05:36:55 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* keywords: import latest keywords file.
+
+Sun Oct 26 05:36:15 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* extconf.rb: add -DRIPPER to CPPFLAGS, not CFLAGS.
+
+Sat Oct 25 05:04:12 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: does not use bison -p.
+
+	* tools/extract-ids.rb: extract from prelude.
+
+	* tools/generate-id_h.c: remove junk LF.
+
+	* tools/preproc.rb: implement all functions.
+
+Sat Oct 25 04:39:37 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: pass bison.
+
+Sat Oct 25 03:11:01 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: wrote all ripper action.
+
+Sat Oct 25 02:47:18 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: create ripper.rb in lib/.
+
+Sat Oct 25 02:46:28 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: add ripper actions.
+
+Sat Oct 25 00:56:36 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* token_list: removed.
+
+Sat Oct 25 00:56:18 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: use new utility macros.
+
+	* parse.y: add ripper actions.
+
+Sat Oct 25 00:54:25 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* ripper.rb.in: remove on__scan.
+
+	* tools/extract-ids.rb: generate predefined symbols.
+
+Fri Oct 24 22:07:43 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* tools/preproc.rb: new file.
+
+Fri Oct 24 22:07:16 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: add ripper actions.
+
+	* parse.y: remove `null'.
+
+	* parse.y: add `symbol'.
+
+Fri Oct 24 20:24:21 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* parse.y: Ripper#parse takes no argument.
+
+	* parse.y: add %pure_parser.
+
+	* parse.y: add %union for ripper.
+
+	* parse.y: add ripper actions.
+
+Fri Oct 24 20:20:00 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend (ripper.c): prefix is ripper_yy.
+
+Fri Oct 24 18:51:25 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* ruby_1_8_import branch.
+
+	* ripper.y: removed.
+
+	* parse.y: new file. imported from ruby CVS HEAD (r1.296)
+
+	* misc/create.rb -> tools/extract-ids.rb, generate-id_[ch].rb,
+	  generate-ripper_rb.rb
+
+	* misc/strip.rb -> tools/strip.rb
+
+	* depend: rewritten.
+
+	* extconf.rb: check if bison exists.
+
+	* ripper.rb.in: new method #warn, #warning.
+
+	* ripper.rb.in: define #on__scan. (moved from extract-ids.rb)
+
+	* .cvsignore: modify file names.
+
+Fri Oct 24 18:13:29 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* misc/create.rb: refactoring.
+
+Fri Oct 24 18:10:48 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* README.ja: update description.
+
+	* README.en: update description.
+
+Fri Oct 24 18:10:26 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* extconf.rb: add -DRIPPER to $CFLAGS.
+
+	* depend: remove CFLAGS assign.
+
+Sun Aug  3 03:11:21 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* depend: support new src tree.
+
+Sun Aug  3 03:10:47 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* misc/create.rb: refactoring.
+
+Sun Aug  3 02:40:24 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* in.ripper.rb -> ripper.rb.in
+
+	* comment.rb -> sample/comment.rb
+
+	* count.rb -> sample/count.rb
+
+	* getembdoc.rb -> sample/getembdoc.rb
+
+	* restruct.rb -> sample/restruct.rb
+
+	* snap.rb -> sample/snap.rb
+
+	* create.rb -> misc/create.rb
+
+	* strip.rb -> misc/strip.rb
+
+Sun Aug  3 01:58:46 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* NOTE -> TODO
+
+Sun Aug  3 01:52:36 2003  Minero Aoki  <aamine@loveruby.net>
+
+	* move old ChangeLog to NEWS.
+

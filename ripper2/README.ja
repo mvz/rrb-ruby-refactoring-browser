@@ -1,0 +1,43 @@
+Ripper README
+=============
+
+  Ripper は Ruby スクリプトのパーサです。
+  トークンをスキャンしたり還元が起こったときにメソッドが
+  呼び出され、情報を得ることができます。(XML の) SAX と
+  似た方式です。
+
+  ！！！注意！！！
+
+  現在はまだアルファリリースです。落ちるのが当然と考えて
+  ください。互換性も一切保証しません。
+
+[必要な環境]
+
+  * ruby 1.8
+  * bison 1.28 or later (bison 必須)
+  * gperf 2.7.2
+
+[コンパイルとテスト]
+
+  $ ruby extconf.rb
+  $ make
+  $ make test
+
+[インストール]
+
+  ripper.so, lib/ripper.rb を Ruby のライブラリパスが通って
+  いるディレクトリにコピーしてください。
+
+[使い方]
+
+  test/*.rb, sample/*.rb を見てください。ディスパッチされる
+  イベントは ripper.rb に on__XXXX の形式で記述されています。
+
+[ライセンス]
+
+  Ruby ライセンスです。
+
+
+                                              Minero Aoki
+                                      aamine@loveruby.net
+                                    http://i.loveruby.net

@@ -1,0 +1,46 @@
+ripper.o: ripper.c lex.c eventids1.c eventids2.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c ripper.c -o$@
+
+ripper.c: ripper.y
+	bison -t -v -o$@ ripper.y
+
+ripper.y: parse.y tools/preproc.rb
+	$(RUBY) tools/preproc.rb parse.y > $@
+
+eventids1.c: parse.y tools/list-parse-event-ids.rb tools/generate-eventids1.rb
+	$(RUBY) tools/list-parse-event-ids.rb parse.y | $(RUBY) tools/generate-eventids1.rb > $@
+
+parse.y: Makefile
+	touch parse.y
+
+Makefile: depend extconf.rb
+	$(RUBY) extconf.rb
+
+all: lib/ripper.rb
+lib/ripper.rb: ripper.rb.in ids1 ids2 tools/generate-ripper_rb.rb
+	$(RUBY) tools/generate-ripper_rb.rb ripper.rb.in ids1 ids2 > $@
+
+ids1: tools/list-parse-event-ids.rb parse.y
+	$(RUBY) tools/list-parse-event-ids.rb -a parse.y > $@
+
+ids2: tools/list-scan-event-ids.rb eventids2.c
+	$(RUBY) tools/list-scan-event-ids.rb -a eventids2.c > $@
+
+parammacros.h: parse.y tools/generate-param-macros.rb
+	$(RUBY) tools/generate-param-macros.rb parse.y > $@
+
+lex.c: keywords
+	gperf -p -j1 -i 1 -g -o -t -N rb_reserved_word -k'1,3,$$' $< > $@
+
+test: all test/*.*
+	$(RUBY) test/check-event-arity.rb parse.y
+	RUBY=./ruby sh test/check-event-coverage.sh
+	$(RUBY) test/check-scanner-event-coverage.rb
+	$(RUBY) test/validate.rb > /dev/null
+	$(RUBY) test/test_parser_events.rb
+	$(RUBY) test/test_scanner_events.rb
+	@echo "Tests All Green."
+
+preproc: ripper.E
+ripper.E: ripper.c
+	gcc -E $(CPPFLAGS) ripper.c | ruby tools/strip.rb > $@
