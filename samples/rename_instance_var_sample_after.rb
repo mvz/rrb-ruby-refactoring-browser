@@ -1,23 +1,19 @@
 samples/rename_instance_var_sample.rb
 module X
   class A
-    @d = 3
+    @@a = 3
     def method_1
       @d = 0
-    end
-    def self.method_2
-      @b = @d
+      @d = @b
     end
   end
   class B < A
-    @d = 3
-    @c = 3
     def method_1
       @d = 0
+      @c = 1
     end
   end
   class C
-    @a = 3
     def method_1
       @a = 0
     end

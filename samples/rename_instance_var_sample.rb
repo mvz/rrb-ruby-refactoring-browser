@@ -1,23 +1,19 @@
 
 module X
   class A
-    @a = 3
+    @@a = 3
     def method_1
       @a = 0
-    end
-    def self.method_2
-      @b = @a
+      @a = @b
     end
   end
   class B < A
-    @a = 3
-    @c = 3
     def method_1
       @a = 0
+      @c = 1
     end
   end
   class C
-    @a = 3
     def method_1
       @a = 0
     end
