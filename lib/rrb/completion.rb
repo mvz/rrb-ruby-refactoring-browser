@@ -12,13 +12,18 @@ module RRB
 	@node = method_node
       end
 
-      def name
+      def fullname
 	@namespace.str + '#' + @node.name
       end
 
       def local_vars
 	Set.new( @node.local_vars.map{|var| var.name} )
       end
+
+      def name
+	@node.name
+      end
+      
     end
 
     
