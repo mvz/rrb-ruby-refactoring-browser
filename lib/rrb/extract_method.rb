@@ -122,12 +122,26 @@ module RRB
     end
 
     def extract_method?(path, new_method, start_lineno, end_lineno)
+      unless RRB.valid_method?( new_method )
+        @error_message = "#{new_method} is not a valid name for methods\n"
+        return false
+      end
+
       method = get_method_on_region(path, start_lineno..end_lineno)
       namespace = get_class_on_region(path, start_lineno..end_lineno)
 
-      return false unless namespace
-      return false unless method
-      return false if get_dumped_info[namespace.name].has_method?(new_method)
+      unless namespace
+        @error_message = "please select \n"
+        return false
+      end
+      unless method
+        @error_message = "please select\n"
+        return false
+      end
+      if get_dumped_info[namespace.name].has_method?(new_method)
+        @error_message = "#{namespace.name} already has #{new_method}\n"
+        return false
+      end
       
       return true
     end
