@@ -24,13 +24,13 @@ module RRB
     
     def extract_superclass( namespace, new_class, targets )
       visitor = ExtractSuperclassVisitor.new( namespace, new_class, targets )
-      @tree.accept( visitor )      
+      @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def add_superclass_def( lines, lineno )
       indented = RRB.reindent_lines_node( lines, class_node_on( lineno ) ).join
-      @new_script = RRB.insert_str( @new_script, lineno, nil, indented )
+      @new_script = RRB.insert_str( @new_script || @input, lineno, nil, indented )
     end
 
   end
