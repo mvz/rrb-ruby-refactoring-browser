@@ -99,7 +99,6 @@ module RRB
     
     def_space_num =  RRB.space_width(/^(\s*)/.match(lines[method_lineno])[0])
     call_space_num = RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
-    imp_space_num = def_space_num + 2
     
     0.upto(lines.length-1) do |lineno|
       if lineno == method_lineno
@@ -107,6 +106,8 @@ module RRB
         dst << args.join(", ")
         dst << ")\n"
         for i in start_lineno..end_lineno
+          space_num = lines[i][/^\s*/].length 
+          imp_space_num = def_space_num + space_num - call_space_num + 2
           dst << "\s" * imp_space_num + /^(\s*)(.*)/.match(lines[i])[2] + "\n"
         end
         unless assigned.empty?
