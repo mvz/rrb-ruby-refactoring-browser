@@ -14,7 +14,9 @@ class TestScriptFile < RUNIT::TestCase
     File.open( 'samples/rename_var_sample.rb', 'r' ) do |file|
 
       script_file = RRB::ScriptFile.new( file, file.path )
-      script_file.rename_local_var( ['Rename'], 'method_1', 'z', 'bb' )
+      #script_file.rename_local_var( ['Rename'], 'method_1', 'z', 'bb' )
+      script_file.rename_local_var( RRB::NS.new('Rename'),
+				   'method_1', 'z', 'bb' )
       assert_equals( File.open( 'samples/rename_var_sample_after.rb' ).read,
 		    script_file.new_script )
     end
@@ -25,24 +27,24 @@ class TestScriptFile < RUNIT::TestCase
     
     File.open( 'samples/rename_var_sample.rb', 'r' ) do |file|
       script_file = RRB::ScriptFile.new( file, file.path )
-      assert_equals( true, script_file.rename_local_var?( ['Rename'],
+      assert_equals( true, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							 'z', 'bb' ) )
       # collision with other variable
-      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+      assert_equals( false, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							 'z', 'x' ) )
-      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+      assert_equals( false, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							  'z', 'i' ) )
       # invalid identifier 
-      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+      assert_equals( false, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							  'z', 'Z' ) )
-      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+      assert_equals( false, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							  'z', 'print' ) )
-      assert_equals( false, script_file.rename_local_var?( ['Rename'],
+      assert_equals( false, script_file.rename_local_var?( RRB::NS.new('Rename'),
 							 'method_1',
 							  'z', 'super' ) )
     end
