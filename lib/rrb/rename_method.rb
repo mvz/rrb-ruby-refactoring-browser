@@ -122,7 +122,7 @@ raise '#{namespace.name}##{@old_method.name} is renamed #{@new_method}' end\n" +
       end
 
       classes_respond_to( base_classes, old_method ).each do |ns|
-	if get_dumped_info[ns.name].has_method?( MethodName.new(new_method, true) ) then
+	if get_dumped_info[ns.name].has_method?( MethodName.new(new_method) ) then
           @error_message = "#{new_method}: already defined at #{ns.name}\n"
 	  return false
 	end

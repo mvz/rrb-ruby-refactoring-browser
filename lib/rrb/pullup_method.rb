@@ -23,7 +23,7 @@ module RRB
       
       subclass_info = @dumped_info[@old_namespace]
       node.calls.each do |call|
-        if subclass_info.has_method?(MethodName.new(call.name, true), false)
+        if subclass_info.has_method?(MethodName.new(call.name), false)
           @result = false
           @error_message = "#{@old_namespace.name}##{@method_name.name} uses #{call.name} defined at #{@old_namespace.name}\n"
         end

@@ -63,38 +63,38 @@ end
   def test_classes_respond_to
     script = RRB::Script.new_from_io( StringIO.new( input_str ) )
     assert_equals( %w( C ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'C' ) ], RRB::MN.new('foo', true) ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'C' ) ], RRB::MN.new('foo') ) )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'A' ) ], RRB::MN.new('foo', true) ).sort )
+		  script.classes_respond_to( [ RRB::NS.new( 'A' ) ], RRB::MN.new('foo') ).sort )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo', true) ).sort )
+		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo') ).sort )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], RRB::MN.new('foo', true) ).sort )
+		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], RRB::MN.new('foo') ).sort )
     script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], RRB::MN.new('foo', true) ).sort )
+		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], RRB::MN.new('foo') ).sort )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], RRB::MN.new('foo', true) ).sort )
+		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], RRB::MN.new('foo') ).sort )
   end
 
   def test_rename_method?
     script = RRB::Script.new_from_io( StringIO.new( input_str ) )
     assert_equals( true,
-		  script.rename_method?( [ RRB::NS.new( 'C' ) ], RRB::MN.new('foo', true), 'bar' ) )
+		  script.rename_method?( [ RRB::NS.new( 'C' ) ], RRB::MN.new('foo'), 'bar' ) )
     assert_equals( true,
-		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo', true), 'foobar' ) )
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo'), 'foobar' ) )
     assert_equals( false,
-		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo', true), 'bar' ) )
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo'), 'bar' ) )
     assert_equals( "bar: already defined at C::D\n", script.error_message)
     assert_equals( false,
-		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo', true), '@@bar' ) )
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], RRB::MN.new('foo'), '@@bar' ) )
     assert_equals( "@@bar is not a valid name for methods\n",
                    script.error_message)
   end
 
   def test_rename_method
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
-    script.rename_method( [ RRB::NS.new('G') ], RRB::MN.new('foo', true), 'foofee' )
+    script.rename_method( [ RRB::NS.new('G') ], RRB::MN.new('foo'), 'foofee' )
     result = ''
     script.result_to_io( result )
     assert_equals( OUTPUT_STR2, result )
@@ -186,12 +186,12 @@ end
   def test_classes_call_method
     scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
     assert_equals( [ RRB::NS['B'], RRB::NS['C::D'] ],
-		  scriptfile.classes_call_method( RRB::MN.new('foo', true) ) )
+		  scriptfile.classes_call_method( RRB::MN.new('foo') ) )
   end
   
   def test_rename_method
     scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
-    scriptfile.rename_method( %w(A B C::D).map{|x| RRB::NS.new(x)}, RRB::MN.new('foo', true), 'feefoo' )
+    scriptfile.rename_method( %w(A B C::D).map{|x| RRB::NS.new(x)}, RRB::MN.new('foo'), 'feefoo' )
     assert_equals( OUTPUT_STR, scriptfile.new_script )
   end
 

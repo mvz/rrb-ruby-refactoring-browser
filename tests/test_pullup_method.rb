@@ -11,22 +11,22 @@ class TestScript_PullupMethod < RUNIT::TestCase
 
     script = RRB::Script.new_from_filenames(filename)
     assert_equals(true, script.pullup_method?(RRB::NS['Derived'], 
-                                              RRB::MN.new('bar', true),
+                                              RRB::MN.new('bar'),
                                               RRB::NS['Base'], filename, 2))
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 
-                                               RRB::MN.new('foo', true),
+                                               RRB::MN.new('foo'),
                                                RRB::NS['Base'], filename, 2))
     assert_equals("Derived#foo uses bar defined at Derived\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 
-                                               RRB::MN.new('hoge', true),
+                                               RRB::MN.new('hoge'),
                                                RRB::NS['Base'], filename, 2))
     assert_equals("hoge: no definition at Derived\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Base'], 
-                                               RRB::MN.new('hoge', true),
+                                               RRB::MN.new('hoge'),
                                                RRB::NS['Derived'], filename, 11))
     assert_equals("Derived is not the superclass of Base\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 
-                                               RRB::MN.new('asdf', true), RRB::NS['Base'], filename, 11))
+                                               RRB::MN.new('asdf'), RRB::NS['Base'], filename, 11))
     assert_equals("asdf: already defined at Base\n", script.error_message)    
   end
 
@@ -35,7 +35,7 @@ class TestScript_PullupMethod < RUNIT::TestCase
 
     script = RRB::Script.new_from_filenames(filename)
     script.pullup_method(RRB::NS['Derived'], 
-                         RRB::MN.new('bar', true), RRB::NS['Base'], filename, 2)
+                         RRB::MN.new('bar'), RRB::NS['Base'], filename, 2)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pullup_method_sample_after.rb' ).read,
@@ -43,7 +43,7 @@ class TestScript_PullupMethod < RUNIT::TestCase
 
     script = RRB::Script.new_from_filenames(filename)
     script.pullup_method(RRB::NS['Derived::Derived2'], 
-                         RRB::MN.new('bar', true), RRB::NS['Base'], filename, 2)
+                         RRB::MN.new('bar'), RRB::NS['Base'], filename, 2)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pullup_method_sample_after2.rb' ).read,
@@ -157,32 +157,32 @@ end
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     assert_equals(true,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', true),
+                                        RRB::MN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 3))
     assert_equals(true,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', false),
+                                        RRB::CMN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 3))
 
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', true),
+                                        RRB::MN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
     assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', false),
+                                        RRB::CMN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
     assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
 
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', true),
+                                        RRB::MN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
     assert_equals("Specify which definition to pull up method to\n", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
-                                        RRB::MN.new('hoge', false),
+                                        RRB::CMN.new('hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
     assert_equals("Specify which definition to pull up method to\n", script.error_message)
 
@@ -191,7 +191,7 @@ end
   def test_pullup_method_plural_files
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pullup_method(RRB::NS['Derived'], 
-                         RRB::MN.new('hoge', true),
+                         RRB::MN.new('hoge'),
                          RRB::NS['Base'], 
                            '/home/yuichi/work/rrb/private/test.rb', 3)
     dst = ''
@@ -200,7 +200,7 @@ end
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pullup_method(RRB::NS['Derived'], 
-                         RRB::MN.new('hoge', true),
+                         RRB::MN.new('hoge'),
                          RRB::NS['Base'], 
                            '/home/yuichi/work/rrb/private/test.rb', 7)
     dst = ''
@@ -209,7 +209,7 @@ end
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pullup_method(RRB::NS['Derived'], 
-                         RRB::MN.new('hoge', true), RRB::NS['Base'], 
+                         RRB::MN.new('hoge'), RRB::NS['Base'], 
                            '/home/yuichi/work/rrb/private/test2.rb', 3)
     dst = ''
     script.result_to_io(dst)
@@ -217,7 +217,7 @@ end
     
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pullup_method(RRB::NS['Derived'], 
-                         RRB::MN.new('hoge', false),
+                         RRB::CMN.new('hoge'),
                          RRB::NS['Base'], 
                            '/home/yuichi/work/rrb/private/test.rb', 3)
     dst = ''

@@ -25,7 +25,7 @@ TEST_CLASS_A_METHOD_1 =
     script = RRB::Script.new_from_filenames('samples/parser_sample.rb')
     assert_equals(TEST_CLASS_A_METHOD_1, 
                   script.get_string_of_method(RRB::NS.new("TestClassA"), 
-                                              RRB::MN.new('method_1', true)))
+                                              RRB::MN.new('method_1')))
   end
 
   def test_get_class_on_region

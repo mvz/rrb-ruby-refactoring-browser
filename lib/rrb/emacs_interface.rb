@@ -49,10 +49,10 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     def split_method_name( str )
       if str['#']
         a, b = str.split( /#/ )
-        return Namespace.new(a), MethodName.new(b, true)
+        return Namespace.new(a), MethodName.new(b)
       elsif str['.']
         a, b = str.split( '.' )
-        return Namespace.new(a), MethodName.new(b, false)
+        return Namespace.new(a), ClassMethodName.new(b)
       end
     end
 
@@ -103,7 +103,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 
     def parse_argv_rename_method(argv)
       classes = argv.shift.split(' ').map{|ns| RRB::NS.new(ns)}
-      old_method = MethodName.new(argv.shift, true)
+      old_method = MethodName.new(argv.shift)
       new_method = argv.shift
       @args = [ classes, old_method, new_method ]
       @refactoring_method = :rename_method

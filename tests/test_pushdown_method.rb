@@ -11,35 +11,35 @@ class TestScript_PushdownMethod < RUNIT::TestCase
 
     script = RRB::Script.new_from_filenames(filename)
     assert_equals(true, script.pushdown_method?(RRB::NS['B'], 
-                                                RRB::MN.new('x', true),
+                                                RRB::MN.new('x'),
                                                 RRB::NS['C'], filename, 23))
     assert_equals(false, script.pushdown_method?(RRB::NS['B'],
-                                                 RRB::MN.new('y', true),
+                                                 RRB::MN.new('y'),
                                                  RRB::NS['C'], filename, 23))
     assert_equals("B#y calls private function \"z\"\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['B'],
-                                                 RRB::MN.new('z', true),
+                                                 RRB::MN.new('z'),
                                                  RRB::NS['C'], filename, 23))
     assert_equals("B#z: called by other function\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['B'], 
-                                                 RRB::MN.new('w', true),
+                                                 RRB::MN.new('w'),
                                                  RRB::NS['C'], filename, 23))
     assert_equals("w: already defined at C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['C'],
-                                                 RRB::MN.new('w', true),
+                                                 RRB::MN.new('w'),
                                                  RRB::NS['B'], filename, 7))    
     assert_equals("B is not the subclass of C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['C'],
-                                                 RRB::MN.new('asdf', true),
+                                                 RRB::MN.new('asdf'),
                                                  RRB::NS['B'], filename, 7))    
     assert_equals("asdf: no definition in C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['A'], 
-						 RRB::MN.new('a', true),
+						 RRB::MN.new('a'),
                                                  RRB::NS['C'], filename, 23))
     assert_equals("Other subclass calls A#a\n", script.error_message)
 
     assert_equals(true, script.pushdown_method?(RRB::NS['A'], 
-                                                RRB::MN.new('a',true),
+                                                RRB::MN.new('a'),
                                                 RRB::NS['B'], filename, 7))
   end
 
@@ -48,7 +48,7 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     lineno = 10
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::NS['B'], 
-                           RRB::MN.new('x', true),
+                           RRB::MN.new('x'),
                            RRB::NS['C'], filename, lineno)
     dst = ''
     script.result_to_io(dst)
@@ -56,7 +56,7 @@ class TestScript_PushdownMethod < RUNIT::TestCase
                    dst )    
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::NS['B'], 
-                           RRB::MN.new('x', true),
+                           RRB::MN.new('x'),
                            RRB::NS['C::D'], filename, lineno)
     dst = ''
     script.result_to_io(dst)
@@ -170,35 +170,35 @@ end
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     assert_equals(true,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', true),
+                                          RRB::MN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
 
     assert_equals(true,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', false),
+                                          RRB::CMN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', true),
+                                          RRB::MN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
     assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', false),
+                                          RRB::CMN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
     assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', true),
+                                          RRB::MN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
-                                          RRB::MN.new('hoge', false),
+                                          RRB::CMN.new('hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
 
@@ -208,7 +208,7 @@ end
   def test_pushdown_method_plural_files
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge', true),
+                           RRB::MN.new('hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 10)
     dst = ''
@@ -217,7 +217,7 @@ end
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge', true),
+                           RRB::MN.new('hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 13)
     dst = ''
@@ -226,7 +226,7 @@ end
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge', true),
+                           RRB::MN.new('hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test2.rb', 5)
     dst = ''
@@ -235,7 +235,7 @@ end
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::NS['Base'], 
-                           RRB::MN.new('hoge', false),
+                           RRB::CMN.new('hoge'),
                            RRB::NS['Derived'], 
                            '/home/yuichi/work/rrb/private/test.rb', 10)
     dst = ''
