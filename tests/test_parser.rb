@@ -90,6 +90,11 @@ class TestParser < RUNIT::TestCase
     assert_equals( 'TestClassA::TestClassB',
 		  parsed_info.class_info("TestClassD").superclass.name )
     assert_nil( class_info.superclass )
+
+    # test attr_*
+    assert_equals( [], class_info.attr_readers )
+    assert_equals( %w(y z), class_info.attr_writers.map{|i| i.name} )
+    assert_equals( %w(a b c d), class_info.attr_accessors.map{|i| i.name} )
   end
   
 end
