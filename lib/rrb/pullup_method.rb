@@ -56,7 +56,7 @@ module RRB
 
     def pullup_method?(old_namespace, method_name, new_namespace)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{old_namespace.name} doesn't have #{method_name}\n"
+        @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
         return false
       end
 
