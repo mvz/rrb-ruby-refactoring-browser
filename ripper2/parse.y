@@ -8403,6 +8403,52 @@ keyword_id_to_str(id)
     return NULL;
 }
 
+static struct {
+    ID token;
+    char *name;
+} ripper_op_tbl[] = {
+    {tDOT2,	".."},
+    {tDOT3,	"..."},
+    {'+',	"+"},
+    {'-',	"-"},
+    {'+',	"+(binary)"},
+    {'-',	"-(binary)"},
+    {'*',	"*"},
+    {'/',	"/"},
+    {'%',	"%"},
+    {tPOW,	"**"},
+    {tUPLUS,	"+@"},
+    {tUMINUS,	"-@"},
+    {tUPLUS,	"+(unary)"},
+    {tUMINUS,	"-(unary)"},
+    {'|',	"|"},
+    {'^',	"^"},
+    {'&',	"&"},
+    {tCMP,	"<=>"},
+    {'>',	">"},
+    {tGEQ,	">="},
+    {'<',	"<"},
+    {tLEQ,	"<="},
+    {tEQ,	"=="},
+    {tEQQ,	"==="},
+    {tNEQ,	"!="},
+    {tMATCH,	"=~"},
+    {tNMATCH,	"!~"},
+    {'!',	"!"},
+    {'~',	"~"},
+    {'!',	"!(unary)"},
+    {'~',	"~(unary)"},
+    {'!',	"!@"},
+    {'~',	"~@"},
+    {tAREF,	"[]"},
+    {tASET,	"[]="},
+    {tLSHFT,	"<<"},
+    {tRSHFT,	">>"},
+    {tCOLON2,	"::"},
+    {'`',	"`"},
+    {0,	0}
+};
+
 static VALUE
 ripper_id2sym(id)
     ID id;
@@ -8417,6 +8463,14 @@ ripper_id2sym(id)
     }
     if ((name = keyword_id_to_str(id))) {
         return ID2SYM(rb_intern(name));
+    }
+
+    {
+        int i = 0;
+        for (i=0; ripper_op_tbl[i].token; i++) {
+            if (ripper_op_tbl[i].token == id)
+                return ID2SYM(rb_intern(ripper_op_tbl[i].name));
+        }
     }
     switch (id) {
     case tOROP:
