@@ -149,22 +149,7 @@ module RRB
   class ClassMethodNode < Node
 
     def initialize( sdef )
-      @name_id = sdef.name_id
-      @class_defs = sdef.class_defs
-      @method_defs = sdef.method_defs
-      @local_vars = sdef.local_vars
-      @instance_vars = sdef.instance_vars
-      @class_vars = sdef.class_vars
-      @consts = sdef.consts
-      @method_calls = sdef.method_calls
-      @fcalls = sdef.fcalls
-      @singleton_method_defs = sdef.singleton_method_defs
-      @class_method_defs = sdef.class_method_defs
-      @singleton_class_defs = sdef.singleton_class_defs
-      @assigned = sdef.assigned
-      @s_obj = sdef.s_obj
-      @head_keyword = sdef.head_keyword
-      @tail_keyword = sdef.tail_keyword
+      super sdef.name_id, sdef, sdef.head_keyword, sdef.tail_keyword
     end
 
     def accept( visitor, namespace )
