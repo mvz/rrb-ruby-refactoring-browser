@@ -14,19 +14,12 @@ module RRB
     attr_reader :result
 
     def visit_node( namespace, node )      
-      node.method_calls.each do |call|
+      node.calls.each do |call|
 	if call.name == @old_method then
 	  @result <<
 	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
 	end
       end
-
-      node.fcalls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end      
     end
     
     def visit_method( namespace, method_node )
