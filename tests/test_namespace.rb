@@ -31,7 +31,12 @@ class TestNamespace < RUNIT::TestCase
   def test_inspect
     assert_equals( '#<RRB::NS: X::Y::Z>', RRB::Namespace.new("X::Y::Z").inspect )
   end
-  
+
+  def test_chop
+    assert_equals( RRB::Namespace.new("A::B"), RRB::Namespace.new("A::B::C").chop )
+    assert_equals( RRB::Namespace.new(""), RRB::Namespace.new("Heke").chop )
+    assert_equals( nil, RRB::Namespace.new("").chop )
+  end
 end
 
 if $0 == __FILE__
