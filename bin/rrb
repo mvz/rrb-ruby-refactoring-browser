@@ -7,8 +7,13 @@ def print_usage
 Usage: rrb refactoring-type refactoring-parameter io-type
 
   refactoring-type
-    * --rename-local-variable Class#method old_var new_var
-    * --rename-method-all old_method new_method
+    * --rename-local-variable  Class#method old_var new_var
+    * --rename-method-all  old_method new_method
+    * --rename-class-variable  Class old_var new_var
+    * --rename-instance-variable  Class old_var new_var
+    * --rename-global-variable  old_var new_var
+    * --extract-method path new_method start_lineno end_lineno
+    * --rename-method old_method new_method classes...
 
   io-type
     * --stdin-stdout
@@ -61,6 +66,14 @@ if $0 == __FILE__ then
       method_name = ARGV.shift
       old_namespace = RRB::Namespace.new( ARGV.shift )
       new_namespace = RRB::Namespace.new( ARGV.shift )
+    when '--rename-method'
+      old_method = ARGV.shift
+      new_method = ARGV.shift
+      for i in 0...(ARGV.size)
+	break if /^--/ =~ ARGV[i]
+      end
+      classes = ARGV[0,i]
+      i.times{ ARGV.shift }
     else
       STDERR << "Unknown refactoring: #{refactor_type}\n"
       exit 2
@@ -130,6 +143,13 @@ if $0 == __FILE__ then
         exit 1
       end
       script.move_method(method_name, old_namespace, new_namespace)
+      output.call
+    when '--rename-method'
+      unless script.rename_method?( classes, old_method, new_method )
+	STDERR << "REJECTED\n"
+	exit 1
+      end
+      script.rename_method( classes, old_method, new_method )
       output.call
     end
     
