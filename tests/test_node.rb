@@ -154,6 +154,22 @@ class TestNode < RUNIT::TestCase
 
   end
 
+  def test_range
+    parser = RRB::Parser.new
+    tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+
+    def_range = tree.class_info( "TestClassA" ).range
+    assert_equals( 2, def_range.head.lineno )
+    assert_equals( 51, def_range.tail.lineno )
+    assert( def_range.contain?( 3..50 ) )
+    assert( !def_range.contain?( 2..50 ) )
+    assert( !def_range.contain?( 3..51 ) )
+    assert( def_range.out_of?( 52..55 ) )
+    assert( !def_range.out_of?( 3..50 ) )
+    assert( !def_range.out_of?( 1..2 ) )
+    assert( !def_range.out_of?( 51..55 ) )
+  end
+  
 end
 
 if $0 == __FILE__
