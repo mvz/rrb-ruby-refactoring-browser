@@ -2,32 +2,6 @@ require 'rrb/script'
 
 module RRB
 
-  class MoveMethodVisitor < Visitor
-
-    def initialize(method_name, old_namespace, new_namespace)
-      @method_name = method_name
-      @str_old_namespace = old_namespace.str
-      @str_new_namespace = new_namespace.str
-    end
-
-    attr_reader :new_lineno, :old_start_lineno, :old_end_lineno
-    
-    def visit_class( namespace, node )
-      str_namespace = NodeNamespace.new(node, namespace).str
-      if @str_old_namespace == str_namespace
-        node.method_defs.each do |method_def|
-          if method_def.name == @method_name
-            @old_start_lineno = method_def.head_keyword.lineno
-            @old_end_lineno = method_def.tail_keyword.lineno
-          end
-        end
-      end  
-      if @str_new_namespace == str_namespace
-        @new_lineno = node.name_id.lineno
-      end
-    end
-  end
-  
   class MoveMethodCheckVisitor < Visitor
     
     def initialize(method_name, old_namespace, new_namespace)
@@ -62,36 +36,11 @@ module RRB
     end
   end
 
-  def move_method(src, old_start_lineno, old_end_lineno, new_lineno)
-
-    dst = ''
-
-    lines = src.readlines
-
-    def_space_num =  /^(\s*)/.match(lines[new_lineno])[0].length + INDENT_LEVEL
-    imp_space_num =  def_space_num + INDENT_LEVEL
-
-    0.upto(lines.length-1) do |lineno|
-      if lineno == new_lineno+1
-        dst << "\s" * def_space_num + lines[old_start_lineno].lstrip
-        (old_start_lineno+1..old_end_lineno-1).each do |i|
-          dst << "\s" * imp_space_num + lines[i].lstrip
-        end
-        dst << "\s" * def_space_num + lines[old_end_lineno].lstrip
-      end
-      unless (old_start_lineno..old_end_lineno) === lineno
-        dst << lines[lineno]
-      end
-    end
-    dst
-  end
-  module_function :move_method
-
   class ScriptFile
-    def move_method(method_name, old_namespace, new_namespace)
+    def move_method(method_name, old_namespace, new_namespace, moved_method)
       visitor = MoveMethodVisitor.new(method_name, old_namespace, new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.move_method( @input, visitor.old_start_lineno-1, visitor.old_end_lineno-1, visitor.new_lineno-1)
+      RRB.insert_str(@input, visitor.insert_lineno, visitor.delete_range, moved_method)
     end
 
     def move_method?(method_name, old_namespace, new_namespace)
@@ -104,8 +53,9 @@ module RRB
   class Script
     
     def move_method(method_name, old_namespace, new_namespace)
+      moved_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
-	scriptfile.move_method(method_name, old_namespace, new_namespace)
+	scriptfile.move_method(method_name, old_namespace, new_namespace, moved_method)
       end
     end
 
