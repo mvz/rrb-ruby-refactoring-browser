@@ -68,17 +68,6 @@ module RRB
     
   class ScriptFile
 
-    def get_targetmethod(namespace, method_name)
-      visitor = GetTargetMethodVisitor.new(namespace, method_name)
-      @tree.accept(visitor)
-      range = visitor.result_range
-      if range
-        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
-      else
-        return nil
-      end
-    end
-
     def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
       visitor = PushdownMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
@@ -94,10 +83,7 @@ module RRB
 
   class Script
     def pushdown_method(old_namespace, method_name, new_namespace)
-      pushdowned_method = nil
-      @files.each do |scriptfile|
-        pushdowned_method = pushdowned_method || scriptfile.get_targetmethod(old_namespace, method_name)
-      end
+      pushdowned_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
 	scriptfile.pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
       end      

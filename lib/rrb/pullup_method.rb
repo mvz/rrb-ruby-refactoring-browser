@@ -57,17 +57,6 @@ module RRB
 
   class ScriptFile
 
-    def get_targetmethod(namespace, method_name)
-      visitor = GetTargetMethodVisitor.new(namespace, method_name)
-      @tree.accept(visitor)
-      range = visitor.result_range
-      if range
-        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
-      else
-        return nil
-      end
-    end
-
     def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
       visitor = PullupMethodVisitor.new(old_namespace, method_name,  new_namespace)
       @tree.accept( visitor )
@@ -83,10 +72,7 @@ module RRB
 
   class Script
     def pullup_method(old_namespace, method_name, new_namespace)
-      pullupped_method = nil
-      @files.each do |scriptfile|
-        pullupped_method = pullupped_method || scriptfile.get_targetmethod(old_namespace, method_name)
-      end
+      pullupped_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
 	scriptfile.pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
       end      
