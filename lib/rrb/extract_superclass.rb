@@ -83,26 +83,31 @@ module RRB
     def extract_superclass?( namespace, new_class, targets, path, lineno )
       # check namespace exists?
       unless namespace == RRB::Namespace::Toplevel then
+        @error_message = "#{namespace.name}: No such namespace\n"
         return false if get_dumped_info[namespace] == NullDumpedClassInfo.instance
       end
       # check all targets exist?
       targets.each do |klass|
+        @error_message = "#{klass.name}: No such class\n"
         return false unless get_dumped_info[klass].type == "class"
       end
       
       # check targets have the same superclass
       superclass = get_dumped_info[targets.first].superclass
       targets.each do |klass|
+        @error_message = "#{targets.first.name} and #{klass.name} are not sibling classes\n"
         return false unless get_dumped_info[klass].superclass == superclass
       end
 
       # check name collision
       unless get_dumped_info.resolve_const( namespace, new_class ).nil? then
+        @error_message = "#{new_class}: already exists\n"
         return false
       end
 
       # check where new class is defined
       unless namespace.contain?( get_class_on_cursor( path, lineno ).normal )
+        @error_message = "Invalid Position to define new class\n"
         return false
       end
 
