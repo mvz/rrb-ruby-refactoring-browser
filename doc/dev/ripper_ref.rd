@@ -169,16 +169,41 @@
 --- Ripper#on__ambiguous_argument
 --- Ripper#on__and
 --- Ripper#on__aref
---- Ripper#on__argadd
---- Ripper#on__argadd_args
+--- Ripper#on__argadd( args, arg )
+
+    引数、仮引数、配列引数のリストで引数が一つ追加されたときに
+    呼びだされる。
+    
+
+--- Ripper#on__argadd_args( args1, args2 )
+
+    open_args2(かっこの前にスペースをいれるかどうかでそのかっこがメソッド
+    呼出しになるか式になるかどうかを実現している部分)で必要になる。
+    
 --- Ripper#on__argadd_assocs
 --- Ripper#on__argadd_block
 --- Ripper#on__argadd_opt
 --- Ripper#on__argadd_rest
 --- Ripper#on__argadd_star
---- Ripper#on__argadd_value
+--- Ripper#on__argadd_value( args, arg )
+
+    引数のリストに引数がひとつ追加されたときに呼出される。
+    parse時に呼出される。
+    ((<Ripper#on__argadd>))とは排他的、Ripper#on__argaddとどのように区別されて
+    いるのかはよくわからない。
+    
 --- Ripper#on__argstart
+
+    引数、仮引数のリストの一番最初に呼びだされる。
+    ((<Ripper#on__argvoid>))とは排他的。
+    parse時に呼びだされる。
+    
 --- Ripper#on__argvoid
+
+    仮引数で通常の引数(初期値つき、*つき、&つき以外)が無いときに呼びだされる。
+    また、aref([])の引数に「*heke」のみ与えたときにも呼びだされる。
+    parse時に呼びだされる。
+    
 --- Ripper#on__assign
 --- Ripper#on__assignable( var, arg )
 
@@ -486,11 +511,16 @@
 --- Ripper#on__string_concat( str1, str2 )
 
       スキャナ(lexer)では判定できない文字列連結が生じたときに呼びだされる。
-      parser時に呼びだされる
+      parse時に呼びだされる
       
 --- Ripper#on__string_end
 --- Ripper#on__super
---- Ripper#on__symbol
+--- Ripper#on__symbol( id )
+
+      シンボルリテラルのパース時に呼びだされる。
+      parse時に呼びだされる。
+      * ((|id|)) 識別子
+    
 --- Ripper#on__tPOW_ASSIGN
     * bug (on__POW_ASSIGNが正しい) 修正した
     
