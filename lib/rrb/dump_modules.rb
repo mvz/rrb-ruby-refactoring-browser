@@ -23,21 +23,21 @@ ObjectSpace.each_object( Module ) do |mod|
   print "#"
 
   # 2 public instance methods
-  mod.public_instance_methods.each do |method_name|
+  mod.public_instance_methods(false).each do |method_name|
     print method_name, ";"
   end
 
   print "#"
 
   # 3 protected instance methods
-  mod.protected_instance_methods.each do |method_name|
+  mod.protected_instance_methods(false).each do |method_name|
     print method_name, ";"
   end
 
   print "#"
 
   # 4 private instance methods
-  mod.private_instance_methods.each do |method_name|
+  mod.private_instance_methods(false).each do |method_name|
     print method_name, ";"
   end
 
@@ -45,7 +45,7 @@ ObjectSpace.each_object( Module ) do |mod|
 
   # 5 singleton_methods
   class << mod
-    public_instance_methods.each do |method_name|
+    public_instance_methods(false).each do |method_name|
       print method_name, ";"
     end
   end
