@@ -51,7 +51,11 @@ module RRB
 	
       if method_node.local_vars.find{|i| i.name == @new_var} then
 	@result = false
-      end      
+      end
+      if method_node.fcalls.find{|i| i.name == @new_var} then
+	@result = false
+      end
+      
     end
     
   end
@@ -74,6 +78,7 @@ module RRB
     end
 
     def rename_local_var?( namespace, method_name, old_var, new_var )
+      return false unless RRB.valid_local_var?( new_var )
       visitor = RenameLocalVarCheckVisitor.new( namespace, method_name,
 					       old_var, new_var )
       @tree.accept( visitor )
@@ -81,7 +86,7 @@ module RRB
     end
     
     attr_reader :new_script, :name
-    
+
   end
 
 
@@ -119,5 +124,14 @@ module RRB
 
     return dst
   end
-  
+
+  def valid_local_var?( id )
+    /^[a-z_][a-zA-Z0-9_]*$/ =~ id
+  end
+
+  def valid_const_var?( id )
+    /^[A-Z][a-zA-Z0-9_]*$/ =~ id
+  end
+ 
+
 end
