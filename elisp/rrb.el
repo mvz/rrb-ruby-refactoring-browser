@@ -154,7 +154,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
-  (when (/= (rrb-run-process "rrb_compinfo" "--methods") 0)
+  (when (/= (rrb-run-process "rrb_compinfo" "--methods-local-vars") 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
   (let ((method (completing-read "Refactored method: " (rrb-complist-method))))
     (list method
