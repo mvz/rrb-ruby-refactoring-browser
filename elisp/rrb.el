@@ -267,4 +267,32 @@ matches with rrb-ruby-file-name-regexp'"
 		 (rrb-comp-read-rename-constant)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-constant" old-const new-const)))
+
+;;;; Refactoring: Rename class
+
+(defun rrb-complist-classes ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (goto-char (point-min))
+    (mapcar 'list
+	    (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
+
+(defun rrb-comp-read-rename-class ()
+  "compleion read for rename class"
+  (when (/= 0 (rrb-run-process "rrb_compinfo" "--classes"))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (list (completing-read "Old class/module: " (rrb-complist-classes))
+	(read-from-minibuffer "New class/module: ")))
+  
+
+(defun rrb-rename-class (old-class new-class)
+  "Refactor code: Rename class or module"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-class)))
+  (save-current-buffer
+    (rrb-do-refactoring "--rename-constant" old-class new-class)))
+			;class name is a constant.
+
+	       
 	       
