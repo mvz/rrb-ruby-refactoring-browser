@@ -167,14 +167,16 @@ module RRB
 
   class Script
     
-    def extract_method(new_method, start_lineno, end_lineno)
+    def extract_method(path, new_method, start_lineno, end_lineno)
       @files.each do |scriptfile|
-	scriptfile.extract_method(new_method, start_lineno, end_lineno)
+	next unless scriptfile.path == path
+	scriptfile.extract_method(new_method, start_lineno, end_lineno )
       end
     end
 
-    def extract_method?(new_method, start_lineno, end_lineno)
+    def extract_method?(path, new_method, start_lineno, end_lineno)
       @files.each do |scriptfile|
+	next unless scriptfile.path == path
 	if not scriptfile.extract_method?(new_method, start_lineno, end_lineno)
           return false
 	end
