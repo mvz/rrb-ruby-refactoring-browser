@@ -59,24 +59,25 @@ end
     result << RRB::IO_SPLITTER
     result
   end
-  
-  def test_classes_respond_to
-    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
-    assert_equals( %w( C ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'C' ) ], 'foo' ) )
-    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-                   script.classes_respond_to( [ RRB::NS.new( 'A' ) ], 'foo' ).sort )
-    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], 'foo' ).sort )
-    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], 'foo' ).sort )
-    script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
-    assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], 'foo' ).sort )
-    assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], 'foo' ).sort )
-  end
 
+  def test_methods_related_with
+    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
+    assert_equals( Set.new(%w( C#foo ).map{|x| RRB::MN[x]}),
+                   script.methods_related_with( [ RRB::MN['C#foo'] ] ) )
+    assert_equals( Set.new(%w( A#foo B#foo C::D#foo ).map{|x| RRB::MN[x]}),
+                   script.methods_related_with( [ RRB::MN['A#foo'] ] ) )
+    assert_equals( Set.new(%w( A#foo B#foo C::D#foo ).map{|x| RRB::MN[x]}),
+		  script.methods_related_with( [ RRB::MN['B#foo'] ] ) )
+    assert_equals( Set.new(%w( A#foo B#foo C::D#foo ).map{|x| RRB::MN[x]}),
+                   script.methods_related_with( [ RRB::MN['C::D#foo'] ] ) )
+    script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
+    assert_equals( Set.new(%w( F#foo G#foo ).map{|x| RRB::MN[x]}),
+		  script2.methods_related_with( [ RRB::MN['G#foo'] ] ) )
+    assert_equals( Set.new(%w( F#foo G#foo ).map{|x| RRB::MN[x]}),
+		  script2.methods_related_with( [ RRB::MN['F#foo'] ] ) )
+  
+  end
+  
   def test_rename_method?
     script = RRB::Script.new_from_io( StringIO.new( input_str ) )
     assert_equals( true,
@@ -99,7 +100,29 @@ end
     script.result_to_io( result )
     assert_equals( OUTPUT_STR2, result )
   end
-  
+
+  def test_supermethod?
+    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
+    assert_equals( true,
+                   script.supermethod?( RRB::MN['A#heke'], RRB::MN['B#heke'] ))
+    assert_equals( false,
+                   script.supermethod?( RRB::MN['B#heke'], RRB::MN['A#heke'] ))
+    assert_equals( false,
+                   script.supermethod?( RRB::MN['A#heke'], RRB::MN['B#mohe'] ))
+  end
+
+  def test_supermethods
+    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
+    assert_equals( [ RRB::MN['A#foo'],RRB::MN['B#foo'] ], 
+                   script.supermethods( RRB::MN['B#foo'] ) )
+    assert_equals( [ RRB::MN['A#foo'] ], 
+                   script.supermethods( RRB::MN['A#foo'] ) )
+  end
+
+  def test_all_fcalls
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
+    assert_equals( Set[RRB::MN['F#foo']], script.all_fcalls )
+  end
 end
 
 class TestScriptFile_RenameMethod < RUNIT::TestCase
@@ -187,6 +210,12 @@ end
     scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
     assert_equals( [ RRB::NS['B'], RRB::NS['C::D'] ],
 		  scriptfile.classes_call_method( 'foo' ) )
+  end
+
+  def test_all_fcalls
+    scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
+    assert_equals( Set[RRB::MN['B#foo'], RRB::MN['C::D#foo']],
+                   scriptfile.all_fcalls )
   end
   
   def test_rename_method
