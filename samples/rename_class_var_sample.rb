@@ -6,6 +6,9 @@ module X
     def method_1
       @@a = @@b
     end
+    def A.method_2
+      @@a = 2
+    end
   end
   class B < A
     @@c = 0
