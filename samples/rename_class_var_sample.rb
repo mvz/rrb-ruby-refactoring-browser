@@ -1,23 +1,28 @@
 
 module X
   class A
-    @@a = 3
+    @@a = 1
+    @@b = 0
     def method_1
-      @@a = 0
+      @@a = @@b
     end
   end
   class B < A
-    @@b = 2
+    @@c = 0
     def method_1
-      @@b = @@a
+      @@a = @@c
     end
   end
-  class C
-    @@a = 0
+  class C < A
+    @@d = 0
+    def method_1
+      @@a = @@d
+    end
   end
-end
-module Y
-  class A
-    @@a = 2
+  class D < B
+    @@e = 0
+    def method_1
+      @@a = @@e
+    end
   end
 end

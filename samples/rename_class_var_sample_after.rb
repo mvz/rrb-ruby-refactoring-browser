@@ -1,24 +1,29 @@
 samples/rename_class_var_sample.rb
 module X
   class A
-    @@c = 3
+    @@f = 1
+    @@b = 0
     def method_1
-      @@c = 0
+      @@f = @@b
     end
   end
   class B < A
-    @@b = 2
+    @@c = 0
     def method_1
-      @@b = @@c
+      @@f = @@c
     end
   end
-  class C
-    @@a = 0
+  class C < A
+    @@d = 0
+    def method_1
+      @@f = @@d
+    end
   end
-end
-module Y
-  class A
-    @@a = 2
+  class D < B
+    @@e = 0
+    def method_1
+      @@f = @@e
+    end
   end
 end
 -- END --
