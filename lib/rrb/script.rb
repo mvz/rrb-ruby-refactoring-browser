@@ -16,54 +16,6 @@ module RRB
       @files = files
     end
 
-    def rename_local_var( namespace, method_name, old_var, new_var )
-      @files.each do |scriptfile|
-	scriptfile.rename_local_var( namespace, method_name,
-				    old_var, new_var )
-      end
-    end
-
-    def rename_local_var?( namespace, method_name, old_var, new_var )
-      @files.each do |scriptfile|
-	if not scriptfile.rename_local_var?( namespace, method_name,
-					    old_var, new_var ) then
-	  return false
-	end
-      end
-
-      return true
-      
-    end
-
-    def rename_method_all( old_method, new_method )
-      @files.each do |scriptfile|
-	scriptfile.rename_method_all( old_method, new_method )
-      end
-    end
-    
-    def rename_method_all?( old_method, new_method )
-      info = get_dumped_info
-      
-      info.each do |class_info|
-	has_old_method = class_info.has_method?( old_method ) 
-	has_new_method = class_info.has_method?( new_method ) 
-	return false if has_old_method && has_new_method
-      end
-
-      refactored_classes = info.classes_having_method( old_method )      
-      @files.each do |scriptfile|
-	scriptfile.method_define_check( old_method, refactored_classes )
-      end
-      return false unless refactored_classes.empty?
-      
-      @files.each do |scriptfile|
-	unless scriptfile.rename_method_all?( old_method, new_method ) then
-	  return false
-	end
-      end
-      
-      return true
-    end
 
     
     def result_to_io( dst )

@@ -2,150 +2,6 @@ require 'rrb/parser'
 
 module RRB
 
-  class RenameLocalVarVisitor < Visitor
-
-    def initialize( namespace, method_name, old_var, new_var )
-      @namespace = namespace
-      @method_name = method_name
-      @old_var = old_var
-      @new_var = new_var
-      @result = []
-    end
-
-    attr_reader :result
-    
-    def visit_method( namespace, method_node )
-      unless method_node.name == @method_name &&
-	  namespace.map{|i| i.name} == @namespace then
-	return
-      end
-	
-      method_node.local_vars.each do |id|
-	if id.name == @old_var then
-	  @result <<
-	    Replacer.new( id.lineno, id.pointer, @old_var, @new_var )
-	end
-      end
-      
-    end
-    
-  end
-
-  class RenameLocalVarCheckVisitor < Visitor
-    
-    def initialize( namespace, method_name, old_var, new_var )
-      @namespace = namespace
-      @method_name = method_name
-      @old_var = old_var
-      @new_var = new_var
-      @result = true
-    end
-
-    attr_reader :result
-
-    def visit_method( namespace, method_node )
-      unless method_node.name == @method_name &&
-	  namespace.map{|i| i.name} == @namespace then
-	return
-      end
-	
-      if method_node.local_vars.find{|i| i.name == @new_var} then
-	@result = false
-      end
-      if method_node.fcalls.find{|i| i.name == @new_var} then
-	@result = false
-      end
-      
-    end
-    
-  end
-
-  class RenameMethodAllVisitor < Visitor
-
-    def initialize( old_method, new_method )
-      @old_method = old_method
-      @new_method = new_method
-      @result = []
-    end
-
-    attr_reader :result
-
-    def visit_node( namespace, node )      
-      node.method_calls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end
-
-      node.fcalls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end      
-    end
-    
-    def visit_method( namespace, method_node )
-      
-      if method_node.name == @old_method then
-	@result << Replacer.new( method_node.name_id.lineno,
-				method_node.name_id.pointer,
-				@old_method,
-				@new_method )
-      end
-    end
-
-    def visit_singleton_method( namespace, s_method_node )
-      visit_method( namespace, s_method_node )
-    end
-
-    def visit_class_method( namespace, c_method_node )
-      visit_method( namespace, c_method_node )
-    end
-    
-  end
-
-  class RenameMethodAllCheckVisitor < Visitor
-    
-    def initialize( old_method, new_method )
-      @old_method = old_method
-      @new_method = new_method
-      @result = true
-    end
-
-    def visit_node( namespace, node )
-      if node.fcalls.find{|fcall| fcall.name == @old_method } &&
-	  node.local_vars.find{|var| var.name == @new_method } then
-	@result = false
-      end
-    end
-
-    attr_reader :result
-  end
-
-  class MethodDefineCheckVisitor < Visitor
-
-    def initialize( method, classes )
-      @method = method
-      @classes = classes
-    end
-
-    def visit_class( namespace, node )
-      if node.method_defs.inject( false ){|r,i| (r || i.name == @method) } then
-	classname = (namespace + [node]).map{|c| c.name}.join('::')
-	@classes.delete_if{|class_info| class_info.class_name ==  classname }
-      end
-    end
-
-    def visit_toplevel( namespace, node )
-      if node.method_defs.inject( false ){|r,i| r || i.name == @method } then
-	@classes.delete_if{|class_info| class_info.class_name ==  'Object' }
-      end
-    end
-    
-  end
-  
   class ScriptFile
 
     def initialize( input, path )
@@ -156,34 +12,6 @@ module RRB
       @new_script = nil
     end
     
-    def rename_local_var( namespace, method_name, old_var, new_var )
-      visitor = RenameLocalVarVisitor.new( namespace, method_name,
-					  old_var, new_var )
-      @tree.accept( visitor )
-      @new_script = RRB.replace_str( @input, visitor.result )
-    end
-
-    def rename_local_var?( namespace, method_name, old_var, new_var )
-      return false unless RRB.valid_local_var?( new_var )
-      visitor = RenameLocalVarCheckVisitor.new( namespace, method_name,
-					       old_var, new_var )
-      @tree.accept( visitor )
-      return visitor.result
-    end
-
-    def rename_method_all( old_method, new_method )
-      visitor = RenameMethodAllVisitor.new( old_method, new_method )
-      @tree.accept( visitor )
-      @new_script = RRB.replace_str( @input, visitor.result )
-    end
-
-    def rename_method_all?( old_method, new_method )
-      return false unless RRB.valid_method?( new_method )
-      visitor = RenameMethodAllCheckVisitor.new( old_method, new_method )
-      @tree.accept( visitor )
-      return visitor.result
-    end
-
     def write_source_to( dir )
       filepath = File.join( dir,@path )
       FileUtils.mkdir_p( File.dirname( filepath ) )
@@ -193,10 +21,6 @@ module RRB
 	end
       end
       @input.rewind
-    end
-
-    def method_define_check( method, classes )
-      @tree.accept MethodDefineCheckVisitor.new( method, classes )
     end
     
     attr_reader :new_script, :path
