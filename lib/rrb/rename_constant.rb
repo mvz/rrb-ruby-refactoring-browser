@@ -105,72 +105,6 @@ module RRB
 
   end
 
-  class RenameConstantCheckVisitor < Visitor
-    include ConstResolver
-    
-    def initialize(dumped_info, old_const, new_const_body)
-      if old_const[0,2] != '::' then
-        @old_const = '::' + old_const
-      else
-        @old_const = old_const
-      end
-      @old_const_body = old_const.split('::')[-1]
-      @new_const_body = new_const_body
-      @dumped_info = dumped_info
-      @result = true
-
-      #if new const is already defined...
-      klass = @old_const.split('::')[0..-2].join('::')
-      klass = Object if klass==""
-      if dumped_info[klass].consts.include?(@new_const_body)
-        @result = false
-      end
-    end
-
-    attr_reader :result
-
-    def visit_node( namespace, node )
-      return if @result==false
-      
-      ns = namespace.str
-
-      #if node isn't method definition...
-      if ModuleNode === node || SingletonClassNode === node
-        ns << '::' unless namespace.str==""
-        ns << node.name_id.name
-      end
-
-      node.consts.each do |constinfo|
-        next if constinfo.body.name != @old_const_body
-
-        if constinfo.toplevel?
-          used_const = constinfo.name
-        else
-          used_const = resolve_const(@dumped_info, ns, constinfo.name)
-        end
-        
-        if used_const == @old_const then
-          new_const = class_of(constinfo.name) + "::" + @new_const_body
-          new_const = resolve_const(@dumped_info, ns, new_const)
-
-          return if new_const==nil
-          if @dumped_info[class_of(new_const)].consts.include?(@new_const_body)
-            @result = false  #already exists
-          end
-        end
-      end
-    end
-    
-    def visit_class(namespace, node)
-      if resolve_const(@dumped_info, namespace.str, node.name_id.name) == @old_const
-        new_const = resolve_const(@dumped_info, namespace.str, @new_const_body)
-        if @dumped_info[class_of(new_const)].consts.include?(@new_const_body)
-          @result = false
-        end
-      end
-    end
-
-  end
 
   class ScriptFile
 
@@ -178,13 +112,6 @@ module RRB
       visitor = RenameConstantVisitor.new(dumped_info, old_const, new_const)
       @tree.accept(visitor)
       @new_script = RRB.replace_str(@input, visitor.result)
-    end
-
-    def rename_constant?(dumped_info, old_const, new_const)
-      return false unless RRB.valid_const_var?(new_const)
-      visitor = RenameConstantCheckVisitor.new(dumped_info, old_const, new_const)
-      @tree.accept(visitor)
-      return visitor.result
     end
 
   end
@@ -198,11 +125,13 @@ module RRB
     end
 
     def rename_constant?(old_const, new_const)
-      @files.each do |scriptfile|
-        if not scriptfile.rename_constant?(get_dumped_info, old_const, new_const)
-          return false
-        end
+      return false unless RRB.valid_const_var?(new_const)
+      old_const = old_const[2..-1] if old_const[0,2] == "::"
+      ns = Namespace.new(old_const)
+      if get_dumped_info.resolve_const( ns.chop, new_const ).nil? then
         return true
+      else
+        return false
       end
     end
 
