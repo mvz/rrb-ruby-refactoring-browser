@@ -207,16 +207,6 @@ module RRB
   end
   
   class EvalStringParser < Parser
-
-    def adjust_id( ids, lineno, pointer )
-      ids.map do |id|
-	if id.lineno > 1 then
-	  p id
-	  raise RRBError, "eval string mustn't have \"\\n\""
-	end
-	IdInfo.new( id.type, lineno, id.pointer + pointer, id.name )
-      end
-    end
     
     def run( input, scope, lineno, pointer )
       @scope_stack = Array.new
@@ -227,20 +217,20 @@ module RRB
       
       self.parse( input )
 
-      method_calls = @scope_stack[0].method_calls
-      fcalls = @scope_stack[0].fcalls
-      local_vars = @scope_stack[0].local_vars[scope.local_vars.size..-1]
-      global_vars = @scope_stack[0].global_vars
-      instance_vars = @scope_stack[0].instance_vars
-      class_vars = @scope_stack[0].class_vars
+      method_calls = @scope_stack.first.method_calls
+      fcalls = @scope_stack.first.fcalls
+      local_vars = @scope_stack.first.local_vars[scope.local_vars.size..-1]
+      global_vars = @scope_stack.first.global_vars
+      instance_vars = @scope_stack.first.instance_vars
+      class_vars = @scope_stack.first.class_vars
       consts = @scope_stack.first.consts
       
-      method_calls = adjust_id( method_calls, lineno, pointer )
-      fcalls = adjust_id( fcalls, lineno, pointer )
-      local_vars = adjust_id( local_vars, lineno, pointer )
-      global_vars = adjust_id( global_vars, lineno, pointer )
-      instance_vars = adjust_id( instance_vars, lineno, pointer )
-      class_vars = adjust_id( class_vars, lineno, pointer )
+      method_calls.each{|id| id.adjust_id!( lineno, pointer )}
+      fcalls.each{|id| id.adjust_id!( lineno, pointer )}
+      local_vars.each{|id| id.adjust_id!( lineno, pointer )}
+      global_vars.each{|id| id.adjust_id!( lineno, pointer )}
+      instance_vars.each{|id| id.adjust_id!( lineno, pointer )}
+      class_vars.each{|id| id.adjust_id!( lineno, pointer )}
       consts.each{|const| const.adjust_id!( lineno, pointer )}
       
       return method_calls, fcalls, local_vars, global_vars, instance_vars,

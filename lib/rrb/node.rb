@@ -180,6 +180,14 @@ module RRB
       @name = name
     end
 
+    def adjust_id!( lineno, pointer )
+      if @lineno > 1 then
+	raise RRBError, "eval string mustn't have \"\\n\":#{id.inspect}"
+      end
+      @lineno = lineno
+      @pointer += pointer
+    end
+    
     attr_reader :type, :lineno, :pointer, :name
     
   end
@@ -223,12 +231,7 @@ module RRB
     end
 
     def adjust_id!( lineno, pointer )
-      @elements_id.map! do |id|
-	if id.lineno > 1 then
-	  raise RRBError, "eval string mustn't have \"\\n\":#{id.inspect}"
-	end
-	IdInfo.new( id.type, lineno, id.pointer + pointer, id.name )
-      end      
+      @elements_id.each{|id| id.adjust_id!( lineno, pointer )}
     end
     
     attr_reader :elements_id
