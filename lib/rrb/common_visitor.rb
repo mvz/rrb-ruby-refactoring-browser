@@ -72,20 +72,16 @@ module RRB
     def initialize(start_lineno, end_lineno)
       @start_lineno = start_lineno
       @end_lineno = end_lineno
-      @namespace = nil
+      @method = nil
     end
-    attr_reader :namespace
-
-    def visit_toplevel(namespace, node)
-      @namespace = namespace
-    end
+    attr_reader :method
 
     def visit_method(namespace, node)
       if node.range.contain?( @start_lineno .. @end_lineno ) then
-        @namespace = NodeNamespace.new(node, namespace)
+        @method = Method.new(namespace, node)
       else
         unless node.range.out_of?(@start_lineno .. @end_lineno) then
-          @namespace = nil
+          @method = nil
         end
       end
     end
