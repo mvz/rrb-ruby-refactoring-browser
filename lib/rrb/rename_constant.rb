@@ -5,16 +5,21 @@ module RRB
 
   module ConstResolver
     def resolve_const(dumped_info,ns,const)
-      return const if const[0,2]=="::"
+#      return const if const[0,2]=="::"
+      if const[0,2] == "::"
+        return const[2..-1]
+      end
 
       ans = dumped_info.resolve_const( Namespace.new(ns), const.split('::')[0] )
       if ans == nil then
         return nil
       else
         if ans == Namespace::Toplevel then
-          return "::#{const}"
+#          return "::#{const}"
+          return "#{const}"
         else
-          return "::#{ans.name}::#{const}"
+#          return "::#{ans.name}::#{const}"
+          return "#{ans.name}::#{const}"
         end
       end
     end
@@ -40,9 +45,11 @@ module RRB
     
     def initialize(dumped_info, old_const, new_const_body)
       if old_const[0,2] != '::' then
-        @old_const = '::' + old_const
-      else
+#        @old_const = '::' + old_const
         @old_const = old_const
+      else
+#        @old_const = old_const
+        @old_const = old_const[2..-1]
       end
       @old_const_body = old_const.split("::")[-1]
       @new_const_body = new_const_body
