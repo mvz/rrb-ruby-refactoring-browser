@@ -172,9 +172,31 @@ class TestNode < RUNIT::TestCase
   
 end
 
+class TestConstInfo < RUNIT::TestCase
+
+  TEST_SCRIPT_NAME = 'samples/parser_sample.rb'
+  def test_body
+    parser = RRB::Parser.new
+    tree = parser.run File.open( TEST_SCRIPT_NAME, "r" )
+    consts = tree.class_info("TestClassA").method_info("method_9").consts
+    assert_equals( [ "Const1",
+		    "Const2", "Const1",
+		    "Const2", "Const1",
+		    "Const4", "Const5",
+		    "Const6", "Const7",
+		    "Const8", "Const9",
+		    "Const10", "Const11",
+		    "Const12"
+		  ],
+                   consts.map{|const| const.body.name} )
+  end
+end
+
 if $0 == __FILE__
   if ARGV.size == 0
-    suite = TestNode.suite
+    suite = RUNIT::TestSuite.new
+    suite.add_test( TestNode.suite )
+    suite.add_test( TestConstInfo.suite )
   else
     suite = RUNIT::TestSuite.new
     ARGV.each do |testmethod|
