@@ -3,6 +3,63 @@ require 'runit/cui/testrunner'
 require 'rrb/common_visitor'
 require 'rrb/extract_method'
 
+  INPUT_STR = "\
+/home/oxy/work/rrb/private/test.rb\C-a
+class A
+  def A.hoge
+    a = 1
+    b = 1
+    c = a * b + 1
+  end
+  def hoge
+    a = 1
+    b = 1
+    c = a * b
+  end
+end
+\C-a-- END --\C-a
+"
+OUTPUT_STR1 = "/home/oxy/work/rrb/private/test.rb\C-a
+class A
+  def A.fuga()
+    a = 1
+    b = 1
+    return a, b
+  end
+  def A.hoge
+    a, b = fuga()
+    c = a * b + 1
+  end
+  def hoge
+    a = 1
+    b = 1
+    c = a * b
+  end
+end
+\C-a-- END --\C-a
+"
+
+OUTPUT_STR2 = "\
+/home/oxy/work/rrb/private/test.rb\C-a
+class A
+  def A.hoge
+    a = 1
+    b = 1
+    c = a * b + 1
+  end
+  def fuga(a)
+    b = 1
+    c = a * b
+  end
+  def hoge
+    a = 1
+    fuga(a)
+  end
+end
+\C-a-- END --\C-a
+"
+
+
 class TestScriptFile_ExtractMethod < RUNIT::TestCase
 
   def test_extract_method
@@ -25,7 +82,20 @@ class TestScriptFile_ExtractMethod < RUNIT::TestCase
 end
 
 class TestScript_ExtractMethod < RUNIT::TestCase
-  
+  def test_extract_method
+    script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
+    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 4, 5)
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(OUTPUT_STR1, dst)
+
+    script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
+    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 10, 11)
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(OUTPUT_STR2, dst)
+
+  end
 
   def test_extract_method?
     str_filename = 'samples/extract_method_sample.rb'
