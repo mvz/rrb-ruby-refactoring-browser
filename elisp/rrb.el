@@ -224,9 +224,9 @@ matches with rrb-ruby-file-name-regexp'"
 	(read-from-minibuffer prompt2)))
 
 ;;;
-;;; completion type-3
+;;; completion for Pull up method, Push down method
 ;;
-(defun rrb-comp-read-type-3 (compinfo-arg1 prompt1 compinfo-arg2 default-arg2 prompt2)
+(defun rrb-comp-read-move-method (compinfo-arg1 prompt1 compinfo-arg2 default-arg2 prompt2)
   "completion read for Pull up method, etc.."
   (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
@@ -237,7 +237,8 @@ matches with rrb-ruby-file-name-regexp'"
 	  (completing-read prompt2 (rrb-complist-type-2) nil nil default-arg2))))
 
 ;;;
-;;; completion type-4
+;;; completion for Rename variable defined at some namespace
+;;
 (defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
   "completion read for rename instance variable, etc.."
   (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
@@ -249,45 +250,6 @@ matches with rrb-ruby-file-name-regexp'"
 	  (completing-read prompt2 (rrb-complist-type-2))
 	  (read-from-minibuffer prompt3))))
 
-;;;
-;;; completionm type-5
-(defun rrb-comp-read-type-5 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
-  "completion read for rename method, etc.."
-  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((retval-1 "")
-	(result)
-	(looped nil))
-    (while (progn 
-	     (setq result (completing-read prompt1 (rrb-complist-type-2) nil nil (if looped "" default-arg1)))
-	     (not (string= result "")))
-      (setq looped t)
-      (setq retval-1 (format "%s %s" retval-1 result))
-      (message (format "%s %s" "inputed data: " retval-1))
-      (sit-for 1))
-    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2 "--target" retval-1) 0)
-      (error "rrb_info: fail to get information %s" (rrb-error-message)))
-    (list retval-1
-	  (completing-read prompt2 (rrb-complist-type-2))
-	  (read-from-minibuffer prompt3))))
-
-;;;
-;;; completionm type-6
-(defun rrb-comp-read-type-6 (compinfo-arg1 default-arg1 prompt1 prompt2 prompt3)
-  "completion read for rename method, etc.."
-  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((namespace (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1))
-	(new-class (read-from-minibuffer prompt2)))
-    (let ((targets "")
-	  (result))
-      (while (progn 
-	       (setq result (read-from-minibuffer prompt3))
-	       (not (string= result "")))
-	(setq targets (format "%s %s" targets result))
-	(message (format "%s %s" "inputed data: " targets))
-	(sit-for 1))
-      (list namespace new-class targets))))
 
 
 
@@ -350,14 +312,32 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
 ;;;; Refactoring: Rename method
+;;;
 (defun rrb-comp-read-rename-method ()
-  "Completion read for Rename method"
-  (rrb-comp-read-type-5 "--classes" 
-			(rrb-get-value-on-cursor "--class")
-			"Refactored classes(type just RET to finish): "
-			"--bare-methods"
-			"Old method: "
-			"New method: "))
+  "completion read for rename method, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((retval-1 "")
+	(result)
+	(looped nil))
+    (while (progn 
+	     (setq result (completing-read 
+			   "Refactored classes(type just RET to finish): "
+			   (rrb-complist-type-2)
+			   nil nil 
+			   (if looped "" (rrb-get-value-on-cursor "--class"))))
+	     (not (string= result "")))
+      (setq looped t)
+      (setq retval-1 (format "%s %s" retval-1 result))
+      (message (format "%s %s" "inputed data: " retval-1))
+      (sit-for 1))
+    (when (/= (rrb-run-process "rrb_compinfo" "--bare-methods"
+			       "--target" retval-1) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (list retval-1
+	  (completing-read "Old method: " (rrb-complist-type-2))
+	  (read-from-minibuffer "New method: "))))
+
 
 (defun rrb-rename-method (classes old-method new-method)
   "Refactor code: rename local variable"
@@ -496,7 +476,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pullup-method ()
   "completion read for pull up method"
-  (rrb-comp-read-type-3 "--methods" "Old Method: "
+  (rrb-comp-read-move-method "--methods" "Old Method: "
 			"--classes"
 			(rrb-get-value-on-cursor "--class") "New class: "))
 
@@ -514,7 +494,7 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pushdown-method ()
   "completion read for push down method"
-  (rrb-comp-read-type-3 "--methods" "Old Method: "
+  (rrb-comp-read-move-method "--methods" "Old Method: "
 			"--classes" 
 			(rrb-get-value-on-cursor "--class") "New class: "))
 
@@ -529,12 +509,24 @@ matches with rrb-ruby-file-name-regexp'"
 			(number-to-string (rrb-current-line)))))
 		 
 ;;;; Refactoring: Extract superclass
+;;;
 (defun rrb-comp-read-extract-superclass ()
   "completion read for extract superclass"
-  (rrb-comp-read-type-6 "--classes"
-		       (rrb-get-value-on-cursor "--class")
-		       "Location: " "New Class: " 
-		       "Targets(type just RET to finish): "))
+  (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((namespace (completing-read "Location: " (rrb-complist-type-2) nil nil 
+				    (rrb-get-value-on-cursor "--class")))
+	(new-class (read-from-minibuffer "New Class: ")))
+    (let ((targets "")
+	  (result))
+      (while (progn 
+	       (setq result (read-from-minibuffer 
+			     "Targets(type just RET to finish): "))
+	       (not (string= result "")))
+	(setq targets (format "%s %s" targets result))
+	(message (format "%s %s" "inputed data: " targets))
+	(sit-for 1))
+      (list namespace new-class targets))))
 
 (defun rrb-extract-superclass (namespace new-class targets)
   "Refactor code: Extract superclass"
