@@ -16,6 +16,12 @@
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name to use error log file")
 
+(defvar rrb-undo-file-base "rrbundo"
+  "*Base file name for undo file")
+(defvar rrb-undo-file
+  (expand-file-name "rrbundo" temporary-file-directory))
+
+
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
 (defconst rrb-io-terminator "-- END --")
@@ -23,6 +29,11 @@
 (defvar rrb-input-buffer (get-buffer-create " *rrb-input*"))
 (defvar rrb-output-buffer (get-buffer-create " *rrb-output*"))
 (defvar rrb-error-buffer (get-buffer-create " *rrb-error*"))
+(defvar rrb-default-value-buffer (get-buffer-create " *rrb-default-value*"))
+
+(defvar rrb-undo-count 0)
+
+(add-hook 'kill-emacs-hook 'rrb-delete-undo-files)
 
 ;;;; Utility functions
 (defun rrb-find-all (prec list)
@@ -63,10 +74,10 @@ matches with rrb-ruby-file-name-regexp'"
   (insert-buffer-substring src-buffer)
   (insert rrb-io-splitter))
 
-(defun rrb-setup-input-buffer (buffer-list)
+(defun rrb-setup-buffer (buffer buffer-list)
   "Generate input string on \" *rrb-input*\""
   (save-current-buffer
-    (set-buffer rrb-input-buffer)
+    (set-buffer buffer)
     (erase-buffer)
     (mapcar 'rrb-insert-input-string
 	    buffer-list)
@@ -111,6 +122,7 @@ matches with rrb-ruby-file-name-regexp'"
   (let ((buffer-point-alist (rrb-buffer-point-alist)))
     (if (/= (apply 'rrb-run-process "rrb" args) 0)
 	(error "fail to refactor: %s" (rrb-error-message)))
+    (setq rrb-undo-count (+ rrb-undo-count 1))
     (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
 (defun rrb-make-temp-name (base)
@@ -139,6 +151,21 @@ matches with rrb-ruby-file-name-regexp'"
 	      (set-buffer buf)
 	      (cons buf (point)))
 	    (rrb-all-ruby-script-buffer))))
+
+(defun rrb-prepare-refactoring ()
+  (save-current-buffer
+    (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))
+    (set-buffer rrb-input-buffer)
+    (write-region (point-min) (point-max) (format "%s%d" rrb-undo-file rrb-undo-count) nil 0 nil)))
+
+(defun rrb-delete-undo-files ()
+  (let ((sub-files 
+	 (directory-files temporary-file-directory t rrb-undo-file-base)))
+    (while (not (null sub-files))
+      (let ((sub-file (car sub-files)))
+	(delete-file sub-file))
+      (setq sub-files (cdr sub-files)))))
+
 
 ;;;; Completion
 
@@ -249,13 +276,46 @@ matches with rrb-ruby-file-name-regexp'"
 ;;    
 (defun rrb-get-value-on-cursor (args)
   (save-current-buffer
-    (rrb-setup-input-buffer (list (current-buffer)))
+    (rrb-setup-buffer rrb-default-value-buffer (list (current-buffer)))
     (if (/= (rrb-run-process "rrb_default_value" (buffer-file-name) (number-to-string (rrb-current-line)) args) 0)
 	""
-      (save-current-buffer
-	(set-buffer rrb-output-buffer)
-	(buffer-substring (point-min) (point-max))))))
-  
+      (set-buffer rrb-output-buffer)
+      (buffer-substring (point-min) (point-max)))))
+
+;;;
+;;; Undo, Redo
+;;;
+(defun rrb-undo-base (count-func)
+  "Base of Undo and Redo of the last refactoring"
+  (let ((undo-file-name 
+	 (format "%s%d" rrb-undo-file (funcall count-func rrb-undo-count))))
+    (if (file-readable-p undo-file-name)
+	(progn 
+	  (rrb-prepare-refactoring)
+	  (setq rrb-undo-count (funcall count-func rrb-undo-count))
+	  (save-current-buffer
+	    (rrb-clean-output-buffer)
+	    (set-buffer rrb-output-buffer)
+	    (insert-file-contents undo-file-name)
+	    (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist)))))))
+;;;
+;;; Undo
+;;
+(defun rrb-undo ()
+  "Undo of the last refactoring"
+  (interactive)
+  (rrb-undo-base (lambda (count) (- count 1))))
+
+;;;
+;;; Redo
+;;
+(defun rrb-redo ()
+  "Redo of the last Undo"
+  (interactive)
+  (rrb-undo-base (lambda (count) (+ count 1))))
+
+	  
+
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
@@ -264,7 +324,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-local-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
@@ -282,7 +342,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-method (classes old-method new-method)
   "Refactor code: rename local variable"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-method)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-method" classes old-method new-method)))
@@ -297,7 +357,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-method-all)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
@@ -320,7 +380,7 @@ matches with rrb-ruby-file-name-regexp'"
   "Refactor code: Extract method"
   (interactive "r\nsNew method: ")
   (save-current-buffer
-    (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+    (rrb-prepare-refactoring)
     (rrb-do-refactoring "--extract-method"
 			(buffer-file-name)
 			new_method
@@ -340,7 +400,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-instance-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-instance-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
@@ -358,7 +418,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-class-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-class-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-class-variable" ns old-var new-var)))
@@ -374,7 +434,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-global-variable (old-var new-var)
   "Refactor code: Rename global variable"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-global-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-global-variable" old-var new-var)))
@@ -389,7 +449,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-constant (old-const new-const)
   "Refactor code: Rename constant"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-constant)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-constant" old-const new-const)))
@@ -405,7 +465,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-class (old-class new-class)
   "Refactor code: Rename class or module"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-rename-class)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-constant" old-class new-class)))
@@ -423,7 +483,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-pullup-method (old-method new-class)
   "Refactor code: Pull up method"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-pullup-method)))
   (save-current-buffer
     (rrb-do-refactoring "--pullup-method" old-method new-class)))
@@ -439,7 +499,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-pushdown-method (old-method new-class)
   "Refactor code: Push down method"
   (interactive (progn
-		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-prepare-refactoring)
 		 (rrb-comp-read-pushdown-method)))
   (save-current-buffer
     (rrb-do-refactoring "--pushdown-method" old-method new-class)))
