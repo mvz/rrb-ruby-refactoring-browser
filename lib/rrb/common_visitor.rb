@@ -86,6 +86,21 @@ module RRB
       end
     end
   end
+  class CheckNamespaceDefinedVisitor < Visitor
+    def initialize(namespace)
+      @namespace = namespace
+      @result = false
+    end
+
+    attr_reader :result
+
+    def visit_class(namespace, node)
+      if NodeNamespace.new(node, namespace).match?(@namespace)
+        @result = true
+      end
+    end
+
+  end
 
   class ScriptFile
     def get_string_of_method(namespace, method_name)
@@ -107,6 +122,11 @@ module RRB
       visitor.namespace
     end    
     
+    def check_namespace_defined(namespace)
+      visitor = CheckNamespaceDefinedVisitor.new(namespace)
+      @tree.accept(visitor)
+      visitor.result
+    end
   end
 
   class Script
@@ -125,5 +145,10 @@ module RRB
       target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
       target_scriptfile && target_scriptfile.get_method_on_region(range)
     end
+    def check_namespace_defined(path, namespace)
+      target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
+      target_scriptfile && target_scriptfile.check_namespace_defined(namespace)
+    end
+
   end
 end
