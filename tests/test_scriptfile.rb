@@ -3,6 +3,7 @@ require 'runit/cui/testrunner'
 
 require 'rrb/scriptfile'
 require 'rrb/rename_local_var'
+require 'rrb/rename_global_var'
 require 'rrb/rename_method_all'
 
 class TestScriptFile < RUNIT::TestCase
@@ -47,6 +48,27 @@ class TestScriptFile < RUNIT::TestCase
     
   end
 
+  def test_rename_global_var
+    File.open( 'samples/rename_global_var_sample.rb', 'r' ) do |file|
+      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file.rename_global_var('$x', '$y' )
+      assert_equals( File.open( 'samples/rename_global_var_sample_after.rb' ).read,
+		    script_file.new_script )
+    end
+  end
+
+  def test_rename_global_var?
+   
+    File.open( 'samples/rename_global_var_sample.rb', 'r' ) do |file|
+      script_file = RRB::ScriptFile.new( file, file.path )
+      assert_equals( true, script_file.rename_global_var?('$x', '$y'))
+      assert_equals( false, script_file.rename_global_var?('$x', '$z'))
+      assert_equals( false, script_file.rename_global_var?('$x', 'x'))
+      assert_equals( false, script_file.rename_global_var?('$x', '@x'))
+      assert_equals( false, script_file.rename_global_var?('$x', '@@x'))
+      assert_equals( false, script_file.rename_global_var?('$x', 'print'))
+    end
+  end
   
   def test_rename_method_all
 
