@@ -306,6 +306,10 @@ module RRB
     def normal
       Namespace.new( @nodes.map{|c| c.name} )
     end
+
+    def body_node
+      @nodes.last
+    end
     
     # this methods exist for test_node
     def_delegators :@nodes, :map, :last
@@ -314,17 +318,31 @@ module RRB
     def nodes
       @nodes
     end
-    
   end
 
   class Namespace
     include Enumerable
-    
+
+    # 3.4 -> 2.8
+    class << self
+      alias _new new
+    end
+
+    @@cache = Hash.new
+    def Namespace.new( ns )
+      if @@cache.has_key?( ns ) then
+        @@cache[ns]
+      else
+        _new( ns )
+      end
+    end
+
     def initialize( ns )
       case ns
       when Array
 	@namespace = ns
       when String
+        @@cache[ns] = self
 	@namespace = ns.split('::')
         @namespace.shift if @namespace[0] == ""
       else
@@ -332,7 +350,7 @@ module RRB
       end
       @namespace.freeze
     end
-
+    
     def Namespace.[]( arg )
       new( arg )
     end
@@ -354,6 +372,10 @@ module RRB
       self == other
     end
 
+    def contain?( other )
+      @namespace == other.ary[0,@namespace.size]
+    end
+    
     def hash
       ary.hash
     end
