@@ -85,27 +85,16 @@ module RRB
     return dst
   end
 
-  def insert_str(src, insert_lineno, delete_range, insert_str, adjust_space)
+  def insert_str(src, insert_lineno, delete_range, insert_str)
     return nil if insert_lineno == nil && delete_range == nil
     
     dst = ''
     lines = src.split(/^/)
 
     0.upto(lines.length - 1) do |lineno|
-      if lineno == insert_lineno
-        if adjust_space
-          def_space_num =  count_indent_str(lines[lineno - 1])
-          if lines[lineno - 1] =~ /^(\s*)class/ || lines[lineno - 1] =~ /^(\s*)def/
-            def_space_num += INDENT_LEVEL
-          end
-          insert_lines = insert_str.split("\n")
-          base_space_num = count_indent(insert_lines)
-          reindent_lines(insert_lines, def_space_num).each do |str|
-            dst << str + "\n"
-          end
-        else
-          dst << insert_str
-        end
+      if insert_lineno && lineno == insert_lineno - 1
+        dst << insert_str
+        next if /^\s*$/ =~ lines[lineno]
       end
       if delete_range
         unless (delete_range.head.lineno-1..delete_range.tail.lineno-1) === lineno
@@ -189,5 +178,13 @@ module RRB
     delete_indent( lines ).map{|line| " "*level + line}
   end
 
+  def reindent_lines_node( lines, node )
+    return lines if node == nil
+    reindent_lines( lines, node.range.head.head_pointer + INDENT_LEVEL )
+  end
+
+  def reindent_str_node( str, node )
+    reindent_lines_node( str.split(/^/), node ).join
+  end
   
 end
