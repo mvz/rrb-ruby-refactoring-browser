@@ -71,16 +71,14 @@ module RRB
         
         if used_const == @old_const then
           id = constinfo.body
-          @result << Replacer.new(id.lineno, id.pointer,
-                                    @old_const_body, @new_const_body)
+          @result << Replacer.new_from_id( id, @new_const_body)
         end
       end
     end
 
     def visit_class(namespace, node)
       if resolve_const(@dumped_info, namespace.str, node.name_id.name) == @old_const
-        @result << Replacer.new(node.name_id.lineno, node.name_id.pointer,
-                                @old_const_body, @new_const_body)
+        @result << Replacer.new_from_id( node.name_id, @new_const_body )
       end
     end
 
@@ -106,8 +104,7 @@ module RRB
     end
 
     def rename_constant?(old_const, new_const)
-      return false unless RRB.valid_const_var?(new_const)
-      old_const = old_const[2..-1] if old_const[0,2] == "::"
+      return false unless RRB.valid_const?(new_const)
       ns = Namespace.new(old_const)
       if get_dumped_info.resolve_const( ns.chop, new_const ).nil? then
         return true
