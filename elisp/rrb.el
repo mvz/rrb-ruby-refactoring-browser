@@ -15,9 +15,6 @@
   "*Base file name to use error log file")
 
 ;;;; Internal variables
-(defvar rrb-main-buffer nil
-  "Ruby main script buffer")
-
 (defconst rrb-io-splitter "\C-a")
 (defconst rrb-io-terminator "-- END --")
 
@@ -48,10 +45,6 @@
   (substring str 0 -1))
 
 ;;;; Main functions
-(defun rrb-set-main-script-buffer (buffer-name)
-  "Set ruby main script buffer"
-  (interactive "*bSelect main script: ")
-  (setq rrb-main-buffer (get-buffer buffer-name)))
 
 (defun rrb-all-ruby-script-buffer ()
   "Return all ruby script buffer,`ruby script buffer' means `its file name
@@ -73,10 +66,7 @@ matches with rrb-ruby-file-name-regexp'"
   (save-excursion
     (set-buffer rrb-input-buffer)
     (erase-buffer)
-    (rrb-insert-input-string rrb-main-buffer)
-    (mapcar (lambda (buffer)
-	      (unless (eq buffer rrb-main-buffer)
-		(rrb-insert-input-string buffer)))
+    (mapcar 'rrb-insert-input-string
 	    (rrb-all-ruby-script-buffer))
     (insert rrb-io-terminator)
     (insert rrb-io-splitter)))
@@ -193,3 +183,28 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-setup-input-buffer)
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
 
+;;;; Refactoring: Extract method
+(defun rrb-begin-line-num (begin)
+  (goto-char begin)
+  (if (eolp)
+      (forward-char)
+    (beginning-of-line))
+  (1+ (count-lines (point-min) (point))))
+
+(defun rrb-end-line-num (end)
+  (goto-char end)
+  (if (bolp)
+      (backward-char))
+  (count-lines (point-min) (point)))
+
+(defun rrb-extract-method (begin end new_method)
+  "Refactor code: Extract method"
+  (interactive "r\nsNew method: ")
+  (save-excursion
+    (rrb-setup-input-buffer)
+    (rrb-do-refactoring "--extract-method"
+			(buffer-file-name)
+			new_method
+			(number-to-string (rrb-begin-line-num begin))
+			(number-to-string (rrb-end-line-num end)))))
+					  
