@@ -56,7 +56,7 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals( ["pro1", "pro2"], info.protected_method_names.sort )
     assert_equals( [], info.private_method_names )
     assert_equals( ["sing"], info.singleton_method_names )
-    assert_equals( ["C1", "C3"], info.consts )
+    assert_equals( ["C1", "C3"], info.consts.sort )
   end
 
   def test_has_method?
