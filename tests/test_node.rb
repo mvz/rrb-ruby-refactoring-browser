@@ -191,6 +191,32 @@ class TestConstInfo < RUNIT::TestCase
                    consts.map{|const| const.body.name} )
   end
 end
+class TestMethod < RUNIT::TestCase
+  class Visitor1 < RRB::Visitor
+    def initialize
+      @methods = []
+    end
+    attr_reader :methods
+
+    def visit_method(namespace, node)
+      @methods << RRB::Method.new(namespace, node)
+    end
+  end
+  def test_name
+    parser = RRB::Parser.new
+    tree = parser.run File.open( "samples/parser_sample.rb", "r" )
+
+    # test visit_class and visit_method
+    visitor1 = Visitor1.new
+    tree.accept( visitor1 )
+    
+    assert_equal(["TestClassA::TestClassB#method_4", "TestClassA#<=>", "TestClassA#method_1", "TestClassA#method_2", "TestClassA#method_3", "TestClassA#method_8", "TestClassA#method_9", "TestClassA::[sclass]#method_7"],
+ visitor1.methods.map{|method| method.name})
+    assert_equal(["method_4", "<=>", "method_1", "method_2", "method_3", "method_8", "method_9", "method_7"],
+ visitor1.methods.map{|method| method.bare_name})
+
+  end
+end
 
 if $0 == __FILE__
   if ARGV.size == 0
