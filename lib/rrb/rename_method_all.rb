@@ -108,11 +108,9 @@ module RRB
     end
 
     def classes_define_method( method )
-      classes = Set.new
-      @files.each do |scriptfile|
-        classes.merge scriptfile.classes_define_method( method )
+      @files.inject( Set.new ) do |r,scriptfile|
+        r | scriptfile.classes_define_method( method )
       end
-      classes
     end
     
     def rename_method_all?( old_method, new_method )
