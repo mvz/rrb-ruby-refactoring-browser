@@ -42,14 +42,14 @@ TEST_CLASS_A_METHOD_1 =
     assert_equals("", script.get_method_on_region('samples/parser_sample.rb', 38..38).name)
   end
 
-  def test_check_namespace_defined
+  def test_count_namespace_definitoin
     filename = 'samples/parser_sample.rb'
     script = RRB::Script.new_from_filenames(filename)
-    assert_equals(true, 
-                  script.check_namespace_defined(filename,
+    assert_equals(1, 
+                  script.count_namespace_definition(filename,
                                                  RRB::NS.new('TestClassA')))
-    assert_equals(false, 
-                  script.check_namespace_defined(filename,
+    assert_equals(0, 
+                  script.count_namespace_definition(filename,
                                                  RRB::NS.new('NoClass')))
 
   end
