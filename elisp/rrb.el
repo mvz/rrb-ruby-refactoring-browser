@@ -533,7 +533,8 @@ matches with rrb-ruby-file-name-regexp'"
   "completion read for extract superclass"
   (rrb-comp-read-type-6 "--classes"
 		       (rrb-get-value-on-cursor "--class")
-		       "Namespace: " "New Class: " "Targets: "))
+		       "Location: " "New Class: " 
+		       "Targets(type just RET to finish): "))
 
 (defun rrb-extract-superclass (namespace new-class targets)
   "Refactor code: Extract superclass"
