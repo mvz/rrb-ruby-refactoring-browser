@@ -19,6 +19,9 @@ class TestScript_PullupMethod < RUNIT::TestCase
                                                            'foo'),
                                                RRB::NS['Base'], filename, 2))
     assert_equals("Derived#foo uses Derived#bar\n", script.error_message)    
+    assert_equals(false, script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'],                                                            'foo'),
+                                               RRB::NS['Base'], filename, 2))
+    assert_equals("Derived.foo uses Derived.bar\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 
                                                            'hoge'),
                                                RRB::NS['Base'], filename, 2))
