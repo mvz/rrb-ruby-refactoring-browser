@@ -66,10 +66,11 @@ module RRB
     end
 
     def real_method( methodname )
-      if methodname.class_method?
-        raise
+      if methodname.instance_method?
+        self[methodname.namespace].real_method( methodname.bare_name )
+      else
+        self[methodname.namespace].real_class_method( methodname.bare_name )
       end
-      self[methodname.namespace].real_method( methodname.bare_name )
     end
 
     def real_class_method( methodname )
@@ -166,7 +167,7 @@ module RRB
         return ClassMethod.new( self.class_name, methodname )
       end
       @ancestors.each do |ancestor|
-        if ancestor.has_method?( methodname, false )
+        if ancestor.has_class_method?( methodname, false )
           return ClassMethod.new( ancestor.class_name, methodname )
         end
       end
