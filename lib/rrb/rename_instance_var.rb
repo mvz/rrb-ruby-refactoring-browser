@@ -10,6 +10,7 @@ module RRB
       @old_var = old_var
       @new_var = new_var
       @dumped_info = dumped_info
+      @my_info = dumped_info[@str_namespace]
       @result = []
     end
 
@@ -21,7 +22,7 @@ module RRB
       unless info
         return false
       end
-      unless info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
+      unless @my_info.ancestor_names.include?(str_namespace) || info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
         return false
       end      
       return true
@@ -53,6 +54,7 @@ module RRB
       @dumped_info = dumped_info
       @old_var = old_var
       @new_var = new_var
+      @my_info = @dumped_info[@str_namespace]
       @result = true
     end
 
@@ -63,13 +65,16 @@ module RRB
       unless info
         return false
       end
-      unless info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
+      unless @my_info.ancestor_names.include?(str_namespace) || info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
         return false
       end   
       return true
     end
 
     def rename_instance_var?(str_namespace, node)
+      unless @my_info
+        return false
+      end
       if check_namespace(str_namespace)
         node.instance_vars.each do |id|
           if id.name == @new_var then
