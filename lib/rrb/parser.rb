@@ -16,7 +16,7 @@ module RRB
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
     end
-    
+
     # parse and return tree
     def run( file )
       @scope_stack = Array.new
@@ -92,6 +92,7 @@ module RRB
     end
 
     def on__assignable( var, arg )
+      return unless var.kind_of?( IdInfo )
       @scope_stack.last.local_vars << var
     end
 
@@ -101,6 +102,7 @@ module RRB
     end
     
     def on__varref( var )
+      return unless var.kind_of?( IdInfo )
       if @scope_stack.last.local_vars.find{|i| i.name == var.name } then
 	@scope_stack.last.local_vars << var
       elsif var.type == :id
