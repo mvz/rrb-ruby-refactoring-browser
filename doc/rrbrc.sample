@@ -1,0 +1,22 @@
+#
+# sample for .rrbrc
+#   .rrbrc is configuration file for rrb
+#   this file is ruby script
+
+
+#  RRB::CONF['WORK_DIR_BASENAME'] is basename of working directory
+#  default is '/tmp/rrb_work'
+#RRB::CONF['WORK_DIR_BASENAME'] = '/tmp/rrb_work'
+
+#  RRB::CONF['TAB_WIDTH'] is width of one tab
+#  default is 8
+#RRB::CONF['TAB_WIDTH'] = 8
+
+#  RRB::CONF['INDENT_LEVEL'] is the number of spaces in one indent
+#  default is 2
+#RRB::CONF['INDENT_LEVEL'] = 2
+
+#  RRB::CONF['RUBY_OPTS'] is options for ruby command that runs
+#  when rrb gets class information with reflection
+#  default is ''
+#RRB::CONF['RUBY_OPTS'] = ''
