@@ -7,18 +7,22 @@ module RRB
     def initialize(start_lineno, end_lineno)
       @start_lineno = start_lineno
       @end_lineno = end_lineno
+      @namespace = @m_node = nil
     end
-    attr_reader :namespace
+    attr_reader :namespace, :m_node
 
     def visit_toplevel(namespace, node)
       @namespace = namespace
+      @m_node = node
     end
     
-    def visit_class(namespace, node)
-      if node.range.contain?( @start_lineno .. @end_lineno )
-        @namespace = NodeNamespace.new(node, namespace)
+    def visit_method(namespace, node)
+      if node.range.contain?( @start_lineno .. @end_lineno ) then
+        @m_node = node
+        @namespace = namespace
       end
     end
+    
   end
   
   class ExtractMethodOwnerVisitor < Visitor
@@ -90,8 +94,8 @@ module RRB
 
   class ExtractMethodCheckVisitor < Visitor
     
-    def initialize(str_owner, dumped_info, new_method, start_lineno, end_lineno)
-      @str_owner = str_owner
+    def initialize(owner, dumped_info, new_method, start_lineno, end_lineno)
+      @owner = owner
       @dumped_info = dumped_info
       @new_method = new_method
       @start_lineno = start_lineno
@@ -122,7 +126,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      if @dumped_info[NodeNamespace.new(node, namespace).str].subclass_of?(@str_owner)
+      if @dumped_info[NodeNamespace.new(node, namespace).normal].subclass_of?(@owner.normal)
         node.method_defs.each do |defs|
           @result = false if defs.name == @new_method
         end
@@ -250,7 +254,7 @@ module RRB
       
       @files.each do |scriptfile|
 	next unless scriptfile.path == path
-	if not scriptfile.extract_method?(owner.str, get_dumped_info, new_method, start_lineno, end_lineno)
+	if not scriptfile.extract_method?(owner, get_dumped_info, new_method, start_lineno, end_lineno)
           return false
 	end
       end
