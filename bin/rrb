@@ -1,164 +1,26 @@
 #!/usr/bin/env ruby
 require 'rrb/emacs_interface'
 
-def print_usage
-
-  print "\
-Usage: rrb refactoring-type refactoring-parameter io-type
-
-  refactoring-type
-    * --rename-local-variable  Class#method old_var new_var
-    * --rename-method-all  old_method new_method
-    * --rename-class-variable  Class old_var new_var
-    * --rename-instance-variable  Class old_var new_var
-    * --rename-global-variable  old_var new_var
-    * --extract-method path new_method start_lineno end_lineno
-    * --rename-method old_method new_method classes...
-
-  io-type
-    * --stdin-stdout
-    * --filein-overwrite FILES..
-    * --filein-stdout FILES..
-"
-end
-
-def split_method_name( str )
-  a, b = str.split( /#/ )
-  return RRB::Namespace.new(a), b
-end
-
 if $0 == __FILE__ then
-
-  if ARGV.size == 0 then
-    print_usage
+  if ARGV.empty? then
+    print RRB::EmacsInterface::USAGE
     exit
   end
-
+  
   begin
-
-    #  analyze options
-    refactor_type = ARGV.shift
-    case refactor_type
-    when '--rename-local-variable'
-      namespace, method_name = split_method_name ARGV.shift
-      old_var = ARGV.shift
-      new_var = ARGV.shift
-    when '--rename-instance-variable'
-      namespace = RRB::Namespace.new( ARGV.shift )
-      old_var = ARGV.shift
-      new_var = ARGV.shift
-    when '--rename-class-variable'
-      namespace = RRB::Namespace.new( ARGV.shift )
-      old_var = ARGV.shift
-      new_var = ARGV.shift
-    when '--rename-global-variable'
-      old_var = ARGV.shift
-      new_var = ARGV.shift
-    when '--rename-method-all'
-      old_method = ARGV.shift
-      new_method = ARGV.shift
-    when '--extract-method'
-      filepath = ARGV.shift
-      new_method = ARGV.shift
-      start_lineno = ARGV.shift.to_i
-      end_lineno = ARGV.shift.to_i
-    when '--move-method'
-      method_name = ARGV.shift
-      old_namespace = RRB::Namespace.new( ARGV.shift )
-      new_namespace = RRB::Namespace.new( ARGV.shift )
-    when '--rename-method'
-      old_method = ARGV.shift
-      new_method = ARGV.shift
-      for i in 0...(ARGV.size)
-	break if /^--/ =~ ARGV[i]
-      end
-      classes = ARGV[0,i]
-      i.times{ ARGV.shift }
+    interface = RRB::EmacsInterface.new( ARGV )
+    if interface.enable_refactor? then
+      interface.refactor
+      interface.output
     else
-      STDERR << "Unknown refactoring: #{refactor_type}\n"
-      exit 2
+      STDERR << "REJECTED\n"
+      exit 1
     end
-
-    case ARGV.shift
-    when '--stdin-stdout', nil
-      script = RRB::Script.new_from_io( STDIN )
-      output = proc{ script.result_to_io( STDOUT ) }
-    when '--filein-overwrite'      
-      script = RRB::Script.new_from_filenames( ARGV )
-      output = proc{ script.result_rewrite_file }
-    when '--filein-stdout'
-      script = RRB::Script.new_from_filenames( ARGV )
-      output = proc{ script.result_to_io( STDOUT ) }
-    else
-      STDERR << "Unknown input/output option\n"
-    end
-
-    # refactoring
-    case refactor_type
-    when '--rename-local-variable'
-      unless script.rename_local_var?( namespace, method_name, old_var, new_var )
-	STDERR << "REJECTED\n"
-	exit 1
-      end
-      script.rename_local_var( namespace, method_name, old_var, new_var )
-      output.call
-    when '--rename-instance-variable'
-      unless script.rename_instance_var?(namespace, old_var, new_var)
-        STDERR << "REJECTED\n"
-        exit 1
-      end
-      script.rename_instance_var(namespace, old_var, new_var)
-      output.call
-    when '--rename-class-variable'
-      unless script.rename_class_var?(namespace, old_var, new_var)
-        STDERR << "REJECTED\n"
-        exit 1
-      end
-      script.rename_class_var(namespace, old_var, new_var)
-      output.call
-    when '--rename-global-variable'
-      unless script.rename_global_var?(old_var, new_var )
-	STDERR << "REJECTED\n"
-	exit 1
-      end
-      script.rename_global_var(old_var, new_var )
-      output.call
-    when '--rename-method-all'
-      unless script.rename_method_all?( old_method, new_method )
-	STDERR << "REJECTED\n"
-	exit 1
-      end
-      script.rename_method_all( old_method, new_method )
-      output.call
-    when '--extract-method'
-      unless script.extract_method?(filepath, new_method, start_lineno, end_lineno)
-        STDERR << "REJECTED\n"
-        exit 1
-      end
-      script.extract_method(filepath, new_method, start_lineno, end_lineno)
-      output.call
-    when '--move-method'
-      unless script.move_method?(method_name, old_namespace, new_namespace)
-        STDERR << "REJECTED\n"
-        exit 1
-      end
-      script.move_method(method_name, old_namespace, new_namespace)
-      output.call
-    when '--rename-method'
-      unless script.rename_method?( classes, old_method, new_method )
-	STDERR << "REJECTED\n"
-	exit 1
-      end
-      script.rename_method( classes, old_method, new_method )
-      output.call
-    end
-    
   rescue
     STDERR << "ERROR: exeption raised: #{$!.message}\n"
     STDERR << "stacktrace: \n"
     STDERR.puts $!.backtrace
     exit 2
   end
-    
   
 end
