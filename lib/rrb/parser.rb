@@ -187,11 +187,11 @@ module RRB
 
     def on__eval_string_end( context, str )
       if str == "}"
-	mcalls, fcalls, lvars, gvars, ivars, cvars =
+	mcalls, fcalls, lvars, gvars, ivars, cvars, consts =
 	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
 				   pointer - @eval_str.size - 1  )
       else
-	mcalls, fcalls, lvars, gvars, ivars, cvars =
+	mcalls, fcalls, lvars, gvars, ivars, cvars, consts =
 	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
 				   pointer - @eval_str.size )
       end
@@ -201,6 +201,7 @@ module RRB
       @scope_stack.last.global_vars.concat gvars
       @scope_stack.last.instance_vars.concat ivars
       @scope_stack.last.class_vars.concat cvars
+      @scope_stack.last.consts.concat consts
     end
     
   end
@@ -232,6 +233,7 @@ module RRB
       global_vars = @scope_stack[0].global_vars
       instance_vars = @scope_stack[0].instance_vars
       class_vars = @scope_stack[0].class_vars
+      consts = @scope_stack.first.consts
       
       method_calls = adjust_id( method_calls, lineno, pointer )
       fcalls = adjust_id( fcalls, lineno, pointer )
@@ -239,9 +241,10 @@ module RRB
       global_vars = adjust_id( global_vars, lineno, pointer )
       instance_vars = adjust_id( instance_vars, lineno, pointer )
       class_vars = adjust_id( class_vars, lineno, pointer )
+      consts.each{|const| const.adjust_id!( lineno, pointer )}
       
       return method_calls, fcalls, local_vars, global_vars, instance_vars,
-	class_vars
+	class_vars, consts
     end
     
   end
