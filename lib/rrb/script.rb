@@ -7,7 +7,7 @@ require 'rrb/default'
 
 module RRB
 
-  IO_SPLITTER = "\C-l"
+  IO_SPLITTER = "\C-a"
   IO_TERMINATOR = '-- END --'
   
   class Script
@@ -43,18 +43,17 @@ module RRB
     
     def rename_method_all?( old_method, new_method )
       info = get_dumped_info
+      
       info.each do |class_info|
 	has_old_method = class_info.has_method?( old_method ) 
 	has_new_method = class_info.has_method?( new_method ) 
 	return false if has_old_method && has_new_method
       end
 
-      refactored_classes = info.classes_having_method( old_method )
-      
+      refactored_classes = info.classes_having_method( old_method )      
       @files.each do |scriptfile|
 	scriptfile.method_define_check( old_method, refactored_classes )
       end
-
       return false unless refactored_classes.empty?
       
       @files.each do |scriptfile|
@@ -62,6 +61,7 @@ module RRB
 	  return false
 	end
       end
+      
       return true
     end
 

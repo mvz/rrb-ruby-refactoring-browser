@@ -6,7 +6,7 @@ require 'rrb/script.rb'
 class TestScript < RUNIT::TestCase
 
   RENAME_LOCAL_VAR_INPUT = "\
-/home/ohai/ruby/test/file1.rb\C-l
+/home/ohai/ruby/test/file1.rb\C-a
 
 # comment
 
@@ -19,17 +19,17 @@ class Rename
     print z**4, z**5
   end
 end
-\C-l/home/ohai/ruby/test/file2.rb\C-l
+\C-a/home/ohai/ruby/test/file2.rb\C-a
 class Rename
   def method_2( x, y)
     x**2 + y**2
   end
 end
-\C-l-- END --\C-l
+\C-a-- END --\C-a
 "
 
   RENAME_LOCAL_VAR_OUTPUT = "\
-/home/ohai/ruby/test/file1.rb\C-l
+/home/ohai/ruby/test/file1.rb\C-a
 
 # comment
 
@@ -42,13 +42,13 @@ class Rename
     print z**4, z**5
   end
 end
-\C-l/home/ohai/ruby/test/file2.rb\C-l
+\C-a/home/ohai/ruby/test/file2.rb\C-a
 class Rename
   def method_2( yy, y)
     yy**2 + y**2
   end
 end
-\C-l-- END --\C-l
+\C-a-- END --\C-a
 "
 
   def test_rename_local_var?
@@ -69,7 +69,7 @@ end
   end
 
   RENAME_METHOD_ALL_INPUT = "\
-/home/ohai/ruby/main.rb\C-l
+/home/ohai/ruby/main.rb\C-a
 require 'sub.rb'
 
 class B < A
@@ -93,7 +93,7 @@ if __FILE__ == $0 then
   p obj.bar
 end
 
-\C-l/home/ohai/ruby/sub.rb\C-l
+\C-a/home/ohai/ruby/sub.rb\C-a
 
 class A
 
@@ -110,11 +110,11 @@ class A
   end
   
 end
-\C-l-- END --\C-l
+\C-a-- END --\C-a
 "
 
   RENAME_METHOD_ALL_OUTPUT = "\
-/home/ohai/ruby/main.rb\C-l
+/home/ohai/ruby/main.rb\C-a
 require 'sub.rb'
 
 class B < A
@@ -138,7 +138,7 @@ if __FILE__ == $0 then
   p obj.bar
 end
 
-\C-l/home/ohai/ruby/sub.rb\C-l
+\C-a/home/ohai/ruby/sub.rb\C-a
 
 class A
 
@@ -155,7 +155,7 @@ class A
   end
   
 end
-\C-l-- END --\C-l
+\C-a-- END --\C-a
 "
 
   def test_rename_method_all?

@@ -18,7 +18,7 @@
 (defvar rrb-main-buffer nil
   "Ruby main script buffer")
 
-(defconst rrb-io-splitter "\C-l")
+(defconst rrb-io-splitter "\C-a")
 (defconst rrb-io-terminator "-- END --")
 
 (defvar rrb-input-buffer (get-buffer-create " *rrb-input*"))
