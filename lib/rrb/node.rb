@@ -294,7 +294,7 @@ module RRB
       new( nil, nil )
     end
 
-    def str
+    def name
       @nodes.map{|c| c.name}.join('::')
     end
 
@@ -336,7 +336,7 @@ module RRB
       new( arg )
     end
     
-    def str
+    def name
       @namespace.join('::')
     end
 
@@ -358,7 +358,7 @@ module RRB
     end
 
     def inspect
-      "#<RRB::NS: #{str}>"
+      "#<RRB::NS: #{name}>"
     end
 
     def chop
@@ -383,8 +383,8 @@ module RRB
       @node = method_node
     end
     
-    def fullname
-      @namespace.str + '#' + @node.name
+    def bare_name
+      @node.name
     end
     
     def local_vars
@@ -392,7 +392,7 @@ module RRB
     end
 
     def name
-      @node.name
+      @namespace.name + '#' + @node.name
     end
     
   end
