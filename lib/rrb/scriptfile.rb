@@ -14,6 +14,7 @@ module RRB
       @new_script = nil
       @error_message = ""
     end
+    attr_reader :path, :new_script
     
     def write_source_to( dir )
       filepath = File.join( dir,@path )
