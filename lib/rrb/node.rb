@@ -453,6 +453,14 @@ module RRB
       "#<#{self.class.to_s} #{self.name}>"
     end
 
+    def eql?(other)
+      self == other
+    end
+
+    def hash
+      @namespace.hash ^ @str_method_name.hash
+    end
+    
     def MethodName.[](str)
       case str
       when /\A([^#.]*)#([^#.]+)\Z/
