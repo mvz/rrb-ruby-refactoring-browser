@@ -70,6 +70,24 @@ end
     assert_equals( RENAME_LOCAL_VAR_OUTPUT, dst )
   end
 
+  def test_rename_instance_var
+    script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
+    script.rename_instance_var(['X', 'A'], '@a', '@d')
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(File.open('samples/rename_instance_var_sample_after.rb').read, dst)
+                    
+  end
+
+
+  def test_rename_instance_var?
+    script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
+    assert_equals(true, script.rename_instance_var?(['X', 'A'], '@a', '@d'))
+    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@b'))
+    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@c'))
+    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', 'dd'))
+  end
+
   RENAME_METHOD_ALL_INPUT = "\
 /home/ohai/ruby/main.rb\C-a
 require 'sub.rb'
