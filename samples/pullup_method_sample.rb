@@ -16,4 +16,8 @@ class Derived < Base
   end
   def asdf
   end
+  class Derived2 < Base
+    def bar
+    end
+  end
 end
