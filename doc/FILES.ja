@@ -1,0 +1,45 @@
+ファイル一覧
+
+bin/   実行可能なファイル
+  rrb   emacsとのインターフェース
+
+lib/   RRBのライブラリ部分
+  rrb/   
+    dump_modules.rb    リフレクションを使ってクラスのデータを集める
+    dumped_info.rb     リフレクションを使って集めたデータを得る
+    emacs_interface.rb emacsとのインターフェース  
+    node.rb            パーサで作られる構文木の個々のノードを定義
+    parser.rb          パーサ
+    script.rb          複数のスクリプトを束ねたclass Scriptを定義
+    scriptfile.rb      スクリプトファイル1つをあらわすclass ScriptFileを定義
+    utils.rb           その他
+
+ripper/  ripper(Rubyのパーサ)にパッチを当てたもの
+  README.ja  
+  *
+
+samples/  テスト用のサンプルスクリプト
+  parser_sample.rb
+  rename_var_sample.rb
+  rename_var_sample_after.rb
+  rename_var_sample_stream
+  visitor_sample.rb
+
+tests/  ユニットテスト
+  all.rb  test_*.rbというスクリプトを実行するスクリプト
+  test_dumped_info.rb
+  test_function.rb
+  test_node.rb
+  test_parser.rb
+  test_script.rb
+  test_scriptfile.rb
+
+doc/  ドキュメント
+
+  FILES.ja このファイル
+
+  dev/  開発用ドキュメント
+    init.rd  開発開始時に見るべきドキュメント
+    ripper_memo.txt  ripperに関する覚え書き
+    ripper_ref.rd  ripperのリファレンス
+    rrb_memo.txt  rrbに関する覚え書き
