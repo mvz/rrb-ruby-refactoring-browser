@@ -363,6 +363,8 @@ module RRB
       return nil if @namespace.empty?
       Namespace.new( @namespace[0..-2] )
     end
+
+    Toplevel = Namespace.new( [] )
   end
 
   # shortcut name
