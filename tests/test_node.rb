@@ -169,7 +169,6 @@ class TestNode < RUNIT::TestCase
     assert( !def_range.out_of?( 1..2 ) )
     assert( !def_range.out_of?( 51..55 ) )
   end
-  
 end
 
 class TestConstInfo < RUNIT::TestCase
@@ -191,7 +190,7 @@ class TestConstInfo < RUNIT::TestCase
                    consts.map{|const| const.body.name} )
   end
 end
-class TestMethod < RUNIT::TestCase
+class TestNodeMethod < RUNIT::TestCase
   class Visitor1 < RRB::Visitor
     def initialize
       @methods = []
