@@ -19,7 +19,6 @@ class TestScript_PullupMethod < RUNIT::TestCase
     assert_equals("Derived is not the superclass of Base\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 'asdf', RRB::NS['Base'], filename, lineno))
     assert_equals("Base already has asdf\n", script.error_message)    
-
   end
 
   def test_pullup_method
@@ -56,6 +55,9 @@ class Derived < Base
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
 class Base
+end
+\C-a/home/yuichi/work/rrb/private/test3.rb\C-a
+class Derived < Base
 end
 \C-a-- END --\C-a
 "
@@ -104,6 +106,15 @@ class Base
 end
 \C-a-- END --\C-a
 "
+  def test_pullup_method_plural_files?
+    script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
+    assert_equals(true,
+                  script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 2))
+    assert_equals(false,
+                  script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 2))
+    assert_equals("No Definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+
+  end
 
   def test_pullup_method_plural_files
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
