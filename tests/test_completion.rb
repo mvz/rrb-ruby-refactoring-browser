@@ -50,7 +50,7 @@ end
   def test_refactable_classes
     scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     classes = scriptfile.refactable_classes
-    assert_equals( Set['::A','::B','::C','::C::D'],
+    assert_equals( Set['C::D', 'A','B','C',],
 		  classes )
   end
 
@@ -117,7 +117,7 @@ end
 
   def test_refactable_classes
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
-    assert_equals( Set['::A', '::B'],
+    assert_equals( Set['A', 'B'],
 		  script.refactable_classes )
   end
   
