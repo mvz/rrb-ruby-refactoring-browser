@@ -13,6 +13,10 @@
 
 ;;; Code:
 
+;;;; Keybind for test new undo
+(global-unset-key "\C-cu")
+(global-set-key "\C-cu" 'rrb-undo-1)
+
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
   "*Regular expression matching ruby script file name")
@@ -52,7 +56,7 @@
   "Directory which stores undo files")
 
 (defvar rrb-undo-1-list nil)
-(defvar rrb-redo-1-list nil)
+(defvar rrb-pending-undo-1-list nil)
 
 ;;;; Global Hook
 (add-hook 'kill-emacs-hook 'rrb-delete-undo-files)
@@ -514,40 +518,24 @@ This hook clears undo files when ary ruby script buffer is changed"
 
 (defun rrb-undo-1-buffer (undo-markar)
   (set-buffer (car undo-markar))
-  (let ((redo-markar buffer-list))
+  (undo-boundary)
+  (let ((redo-markar buffer-undo-list))
     (undo (rrb-undo-1-count buffer-undo-list (cadr undo-markar)))
     (undo-boundary)
-    (list (current-buffer) redo-markar buffer-undo-list undo-marker)))
-
-
-(defun rrb-check-redo-1 ()
-  (and (not (eq rrb-redo-1-list nil))
-       (rrb-all-p (lambda (redo-info)
-                    (set-buffer (car redo-info))
-                    (eq buffer-undo-list (caddr redo-info)))
-                  (car rrb-redo-1-list))))
-
-(defun rrb-redo-1 ()
-  (interactive)
-  (save-current-buffer
-    (unless (rrb-check-redo-1)
-      (setq rrb-redo-1-list nil)
-      (error "Can't redo: "))
-    (mapcar 'rrb-undo-1-buffer (car rrb-redo-l-list))
-    (setq this-command 'rrb-redo-1)
-    (setq rrb-undo-1-list (cons (caddar rrb-redo-1-list) rrb-undo-1-list))
-    (setq rrb-redo-1-list (cdr rrb-redo-1-list))))
+    (list (current-buffer) redo-markar)))
     
 (defun rrb-undo-1 ()
   (interactive)
   (save-current-buffer
-    (if (eq rrb-undo-1-list nil)
+    (unless (eq last-command 'rrb-undo-1)
+      (setq rrb-pending-undo-1-list rrb-undo-1-list))
+    (if (eq rrb-pending-undo-1-list nil)
         (error "Can't undo"))
-    (setq rrb-redo-1-list (cons (mapcar 'rrb-undo-1-buffer
-                                        (car rrb-undo-1-list))
-                                rrb-redo-1-list))
+    (setq rrb-undo-1-list (cons (mapcar 'rrb-undo-1-buffer
+                                        (car rrb-pending-undo-1-list))
+                                rrb-undo-1-list))
     (setq this-command 'rrb-undo-1)
-    (setq rrb-undo-1-list (cdr rrb-undo-1-list))))
+    (setq rrb-pending-undo-1-list (cdr rrb-pending-undo-1-list))))
             
 ;;;; Refactoring
 
