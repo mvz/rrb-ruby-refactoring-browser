@@ -52,38 +52,45 @@ module RRB
     end
   end
 
+  module_function
+  def fragment_of_call_method( new_method, args, assigned )
+    if assigned.empty? then
+      "#{new_method}(#{args.join(', ')})\n"
+    else
+      "#{assigned.join(', ')} = #{new_method}(#{args.join(', ')})\n"
+    end
+  end
+  
+  def fragment_of_def_new_method(new_method, args )
+    "def #{new_method}(" + args.join(", ") + ")\n"
+  end
+
+  def lines_of_new_method(new_method, args, assigned, extracted )
+    result = reindent_lines( extracted, INDENT_LEVEL )
+    result.unshift fragment_of_def_new_method( new_method, args )
+    unless assigned.empty? then
+      result.push " "*INDENT_LEVEL + "return " + assigned.join(", ") + "\n"
+    end
+    result.push "end\n"
+  end
   
   def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
     dst = ''
 
     lines = src.split(/^/)
     
-    def_space_num =  RRB.space_width(/^(\s*)/.match(lines[method_lineno])[0])
-    call_space_num = RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
+    def_space_num =  count_indent_str( lines[method_lineno] ) 
+    call_space_num = count_indent_str( lines[start_lineno] )
+    extracted = lines[start_lineno..end_lineno]
     
     0.upto(lines.length-1) do |lineno|
       if lineno == method_lineno
-        dst << "\s" * def_space_num + "def #{new_method}("
-        dst << args.join(", ")
-        dst << ")\n"
-        for i in start_lineno..end_lineno
-          space_num = lines[i][/^\s*/].length 
-          imp_space_num = def_space_num + space_num - call_space_num + 2
-          dst << "\s" * imp_space_num + /^(\s*)(.*)/.match(lines[i])[2] + "\n"
-        end
-        unless assigned.empty?
-          dst << "\s" * imp_space_num + "return " + assigned.join(", ") + "\n"
-        end
-        dst << "\s" * def_space_num + "end\n"
+        lines_of_def = lines_of_new_method( new_method, args, assigned, extracted )
+        dst << reindent_lines( lines_of_def, def_space_num ).join
       end
       if lineno == end_lineno
         dst << "\s" * call_space_num
-        unless assigned.empty?
-          dst << assigned.join(", ") + " = " 
-        end
-        dst << "#{new_method}("
-        dst << args.join(", ")
-        dst << ")\n"
+        dst << fragment_of_call_method( new_method, args, assigned )
       end
       unless (start_lineno..end_lineno) === lineno
         dst << lines[lineno]
@@ -91,7 +98,6 @@ module RRB
     end
     dst
   end
-  module_function :extract_method
 
   class ScriptFile
     def extract_method(new_method, start_lineno, end_lineno)
