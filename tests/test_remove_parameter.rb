@@ -28,19 +28,19 @@ class TestScript_RemoveParameter < RUNIT::TestCase
                   script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
                                                        'target_function'),
                                            'hoge'))
-    assert_equals("hoge: no such parameter\n", script.error_message)
+    assert_equals("hoge: no such parameter", script.error_message)
     assert_equals(false,
                   script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
                                                        'using_parameter_function'),
                                            'heke'))
-    assert_equals("heke is used\n",
+    assert_equals("heke is used",
                   script.error_message)
 
     assert_equals(false,
                   script.remove_parameter?(RRB::MN.new(RRB::NS.new('Derived'), 
                                                        'base_function'),
                                            'heke'))
-    assert_equals("Derived#base_function isn't defined\n",
+    assert_equals("Derived#base_function isn't defined",
                   script.error_message)
 
   end

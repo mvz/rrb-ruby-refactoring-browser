@@ -123,9 +123,9 @@ EOD
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ) )
     assert_equals(true, script.rename_constant?('A::Hoge', 'HogeHoge'))
     assert_equals(false, script.rename_constant?('A::Hoge', 'Hoge2'))
-    assert_equals("A::Hoge2 is already defined\n", script.error_message)
+    assert_equals("A::Hoge2 is already defined", script.error_message)
     assert_equals(false, script.rename_constant?('::E', 'D'))
-    assert_equals("::D is already defined\n", script.error_message)
+    assert_equals("::D is already defined", script.error_message)
   end
   
 end

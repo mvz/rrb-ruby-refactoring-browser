@@ -18,21 +18,21 @@ class TestScript_PullupMethod < RUNIT::TestCase
     assert_equals(false, script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 
                                                            'foo'),
                                                RRB::NS['Base'], filename, 2))
-    assert_equals("Derived#foo uses Derived#bar\n", script.error_message)    
+    assert_equals("Derived#foo uses Derived#bar", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'],                                                            'foo'),
                                                RRB::NS['Base'], filename, 2))
-    assert_equals("Derived.foo uses Derived.bar\n", script.error_message)    
+    assert_equals("Derived.foo uses Derived.bar", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 
                                                            'hoge'),
                                                RRB::NS['Base'], filename, 2))
-    assert_equals("Derived#hoge is not defined\n", script.error_message)    
+    assert_equals("Derived#hoge is not defined", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::MN.new(RRB::NS['Base'], 
                                                            'hoge'),
                                                RRB::NS['Derived'], filename, 11))
-    assert_equals("Derived is not the superclass of Base\n", script.error_message)    
+    assert_equals("Derived is not the superclass of Base", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 'asdf'),
                                                RRB::NS['Base'], filename, 11))
-    assert_equals("Base#asdf is already defined\n", script.error_message)    
+    assert_equals("Base#asdf is already defined", script.error_message)    
   end
 
   def test_pullup_method
@@ -183,25 +183,25 @@ end
                   script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
 
-    assert_equals("Specify which definition to pull up method to\n", script.error_message)
+    assert_equals("Specify which definition to pull up method to", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
-    assert_equals("Specify which definition to pull up method to\n", script.error_message)
+    assert_equals("Specify which definition to pull up method to", script.error_message)
 
     assert_equals(false,
                   script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
-    assert_equals("Specify which definition to pull up method to\n", script.error_message)
+    assert_equals("Specify which definition to pull up method to", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
-    assert_equals("Specify which definition to pull up method to\n", script.error_message)
+    assert_equals("Specify which definition to pull up method to", script.error_message)
 
     assert_equals(false,
                   script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'fuga'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
-    assert_equals("Base.fuga is already defined\n", script.error_message)
+    assert_equals("Base.fuga is already defined", script.error_message)
 
   end
 

@@ -16,23 +16,23 @@ class TestScript_PushdownMethod < RUNIT::TestCase
                                                 RRB::NS['C'], filename, 28))
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'],'z'),
                                                  RRB::NS['C'], filename, 28))
-    assert_equals("B calls B#z\n", script.error_message)
+    assert_equals("B calls B#z", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'w'),
                                                  RRB::NS['C'], filename, 28))
     assert_equals("C#w: already defined", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'w'),
                                                  RRB::NS['B'], filename, 23))    
-    assert_equals("B is not the subclass of C\n", script.error_message)
+    assert_equals("B is not the subclass of C", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'asdf'),
                                                  RRB::NS['B'], filename, 23))    
     assert_equals("C#asdf: no definition", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                  RRB::NS['C'], filename, 28))
-    assert_equals("B calls A#a\n", script.error_message)
+    assert_equals("B calls A#a", script.error_message)
 
     assert_equals(false, script.pushdown_method?(RRB::CMN.new(RRB::NS['A'], 'a'),
                                                  RRB::NS['C'], filename, 28))
-    assert_equals("B calls A.a\n", script.error_message)
+    assert_equals("B calls A.a", script.error_message)
 
     assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                 RRB::NS['B'], filename, 23))
@@ -173,22 +173,22 @@ end
     assert_equals(false,
                   script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
-    assert_equals("Specify which definition to push down method to\n", script.error_message)
+    assert_equals("Specify which definition to push down method to", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
-    assert_equals("Specify which definition to push down method to\n", script.error_message)
+    assert_equals("Specify which definition to push down method to", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
-    assert_equals("Specify which definition to push down method to\n", script.error_message)
+    assert_equals("Specify which definition to push down method to", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
-    assert_equals("Specify which definition to push down method to\n", script.error_message)
+    assert_equals("Specify which definition to push down method to", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'fuga'),

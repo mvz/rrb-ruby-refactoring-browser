@@ -244,24 +244,24 @@ EOS
     assert_equals( true, script.rename_method_all?( 'foo', 'foobar' ) )
     
     assert_equals( false, script.rename_method_all?( 'foo', 'bar' ) )
-    assert_equals("bar: already defined at B\n", script.error_message)
+    assert_equals("bar: already defined at B", script.error_message)
     
     assert_equals( false, script.rename_method_all?( 'foo', 'baz' ) )
     
     assert_equals( false, script.rename_method_all?( 'foo', 'Foo' ) )
-    assert_equals("Foo: not a valid name for methods\n",
+    assert_equals("Foo: not a valid name for methods",
                   script.error_message)
     assert_equals( false, script.rename_method_all?( 'foo', 'foo=' ) )
-    assert_equals("foo=: not a valid name for methods\n",
+    assert_equals("foo=: not a valid name for methods",
                   script.error_message)
     assert_equals( false, script.rename_method_all?( 'foo', 'when' ) )
-    assert_equals("when: not a valid name for methods\n",
+    assert_equals("when: not a valid name for methods",
                   script.error_message)
     assert_equals( false, script.rename_method_all?( 'foo', 'foo?fee' ))
-    assert_equals("foo?fee: not a valid name for methods\n",
+    assert_equals("foo?fee: not a valid name for methods",
                   script.error_message)
     assert_equals( false, script.rename_method_all?( 'foo', 'hek' ) )
-    assert_equals("hek: already used as a local variable at B#bar\n",
+    assert_equals("hek: already used as a local variable at B#bar",
                   script.error_message)
     
     assert_equals( false, script.rename_method_all?( 'send', 'foobar' ) )

@@ -110,15 +110,15 @@ class TestScript_ExtractMethod < RUNIT::TestCase
 
     assert_equals(true, script.extract_method?(str_filename, 'fuga', 11, 14))
     assert_equals(false, script.extract_method?(str_filename, 'fuga', 8, 9))
-    assert_equals("please select statements\n", script.error_message)
+    assert_equals("please select statements", script.error_message)
     assert_equals(false, script.extract_method?(str_filename, 'hogehoge', 11, 14))
-    assert_equals("hogehoge: already defined at B\n", script.error_message)
+    assert_equals("hogehoge: already defined at B", script.error_message)
     assert_equals(false, script.extract_method?(str_filename, 'foo', 11, 14))
-    assert_equals("foo: already defined at B\n", script.error_message)
+    assert_equals("foo: already defined at B", script.error_message)
     assert_equals(false, script.extract_method?(str_filename, 'bar', 8, 9))
-    assert_equals("please select statements\n", script.error_message)
+    assert_equals("please select statements", script.error_message)
     assert_equals(false, script.extract_method?(str_filename, '@asdf', 8, 9))
-    assert_equals("@asdf is not a valid name for methods\n",
+    assert_equals("@asdf is not a valid name for methods",
                   script.error_message)
     assert_equals(true, script.extract_method?(str_filename, 'hoge', 21, 22))
   end

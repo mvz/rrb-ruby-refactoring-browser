@@ -86,10 +86,10 @@ end
 		  script.rename_method?( [ RRB::MN['B#foo'] ], 'foobar' ) )
     assert_equals( false,
 		  script.rename_method?( [ RRB::MN['B#foo'] ], 'bar' ) )
-    assert_equals( "bar: already defined at C::D\n", script.error_message)
+    assert_equals( "bar: already defined at C::D", script.error_message)
     assert_equals( false,
 		  script.rename_method?( [ RRB::MN['B#foo'] ], '@@bar' ) )
-    assert_equals( "@@bar is not a valid name for methods\n",
+    assert_equals( "@@bar is not a valid name for methods",
                    script.error_message)
     assert_equals( false,
                    script.rename_method?( [RRB::MN['C#foo'],RRB::MN['B#bar']],

@@ -129,7 +129,7 @@ EOS
                                                [RRB::NS['K']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "K: No such class\n", 
+    assert_equals( "K: No such class", 
                    script.error_message)
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'NEW',
@@ -138,7 +138,7 @@ EOS
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "B and A::D are not sibling classes\n",
+    assert_equals( "B and A::D are not sibling classes",
                    script.error_message)
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'C',
@@ -146,7 +146,7 @@ EOS
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "B and A::D are not sibling classes\n",
+    assert_equals( "B and A::D are not sibling classes",
                    script.error_message)
 
     assert_equals( false,
@@ -154,7 +154,7 @@ EOS
                                                [RRB::NS['B'],RRB::NS['C']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "CONST: already exists\n",
+    assert_equals( "CONST: already exists",
                    script.error_message)
 
     assert_equals( false,
@@ -162,7 +162,7 @@ EOS
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "D: already exists\n",
+    assert_equals( "D: already exists",
                    script.error_message)
 
     assert_equals( false,
@@ -170,7 +170,7 @@ EOS
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
                                                20 ))
-    assert_equals( "D: already exists\n",
+    assert_equals( "D: already exists",
                    script.error_message)
 
     assert_equals( true,
@@ -183,7 +183,7 @@ EOS
                                                [RRB::NS['B']],
                                                  '/home/heke/temp/file1.rb',
                                                  14 ))
-    assert_equals( "Invalid Position to define new class\n",
+    assert_equals( "Invalid Position to define new class",
                    script.error_message)
 
   end

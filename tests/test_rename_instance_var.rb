@@ -27,16 +27,16 @@ class TestScript_RenameInstanceVar < RUNIT::TestCase
     assert_equals(true, script.rename_instance_var?(RRB::NS.new('X::B'), '@a', '@f'))
     assert_equals(false,
 		  script.rename_instance_var?(RRB::NS.new('X::B'), '@a', '@b'))
-    assert_equals("@b: already used by X::A\n", script.error_message)
+    assert_equals("@b: already used by X::A", script.error_message)
     assert_equals(false,
 		  script.rename_instance_var?(RRB::NS.new('X::B'), '@a', '@c'))
-    assert_equals("@c: already used by X::B\n", script.error_message)
+    assert_equals("@c: already used by X::B", script.error_message)
     assert_equals(false,
 		  script.rename_instance_var?(RRB::NS.new('X::B'), '@a', '@d'))
-    assert_equals("@d: already used by X::C\n", script.error_message)
+    assert_equals("@d: already used by X::C", script.error_message)
     assert_equals(false,
 		  script.rename_instance_var?(RRB::NS.new('X::B'), '@a', 'ee'))
-    assert_equals("ee: not a valid name for instance variables\n",
+    assert_equals("ee: not a valid name for instance variables",
                   script.error_message)
 
   end
