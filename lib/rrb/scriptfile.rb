@@ -154,6 +154,16 @@ module RRB
       @tree.accept( visitor )
       return visitor.result
     end
+
+    def write_source_to( dir )
+      filepath = File.join( dir,@name )
+      FileUtils.mkdir_p( File.dirname( filepath ) )
+      File.open(  filepath , "w" ) do |file|
+	@input.each do |line|
+	  file << line
+	end
+      end
+    end
     
     attr_reader :new_script, :name
 
