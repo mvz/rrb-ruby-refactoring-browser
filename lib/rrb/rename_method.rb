@@ -137,7 +137,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
     def rename_method?(  old_methods, new_method )
       
       unless RRB.valid_method?( new_method )
-        @error_message = "#{new_method} is not a valid name for methods\n"
+        @error_message = "#{new_method} is not a valid name for methods"
         return false
       end
 
@@ -149,7 +149,7 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
 
       methods_related_with( old_methods ).each do |method|
         if get_dumped_info[method.namespace].has_method?( new_method )
-         @error_message = "#{new_method}: already defined at #{method.namespace.name}\n"
+         @error_message = "#{new_method}: already defined at #{method.namespace.name}"
 	  return false
 	end
       end 

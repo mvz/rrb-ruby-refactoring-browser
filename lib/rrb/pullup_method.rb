@@ -28,7 +28,7 @@ module RRB
         called_method = called_method(node, fcall)
         unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
-          @error_message = "#{@method_name.name} uses #{called_method.name}\n"
+          @error_message = "#{@method_name.name} uses #{called_method.name}"
         end
       end
     end
@@ -82,26 +82,26 @@ module RRB
                        path, lineno)
       old_namespace = method_name.namespace
       unless get_dumped_info.exist?( method_name, false )
-        @error_message = "#{method_name.name} is not defined\n"
+        @error_message = "#{method_name.name} is not defined"
         return false
       end
 
       unless get_dumped_info[old_namespace].subclass_of?(new_namespace)
-        @error_message = "#{new_namespace.name} is not the superclass of #{old_namespace.name}\n"
+        @error_message = "#{new_namespace.name} is not the superclass of #{old_namespace.name}"
         return false
       end
 
       superclass = get_dumped_info[old_namespace].superclass
       super_method = get_dumped_info.real_method(method_name.ns_replaced(superclass.class_name))
       if super_method != nil
-        @error_message = "#{super_method.name} is already defined\n"
+        @error_message = "#{super_method.name} is already defined"
         return false
       end
 
 
       target_class = class_on( path, lineno )
       unless target_class && new_namespace == target_class
-        @error_message = "Specify which definition to pull up method to\n"
+        @error_message = "Specify which definition to pull up method to"
         return false
       end
 

@@ -46,7 +46,7 @@ module RRB
     def visit_node( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @old_method } &&
 	  node.local_vars.find{|var| var.name == @new_method } then
-        @error_message = "#{@new_method}: already used as a local variable at #{NodeMethod.new(namespace, node).name}\n"
+        @error_message = "#{@new_method}: already used as a local variable at #{NodeMethod.new(namespace, node).name}"
 	@result = false
       end
     end
@@ -113,7 +113,7 @@ module RRB
     
     def rename_method_all?( old_method, new_method )
       unless RRB.valid_method?( new_method )
-        @error_message = "#{new_method}: not a valid name for methods\n"
+        @error_message = "#{new_method}: not a valid name for methods"
         return false
       end
 
@@ -123,7 +123,7 @@ module RRB
 	has_old_method = class_info.has_method?( old_method ) 
 	has_new_method = class_info.has_method?( new_method ) 
 	if has_old_method && has_new_method
-          @error_message = "#{new_method}: already defined at #{class_info.class_name.name}\n"
+          @error_message = "#{new_method}: already defined at #{class_info.class_name.name}"
           return false
         end
       end
@@ -131,7 +131,7 @@ module RRB
       classes = info.classes_having_method( old_method ).map{|c| c.class_name}
       classes = Set.new( classes )
       unless classes_define_method(old_method).superset?( classes ) then
-        @error_message = "Can't rename method out of scripts\n"
+        @error_message = "Can't rename method out of scripts"
         return false
       end
       

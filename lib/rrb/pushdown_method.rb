@@ -33,7 +33,7 @@ module RRB
     def check_node(namespace, node)
       if @dumped_info.real_method(called_method(namespace, node)) == @method_name
         @result = false
-        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
+        @error_message = "#{namespace.name} calls #{@method_name.name}"
       end
     end
     
@@ -98,7 +98,7 @@ module RRB
       end
 
       unless get_dumped_info[new_namespace].subclass_of?(method_name.namespace)
-        @error_message = "#{new_namespace.name} is not the subclass of #{old_namespace.name}\n"
+        @error_message = "#{new_namespace.name} is not the subclass of #{old_namespace.name}"
         return false
       end
 
@@ -110,7 +110,7 @@ module RRB
 
       target_class = class_on(path, lineno)
       unless target_class && new_namespace == target_class
-        @error_message = "Specify which definition to push down method to\n"
+        @error_message = "Specify which definition to push down method to"
         return false
       end
       

@@ -71,32 +71,32 @@ module RRB
       # check namespace exists?
       if namespace != RRB::Namespace::Toplevel &&
          get_dumped_info[namespace].invalid?
-        @error_message = "#{namespace.name}: No such namespace\n"
+        @error_message = "#{namespace.name}: No such namespace"
         return false
       end
       # check all targets exist?
       targets.each do |klass|
-        @error_message = "#{klass.name}: No such class\n"
+        @error_message = "#{klass.name}: No such class"
         return false unless get_dumped_info[klass].type == "class"
       end
       
       # check targets have the same superclass
       superclass = get_dumped_info[targets.first].superclass
       targets.each do |klass|
-        @error_message = "#{targets.first.name} and #{klass.name} are not sibling classes\n"
+        @error_message = "#{targets.first.name} and #{klass.name} are not sibling classes"
         return false unless get_dumped_info[klass].superclass == superclass
       end
 
       # check name collision
       unless get_dumped_info.resolve_const( namespace, new_class ).nil? then
-        @error_message = "#{new_class}: already exists\n"
+        @error_message = "#{new_class}: already exists"
         return false
       end
 
       # check where new class is defined
       if class_on( path, lineno ).nil? ||
          ! class_on( path, lineno ).contain?( namespace )
-        @error_message = "Invalid Position to define new class\n"
+        @error_message = "Invalid Position to define new class"
         return false
       end
       

@@ -78,7 +78,7 @@ module RRB
     def rename_class_var?(namespace, node)
       if check_namespace(namespace)
         if node.class_vars.any?(){|id| id.name == @new_var}
-          @error_message = "#{@new_var}: already used by #{namespace.name}\n"
+          @error_message = "#{@new_var}: already used by #{namespace.name}"
           return false
         end
       end
@@ -148,7 +148,7 @@ module RRB
 
     def rename_class_var?( namespace, old_var, new_var )
       unless RRB.valid_class_var?( new_var )
-        @error_message = "#{new_var}: not a valid name for class variables\n"
+        @error_message = "#{new_var}: not a valid name for class variables"
         return false
       end
 

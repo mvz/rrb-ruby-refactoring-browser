@@ -79,13 +79,13 @@ module RRB
 
       if @method_name.match_node?( namespace, node )
         unless node.args.map{|arg| arg.name}.include?(@target_parameter)
-          @error_message = "#{@target_parameter}: no such parameter\n"
+          @error_message = "#{@target_parameter}: no such parameter"
           @result = false
         end
         
         if node.local_vars.map{|local_var| local_var.name}.find_all{|var_name|
             var_name == @target_parameter}.size >= 2
-          @error_message = "#{@target_parameter} is used\n"
+          @error_message = "#{@target_parameter} is used"
           @result = false
         end
       end
@@ -93,7 +93,7 @@ module RRB
       if namespace == @namespace 
         node.fcalls.find_all{|fcall| fcall.name == @method_name.bare_name}.each do |fcall|
           if fcall.args.include?(nil) || fcall.args == []
-            @error_message = "parameter is too complex\n"
+            @error_message = "parameter is too complex"
             @result = false
           end
         end
@@ -148,7 +148,7 @@ module RRB
     def remove_parameter?( method_name, target_parameter)
 
       unless get_dumped_info.exist?( method_name, false )
-        @error_message = "#{method_name.name} isn't defined\n"
+        @error_message = "#{method_name.name} isn't defined"
         return false
       end
       

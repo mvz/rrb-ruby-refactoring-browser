@@ -107,14 +107,14 @@ module RRB
 
     def rename_constant?(old_const, new_const)
       unless RRB.valid_const?(new_const)
-        @error_message = "#{new_const} is not a valid name for constants\n"
+        @error_message = "#{new_const} is not a valid name for constants"
         return false
       end
 
       ns = Namespace.new(old_const)
       result_namespace = get_dumped_info.resolve_const( ns.chop, new_const )
       unless result_namespace.nil? then
-        @error_message = "#{result_namespace.name}::#{new_const} is already defined\n"
+        @error_message = "#{result_namespace.name}::#{new_const} is already defined"
         return false
       end
 
