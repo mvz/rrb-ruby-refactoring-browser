@@ -4,7 +4,6 @@ require 'fileutils'
 require 'find'
 require 'rrb/dumped_info.rb'
 require 'rrb/default'
-require 'pp'
 
 module RRB
 
@@ -36,6 +35,12 @@ module RRB
       
     end
 
+    def rename_method_all( old_method, new_method )
+      @files.each do |scriptfile|
+	scriptfile.rename_method_all( old_method, new_method )
+      end
+    end
+    
     def rename_method_all?( old_method, new_method )
       info = get_dumped_info
       info.each do |class_info|
