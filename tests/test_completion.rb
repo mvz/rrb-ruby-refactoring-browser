@@ -6,13 +6,15 @@ require 'rrb/completion'
 class TestScriptFile_Completion < RUNIT::TestCase
 
   INPUT = "
+$a = 0
 class A
   CONST = 0
   def method_1( arg1, arg2 )
-    var = arg1 * arg2
+    var = arg1 * arg2 + $a
   end
   def method_2
     @var = 1
+    $b = 1
   end
 end
 
@@ -60,6 +62,12 @@ end
 		  ivars )
   end
 
+  def test_refactable_global_vars
+    scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
+    assert_equals( Set['$a', '$b'],
+                   scriptfile.refactable_global_vars )
+  end
+  
   def test_refactable_consts
     scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     dumped_info = RRB::Script.new( [scriptfile] ).get_dumped_info
@@ -77,12 +85,13 @@ require 'test2'
 Hoge = 0
 class B < A
   def method_1( arg1, arg3 )
-    print arg1
+    print arg1, $x, $y
     @var = 3
   end
   @var2 = 4
 end
 \C-a/tmp/test2.rb\C-a
+$x = 1
 class A
   def method_1( arg1, arg2 )
     var = arg1 * arg2
@@ -90,6 +99,7 @@ class A
     @varrr = @varr ** 2
   end
   def method_2
+    $y = 2
   end
 end
 \C-a-- END --\C-a
@@ -117,6 +127,12 @@ end
 		  script.refactable_classes_instance_vars )
   end
 
+  def test_refactable_global_vars
+    script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
+    assert_equals( Set['$x', '$y'],
+		  script.refactable_global_vars )
+  end
+  
   def test_refactable_consts
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
     assert_equals( Set['::A', '::B', '::Hoge'],
