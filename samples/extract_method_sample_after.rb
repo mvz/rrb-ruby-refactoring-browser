@@ -5,7 +5,7 @@ class C
   end
 end
 class B < C
-  def bar(x, y)
+  def fuga(x, y)
     z = 2 * x
     z = 3 * z
     w = 2 * y
@@ -15,7 +15,7 @@ class B < C
   def foo
     x = 1
     y = 2
-    z, w = bar(x, y)
+    z, w = fuga(x, y)
     puts "#{z},#{w}"
   end
 end
