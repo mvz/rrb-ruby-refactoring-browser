@@ -6,32 +6,6 @@ require 'rrb/common_visitor'
 
 module RRB
 
-  class PullupMethodVisitor < Visitor
-
-    def initialize(old_namespace, method_name, new_namespace)
-      @method_name = method_name
-      @old_namespace = old_namespace
-      @new_namespace = new_namespace
-      @subclass_range = nil
-      @superclass_lineno = nil
-    end
-
-    attr_reader :subclass_range, :superclass_lineno
-
-    def visit_class(namespace, node)
-      cur_namespace = NodeNamespace.new(node, namespace)
-      if cur_namespace.match?(@new_namespace) 
-        @superclass_lineno = node.range.head.lineno
-      elsif cur_namespace.match?(@old_namespace)
-        node.method_defs.each do |method|
-          if method.name == @method_name 
-            @subclass_range = method.range
-          end
-        end
-      end
-    end
-  end
-
   class PullupMethodCheckVisitor < Visitor
     def initialize(dumped_info, old_namespace, method_name, new_namespace)
       @dumped_info = dumped_info
@@ -58,9 +32,9 @@ module RRB
   class ScriptFile
 
     def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
-      visitor = PullupMethodVisitor.new(old_namespace, method_name,  new_namespace)
+      visitor = MoveMethodVisitor.new(old_namespace, method_name,  new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.insert_str(@input, visitor.superclass_lineno, visitor.subclass_range, pullupped_method)
+      @new_script = RRB.insert_str(@input, visitor.insert_lineno, visitor.delete_range, pullupped_method)
     end
 
     def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
