@@ -15,7 +15,7 @@ class TestNode < RUNIT::TestCase
     end
       
     def visit_method( namespace, method_node )
-      @methods << [ namespace.top.name, method_node.name ]
+      @methods << [ namespace.last.name, method_node.name ]
     end
     
     def visit_class( namespace, class_node )
@@ -56,11 +56,7 @@ class TestNode < RUNIT::TestCase
 
     attr_reader :nodes
     def visit_node( namespace, node )
-      if node.name_id == 'toplevel' then
-	@nodes << [ 'toplevel']
-      else
-	@nodes << namespace.map{|i| i.name}.push( node.name )
-      end
+      @nodes << namespace.map{|i| i.name}.push( node.name )
     end
 
     
