@@ -119,18 +119,18 @@ module RRB
     
     def on__def( kw_def, name, arglist, stmts, rescue_clause, kw_end )
       @scope_stack[-2].method_defs <<
-	MethodNode.new( name, @scope_stack.last, kw_def, kw_end )	
+	MethodNode.new( name, @scope_stack.last, arglist, kw_def, kw_end )
     end
 
     def on__sdef( kw_def, s_obj, method_name, arglist, stmts, kw_end )
       s_obj = IdInfo.new( :nil, 0, 0, "" ) if s_obj == nil
       @scope_stack[-2].singleton_method_defs <<
 	SingletonMethodNode.new( s_obj, method_name, @scope_stack.last,
-				kw_def, kw_end )
+				arglist, kw_def, kw_end )
     end
     
     def on__call( receiver, method, args )
-      @scope_stack.last.method_calls << method
+      @scope_stack.last.method_calls << MethodCall.new(method, args)
     end
 
     def add_attr( function, args )
@@ -146,12 +146,12 @@ module RRB
     end
     
     def on__fcall( function, args )
-      @scope_stack.last.fcalls << function
+      @scope_stack.last.fcalls << MethodCall.new(function, args || [])
       add_attr( function, args )
     end
 
-    def on__varcall( method, arg )
-      @scope_stack.last.fcalls << method
+    def on__varcall( method, args )
+      @scope_stack.last.fcalls << MethodCall.new(method, args || [])
     end
 
     def add_var( var )
@@ -184,11 +184,10 @@ module RRB
     
     def on__varref( var )
       return unless var.kind_of?( IdInfo )
-
       if @scope_stack.last.local_vars.find{|i| i.name == var.name } then
 	@scope_stack.last.local_vars << var
       elsif var.type == :id
-	@scope_stack.last.fcalls << var
+	@scope_stack.last.fcalls << MethodCall.new(var, [])
       else
 	return add_var( var )
       end
@@ -221,8 +220,32 @@ module RRB
       args << arg
     end
 
+    def on__argadd_args( args, arg )
+      on__argadd( args, arg )
+    end
+
     def on__argadd_value( args, arg )
       on__argadd( args, arg )
+    end
+
+    def on__argadd_assocs( args, arg)
+      args
+    end
+
+    def on__argadd_block( args, arg )
+      args
+    end
+
+    def on__argadd_opt( args, arg )
+      args 
+    end
+
+    def on__argadd_rest( args, arg )
+      args
+    end
+
+    def on__argadd_star( args, arg)
+      args
     end
 
     def on__add_eval_string( context, str )
@@ -270,7 +293,7 @@ module RRB
       consts = @scope_stack.first.consts
       
       method_calls.each{|id| id.adjust_id!( lineno, pointer )}
-      fcalls.each{|id| id.adjust_id!( lineno, pointer )}
+      fcalls.each{|fcall| fcall.body.adjust_id!( lineno, pointer )}
       local_vars.each{|id| id.adjust_id!( lineno, pointer )}
       global_vars.each{|id| id.adjust_id!( lineno, pointer )}
       instance_vars.each{|id| id.adjust_id!( lineno, pointer )}
