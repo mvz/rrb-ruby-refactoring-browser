@@ -4,20 +4,29 @@ module RRB
 
   class MoveMethodVisitor < Visitor
 
-    def initialize(old_namespace, method_name, new_namespace)
+    def initialize(old_namespace, method_name, new_namespace,
+                   ignore_new_namespace, specified_lineno)
       @method_name = method_name
       @old_namespace = old_namespace
       @new_namespace = new_namespace
       @delete_range = nil
       @insert_lineno = nil
+      @ignore_new_namespace = ignore_new_namespace
+      @specified_lineno = specified_lineno
+      @insert_lineno_decided = false
     end
 
     attr_reader :delete_range, :insert_lineno
 
     def visit_class(namespace, node)
       cur_namespace = NodeNamespace.new(node, namespace)
-      if cur_namespace.match?(@new_namespace) 
-        @insert_lineno = node.range.head.lineno
+      if cur_namespace.match?(@new_namespace) && !@ignore_new_namespace
+        unless @insert_lineno_decided
+          @insert_lineno = node.range.head.lineno
+          if node.range.head.lineno <= @specified_lineno && @specified_lineno <= node.range.tail.lineno
+            @insert_lineno_decided = true
+          end
+        end
       elsif cur_namespace.match?(@old_namespace)
         target_method = node.method_defs.find(){|method| method.name == @method_name}
         @delete_range = target_method && target_method.range
