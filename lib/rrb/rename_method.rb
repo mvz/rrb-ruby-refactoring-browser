@@ -119,9 +119,14 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
     end
 
     def rename_method?( base_classes, old_method, new_method )
-      return false unless RRB.valid_method?( new_method )
+      unless RRB.valid_method?( new_method )
+        @error_message = "#{new_method} is not a valid name for methods\n"
+        return false
+      end
+
       classes_respond_to( base_classes, old_method ).each do |ns|
 	if get_dumped_info[ns.name].has_method?( new_method ) then
+          @error_message = "#{ns.name} already has #{new_method}\n"
 	  return false
 	end
       end

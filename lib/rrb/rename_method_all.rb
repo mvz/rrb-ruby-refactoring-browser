@@ -49,6 +49,7 @@ module RRB
     def visit_node( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @old_method } &&
 	  node.local_vars.find{|var| var.name == @new_method } then
+        @error_message = "#{@new_method} is already used as a local variable at #{NodeNamespace.new(node, namespace).name}\n"
 	@result = false
       end
     end
@@ -95,16 +96,15 @@ module RRB
     end
 
     def rename_method_all?( old_method, new_method )
-      return false unless RRB.valid_method?( new_method )
       visitor = RenameMethodAllCheckVisitor.new( old_method, new_method )
       @tree.accept( visitor )
+      @error_message = visitor.error_message unless visitor.result
       return visitor.result
     end
 
   end
 
   class Script
-    
     def rename_method_all( old_method, new_method )
       @files.each do |scriptfile|
 	scriptfile.rename_method_all( old_method, new_method )
@@ -120,22 +120,32 @@ module RRB
     end
     
     def rename_method_all?( old_method, new_method )
+      unless RRB.valid_method?( new_method )
+        @error_message = "#{new_method} is not a valid name for methods\n"
+        return false
+      end
+
       info = get_dumped_info
       
       info.each do |class_info|
 	has_old_method = class_info.has_method?( old_method ) 
 	has_new_method = class_info.has_method?( new_method ) 
-	return false if has_old_method && has_new_method
+	if has_old_method && has_new_method
+          @error_message = "#{class_info.class_name.name} already has #{new_method}\n"
+          return false
+        end
       end
 
       refactored_classes = info.classes_having_method( old_method )
       refactored_classes.map!{|c| c.class_name}
       if Set.new(refactored_classes) != classes_define_method( old_method ) then
+        @error_message = "Don't rename kernel method\n"
         return false
       end
       
       @files.each do |scriptfile|
 	unless scriptfile.rename_method_all?( old_method, new_method ) then
+          @error_message = scriptfile.error_message
 	  return false
 	end
       end

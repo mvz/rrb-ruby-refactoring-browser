@@ -23,6 +23,7 @@ module RRB
         node.calls.each do |call| 
           if subclass_info.has_method?(call.name, false)
             @result = false
+            @error_message = "#{@old_namespace.name}##{@method_name} uses #{call.name} defined at #{@old_namespace.name}\n"
           end
         end
       end
@@ -40,6 +41,7 @@ module RRB
     def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
       visitor = PullupMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
       @tree.accept(visitor)
+      @error_message = visitor.error_message unless visitor.result
       return visitor.result
     end
   end
@@ -53,11 +55,20 @@ module RRB
     end
 
     def pullup_method?(old_namespace, method_name, new_namespace)
-      return false unless get_dumped_info[old_namespace].has_method?(method_name, false)
-      return false if get_dumped_info[new_namespace].has_method?(method_name)
+      unless get_dumped_info[old_namespace].has_method?(method_name, false)
+        @error_message = "#{old_namespace.name} doesn't have #{method_name}\n"
+        return false
+      end
+
+      if get_dumped_info[new_namespace].has_method?(method_name)
+        @error_message = "#{new_namespace.name} already has #{method_name}\n"
+        return false
+      end
+
 
       @files.each do |scriptfile|
         unless scriptfile.pullup_method?(get_dumped_info, old_namespace, method_name, new_namespace)
+          @error_message = scriptfile.error_message
           return false
         end
       end

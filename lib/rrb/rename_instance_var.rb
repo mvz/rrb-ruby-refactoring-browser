@@ -73,6 +73,7 @@ module RRB
       if check_namespace(namespace)
         node.instance_vars.each do |id|
           if id.name == @new_var then
+            @error_message = "#{namespace.name} already has #{@new_var}\n"
             return false
           end
         end  
@@ -105,10 +106,10 @@ module RRB
     end
 
     def rename_instance_var?( real_owner, dumped_info, old_var, new_var )
-      return false unless RRB.valid_instance_var?( new_var )
       visitor = RenameInstanceVarCheckVisitor.new( real_owner, dumped_info,
 						  old_var, new_var )
       @tree.accept( visitor )
+      @error_message = visitor.error_message unless visitor.result
       return visitor.result
     end
 
@@ -132,11 +133,16 @@ module RRB
     end
 
     def rename_instance_var?( namespace, old_var, new_var )
+      unless RRB.valid_instance_var?( new_var )
+        @error_message = "#{new_var} is not a valid name for instance variables\n"
+        return false
+      end
       
       owner = get_real_ivar_owner( namespace, old_var )
       @files.each do |scriptfile|
 	if not scriptfile.rename_instance_var?( owner, get_dumped_info,
 					    old_var, new_var ) then
+          @error_message = scriptfile.error_message
 	  return false
 	end
       end

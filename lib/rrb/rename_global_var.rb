@@ -33,6 +33,7 @@ module RRB
 
     def visit_node( namespace, node )
       if node.global_vars.find{|i| i.name == @new_var} then
+        @error_message = "#{@new_var} is already used\n"
 	@result = false
       end
     end
@@ -50,9 +51,10 @@ module RRB
     end
 
     def rename_global_var?(old_var, new_var )
-      return false unless RRB.valid_global_var?( new_var )
+
       visitor = RenameGlobalVarCheckVisitor.new( old_var, new_var )
       @tree.accept( visitor )
+      @error_message = visitor.error_message unless visitor.result
       return visitor.result
     end
 
@@ -66,8 +68,14 @@ module RRB
     end
 
     def rename_global_var?(old_var, new_var )
+      unless RRB.valid_global_var?( new_var )
+        @error_message = "#{new_var} is not a valid name for global variables\n"
+        return false
+      end
+
       @files.each do |scriptfile|
 	if not scriptfile.rename_global_var?(old_var, new_var ) then
+          @error_message = scriptfile.error_message
 	  return false
 	end
       end

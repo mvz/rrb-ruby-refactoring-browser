@@ -48,9 +48,11 @@ module RRB
       end
 	
       if method_node.local_vars.find{|i| i.name == @new_var} then
+        @error_message = "#{@new_var} is already used\n"
 	@result = false
       end
       if method_node.fcalls.find{|i| i.name == @new_var} then
+        @error_message = "#{@new_var} is already used as a function\n"
 	@result = false
       end
       
@@ -70,10 +72,10 @@ module RRB
     end
 
     def rename_local_var?( namespace, method_name, old_var, new_var )
-      return false unless RRB.valid_local_var?( new_var )
       visitor = RenameLocalVarCheckVisitor.new( namespace, method_name,
 					       old_var, new_var )
       @tree.accept( visitor )
+      @error_message = visitor.error_message unless visitor.result
       return visitor.result
     end
 
@@ -89,9 +91,15 @@ module RRB
     end
 
     def rename_local_var?( namespace, method_name, old_var, new_var )
+      unless RRB.valid_local_var?( new_var )
+        @error_message = "#{new_var} is not a valid name for local variables\n"
+        return false
+      end
+
       @files.each do |scriptfile|
 	if not scriptfile.rename_local_var?( namespace, method_name,
 					    old_var, new_var ) then
+          @error_message = scriptfile.error_message
 	  return false
 	end
       end

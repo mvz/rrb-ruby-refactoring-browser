@@ -49,15 +49,18 @@ module RRB
           node.calls.each do |call|
             if @dumped_info[@old_namespace].private_method_names.include?(call.name)
               @result = false
+              @error_message = "#{@old_namespace.name}##{@method_name} calls private function \"#{call.name}\"\n"
             end
             if @dumped_info[@new_namespace].has_method?(call.name, false)
               @result = false
+              @error_message = "Destination class also has #{call.name}\n"
             end
           end
         else
           node.calls.each do |call|
             if call.name == @method_name
               @result = false
+              @error_message = "Other function uses #{@old_namespace.name}##{@method_name}\n"
             end
           end
         end
@@ -77,6 +80,7 @@ module RRB
     def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)
       visitor = PushdownMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
       @tree.accept(visitor)
+      @error_message = visitor.error_message unless visitor.result 
       return visitor.result
     end
   end
@@ -90,11 +94,20 @@ module RRB
     end
 
     def pushdown_method?(old_namespace, method_name, new_namespace)
-      return false unless get_dumped_info[old_namespace].has_method?(method_name, false)
-      return false if get_dumped_info[new_namespace].has_method?(method_name, false)
+      unless get_dumped_info[old_namespace].has_method?(method_name, false)
+        @error_message = "#{old_namespace.name} doesn't have #{method_name}\n"
+        return false
+      end
+
+      if get_dumped_info[new_namespace].has_method?(method_name, false)
+        @error_message = "#{new_namespace.name} already has #{method_name}\n"
+        return false
+      end
       @files.each do |scriptfile|
         unless scriptfile.pushdown_method?(get_dumped_info, old_namespace, method_name, new_namespace)
+          @error_message = scriptfile.error_message
           return false
+          
         end
       end
       return true
