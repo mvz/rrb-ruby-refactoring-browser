@@ -416,25 +416,23 @@ module RRB
   NS = Namespace
 
   class MethodName
-    def initialize(str_method_name, is_instance_method)
+    def initialize( str_method_name )
       @str_method_name = str_method_name
-      @is_instance_method = is_instance_method
     end
 
-    attr_reader :str_method_name, :is_instance_method
+    attr_reader :str_method_name
 
     def instance_method?
-      @is_instance_method
+      true
     end
 
     def class_method?
-      not @is_instance_method
+      false
     end
 
     def ==(other)
       return false unless other.kind_of?( MethodName )
-      return @str_method_name == other.str_method_name &&
-             @is_instance_method == other.is_instance_method
+      return @str_method_name == other.str_method_name 
     end
 
     def name
@@ -442,9 +440,35 @@ module RRB
     end
   end
 
+  class ClassMethodName
+    def initialize( str_method_name )
+      @str_method_name = str_method_name
+    end
+
+    attr_reader :str_method_name
+    
+    def instance_method?
+      false
+    end
+
+    def class_method?
+      true
+    end
+
+    def ==(other)
+      return false unless other.instance_of?( ClassMethodName )
+      return @str_method_name == other.str_method_name
+    end
+
+    def name
+      @str_method_name
+    end
+  end
+  
   # shortcut name
   MN = MethodName
-
+  CMN = ClassMethodName
+  
   class Method
 
     def initialize( namespace, method_node )
