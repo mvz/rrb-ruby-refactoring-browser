@@ -8,6 +8,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 
   refactoring-type
     * rename-local-variable Class#method old_var new_var
+    * rename-method-all old_method new_method
 
   io-type
     * --stdin-stdout
@@ -37,10 +38,13 @@ if $0 == __FILE__ then
       namespace, method_name = split_method_name ARGV.shift
       old_var = ARGV.shift
       new_var = ARGV.shift
+    when 'rename-method-all'
+      old_method = ARGV.shift
+      new_method = ARGV.shift
     end
 
     case ARGV.shift
-    when '--stdin-stdout'
+    when '--stdin-stdout', nil
       script = RRB::Script.new_from_io( STDIN )
       output = proc{ script.result_to_io( STDOUT ) }
     when '--filein-overwrite'      
@@ -59,6 +63,13 @@ if $0 == __FILE__ then
 	exit 1
       end
       script.rename_local_var( namespace, method_name, old_var, new_var )
+      output.call
+    when 'rename-method-all'
+      unless script.rename_method_all?( old_method, new_method )
+	STDERR << "REJECTED\n"
+	exit 1
+      end
+      script.rename_method_all( old_method, new_method )
       output.call
     end
     
