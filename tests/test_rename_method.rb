@@ -65,16 +65,16 @@ end
     assert_equals( %w( C ).map{|x| RRB::NS.new(x)},
 		  script.classes_respond_to( [ RRB::NS.new( 'C' ) ], 'foo' ) )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'A' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'A' ) ], 'foo' ).sort )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], 'foo' ).sort )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], 'foo' ).sort )
     script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], 'foo' ) )
+		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], 'foo' ).sort )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], 'foo' ) )
+		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], 'foo' ).sort )
   end
 
   def test_rename_method?

@@ -47,9 +47,10 @@ class TestDumpedInfo < RUNIT::TestCase
     info = make_info["TestClassB"]
     
     assert_equals( "class", info.type )
-    assert_equals( "TestClassB", info.class_name )
-    assert_equals( ["TestClassA","Object","Kernel"], info.ancestor_names )
-    assert_equals( ["TestClassA","Object","Kernel"],
+    assert_equals( RRB::NS["TestClassB"], info.class_name )
+    assert_equals( [ RRB::NS["TestClassA"], RRB::NS["Object"], RRB::NS["Kernel"] ],
+                   info.ancestor_names )
+    assert_equals( [ RRB::NS["TestClassA"], RRB::NS["Object"], RRB::NS["Kernel"] ],
 		  info.ancestors.map{|klass| klass.class_name} )
     assert_equals( ["pub"], info.public_method_names )
     assert_equals( ["pro1", "pro2"], info.protected_method_names.sort )
