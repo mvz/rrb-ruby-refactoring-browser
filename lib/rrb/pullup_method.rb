@@ -81,6 +81,12 @@ module RRB
         return false
       end
 
+      unless check_namespace_defined(filename, new_namespace)
+        @error_message = "No Definition of #{new_namespace.name} in #{filename}\n"
+        return false
+      end
+
+
       @files.each do |scriptfile|
         unless scriptfile.pullup_method?(get_dumped_info, old_namespace, method_name, new_namespace)
           @error_message = scriptfile.error_message
