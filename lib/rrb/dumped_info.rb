@@ -3,6 +3,7 @@ module RRB
   
   class DumpedInfo
 
+    include Enumerable
     def initialize( hash )
       @classes = hash
     end
