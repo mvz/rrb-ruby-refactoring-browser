@@ -13,6 +13,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
     * --methods
     * --classes
     * --classes-instance-vars
+    * --gloval-vars
     * --constants
   IOTYPE
     * --stdin-stdout
@@ -53,6 +54,10 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   when '--classes-instance-vars'
     script.refactable_classes_instance_vars.each do |classname,ivars|
       print classname, ';', ivars.to_a.join(','), "\n"
+    end
+  when '--global-vars'
+    script.refactable_global_vars.each do |var|
+      print var, ","
     end
   when '--constants'
     script.refactable_consts.each do |const|
