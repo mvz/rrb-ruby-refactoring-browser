@@ -1,12 +1,4 @@
 
-class Array
-
-  def top
-    self[-1]
-  end
-
-end
-
 module Enumerable
 
   if RUBY_VERSION < '1.7' then

@@ -66,45 +66,45 @@ module RRB
 
     def on__class( class_name, stmts, superclass )
       @scope_stack[-2].class_defs << ClassNode.new( class_name,
-						   @scope_stack.top )
+						   @scope_stack.last )
     end
 
     def on__module( module_name, stmts )
       @scope_stack[-2].class_defs << ModuleNode.new( module_name,
-						    @scope_stack.top )
+						    @scope_stack.last )
     end
     
     def on__def( def_str, name, arglist, stmts, rescue_clause )
       @scope_stack[-2].method_defs <<
-	MethodNode.new( name, @scope_stack.top )	
+	MethodNode.new( name, @scope_stack.last )	
     end
 
     def on__call( receiver, method, args )
-      @scope_stack.top.method_calls << method
+      @scope_stack.last.method_calls << method
     end
 
     def on__fcall( function, args )
-      @scope_stack.top.fcalls << function
+      @scope_stack.last.fcalls << function
     end
 
     def on__varcall( method, arg )
-      @scope_stack.top.fcalls << method
+      @scope_stack.last.fcalls << method
     end
 
     def on__assignable( var, arg )
-      @scope_stack.top.local_vars << var
+      @scope_stack.last.local_vars << var
     end
 
     def on__local_count(  arg )
       return if arg == '~'.intern
-      @scope_stack.top.local_vars << arg
+      @scope_stack.last.local_vars << arg
     end
     
     def on__varref( var )
-      if @scope_stack.top.local_vars.find{|i| i.name == var.name } then
-	@scope_stack.top.local_vars << var
+      if @scope_stack.last.local_vars.find{|i| i.name == var.name } then
+	@scope_stack.last.local_vars << var
       elsif var.type == :id
-	@scope_stack.top.fcalls << var
+	@scope_stack.last.fcalls << var
       end
     end
     
