@@ -325,6 +325,7 @@ module RRB
 	@namespace = ns
       when String
 	@namespace = ns.split('::')
+        @namespace.shift if @namespace[0] == ""
       else
 	raise TypeError, 'must be string or array'
       end
