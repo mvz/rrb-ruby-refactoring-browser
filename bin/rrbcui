@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'rrb/cui_interface'
+
+if $0 == __FILE__
+  RRB::CUI.execute
+end
