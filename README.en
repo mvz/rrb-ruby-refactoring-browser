@@ -1,19 +1,24 @@
-Ruby Refactoring Browerw
+Ruby Refactoring Browser(RRB)
 
-= outline
-Ruby Refactoring Browerw is refactoring brower on Ruby for emacsen.
+= What's RRB?
+RRB is a development tool working on Emacs that allow you to refactor
+Ruby code.
+This is alpha version and no detailed installation and documents are
+available.
+
+= Requirements
+Ruby 1.6.x + ruby_shim or Ruby 1.8.x.
+Emacs 20.7 or later.
 
 = Tested Emvironment
-Emacs 20.7.2/21.3, ruby 1.6.7/1.8.0 on Debian GNU/Linux.
-
-= Library needed
-ruby_shim if you use ruby 1.6.x
+Emacs 20.7.2/21.3, Ruby 1.6.7/1.8.0 on Debian GNU/Linux.
 
 = Installation
 Please see doc/dev/init.en.rd .
 
 = Documentation
-There is no English document.
+Sorry.
+No English document is prepared yet.
 
 = Copyright and License
 Copyright (C) 2004  OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
@@ -26,5 +31,5 @@ OHBAYASHI Ippei
 HARA Yutaka
 YOSHIDA Yuichi
 
-= Bug report and comment
-Please send bug reports and comments to OHBAYASHI(ohai@kmc.gr.jp).
+= Comments and bug reports
+Please send comments and bug reports to OHBAYASHI(ohai@kmc.gr.jp).
