@@ -42,6 +42,11 @@ class TestClassA
 
   def TestClassA.method_7
   end
+
+  class << TestClassA
+    def method_8
+    end
+  end
   
 end
 
