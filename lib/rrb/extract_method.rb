@@ -78,10 +78,11 @@ module RRB
     dst = ''
 
     lines = src.split(/^/)
-    
-    def_space_num =  count_indent_str( lines[method_lineno] ) 
-    call_space_num = count_indent_str( lines[start_lineno] )
+
     extracted = lines[start_lineno..end_lineno]
+    def_space_num =  count_indent_str( lines[method_lineno] ) 
+    call_space_num = count_indent( extracted )
+    
     
     0.upto(lines.length-1) do |lineno|
       if lineno == method_lineno
