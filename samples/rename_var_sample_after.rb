@@ -7,6 +7,6 @@ class Rename
     bb.upto(6) do |i|
       print i*3, "\n"
     end
-    print bb**4, bb**5
+    print bb**4, bb**5, "#{bb}", " #{3*bb**2}"
   end
 end
