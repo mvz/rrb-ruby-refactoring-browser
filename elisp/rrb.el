@@ -87,29 +87,43 @@ matches with rrb-ruby-file-name-regexp'"
 	(insert (cadr list-top))
 	(setq list-top (cddr list-top))))))
 
+(defun rrb-output-to-error-buffer (filename)
+  "load FILENAME to \" *rrb-error\""
+  (save-excursion
+    (set-buffer rrb-error-buffer)
+    (insert-file-contents filename)))
+
+(defun rrb-error-message ()
+  "Get Error Message in \" *rrb-error\""
+  (save-excursion
+    (set-buffer rrb-error-buffer)
+    (goto-char (point-min))
+    (substring (thing-at-point 'line) 0 -1)))
+    
+(defun rrb-do-refactoring (args)
+  "Do refactoring"
+  (let ((error-code)
+	(tmpfile (make-temp-name (expand-file-name rrb-tmp-file-base
+						   temporary-file-directory))))
+    (rrb-clean-buffer)
+    (rrb-setup-input-buffer)
+    (set-buffer rrb-input-buffer)
+    (setq error-code (apply 'call-process-region
+			    (point-min) (point-max)
+			    "rrb"
+			    nil
+			    (list rrb-output-buffer
+				  tmpfile)
+			    nil
+			    (append args '("--stdin-stdout"))))
+    (rrb-output-to-error-buffer tmpfile)
+    (delete-file tmpfile)
+    (if (/= error-code 0)
+	(message (concat "rrb: fail to refactor: " (rrb-error-message)))
+      (rrb-output-to-buffer))))
+
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
   (interactive "sRefactored method: \nsOld variable: \nsNew variable: ")
   (save-excursion
-    (let ((error-code))
-      (rrb-clean-buffer)
-      (rrb-setup-input-buffer)
-      (set-buffer rrb-input-buffer)
-      (setq error-code (call-process-region (point-min) (point-max)
-					    "rrb"
-					    nil
-					    (list rrb-output-buffer
-						  "/tmp/rrb_log")
-					    nil
-					    "--rename-local-variable"
-					    method old-var new-var
-					    "--stdin-stdout"))
-      (if (/= error-code 0)
-	  (message "rrb: fail to refactor")
-	(rrb-output-to-buffer)))))
-
-
-			   
-      
-  
-  
+    (rrb-do-refactoring (list "--rename-local-variable" method old-var new-var))))
