@@ -69,6 +69,10 @@ module RRB
     def on__OP( op )
       IdInfo.new :op, lineno, pointer, op
     end
+
+    def on__KEYWORD( keyword )
+      IdInfo.new :keyword, lineno, pointer, keyword
+    end
     
     def on__local_push
       @scope_stack.push( Scope.new )
@@ -78,8 +82,7 @@ module RRB
       @scope_stack.pop
     end
 
-    def on__class( class_name, stmts, superclass )
-
+    def on__class( kw_class, class_name, stmts, superclass, kw_end )
       @scope_stack.last.singleton_method_defs.delete_if do |sdef|
 	if sdef.s_obj.name == class_name.name then
 	  @scope_stack.last.class_method_defs << ClassMethodNode.new( sdef )
@@ -94,23 +97,23 @@ module RRB
 						   @scope_stack.last )
     end
 
-    def on__module( module_name, stmts )
+    def on__module( kw_module, module_name, stmts, kw_end )
       @scope_stack[-2].class_defs << ModuleNode.new( module_name,
 						    @scope_stack.last )
     end
 
-    def on__sclass( s_obj, stmts )
+    def on__sclass( kw_class, s_obj, stmts, kw_end )
       @scope_stack[-2].singleton_class_defs <<
 	SingletonClassNode.new( IdInfo.new( :nil, 0, 0, "[sclass]" ),
 			       @scope_stack.last )
     end
     
-    def on__def( def_str, name, arglist, stmts, rescue_clause )
+    def on__def( kw_def, name, arglist, stmts, rescue_clause, kw_end )
       @scope_stack[-2].method_defs <<
 	MethodNode.new( name, @scope_stack.last )	
     end
 
-    def on__sdef( s_obj, method_name, arglist, stmts )
+    def on__sdef( kw_def, s_obj, method_name, arglist, stmts, kw_end )
       s_obj = IdInfo.new( :nil, 0, 0, "" ) if s_obj == nil
       @scope_stack[-2].singleton_method_defs <<
 	SingletonMethodNode.new( s_obj, method_name, @scope_stack.last )
