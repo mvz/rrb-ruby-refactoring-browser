@@ -105,6 +105,8 @@ USG
         ui = RenameInstanceVariable.new(ARGV, diff_file)
       when "extract-method"
         ui = ExtractMethod.new(ARGV, diff_file)
+      else
+        raise 'No such refactoring'
       end
       
       ui.run
