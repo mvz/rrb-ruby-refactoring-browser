@@ -32,13 +32,8 @@
 
 (defun rrb-buffer-map-line (prec)
   "Return list of (PREC line) for each line in current buffer"
-  (goto-char (point-max))
-  (let ((result nil))
-    (while (not (bobp))
-      (setq result (cons (funcall prec (thing-at-point 'line)) result))
-      (forward-line -1))
-    result))
-      
+  (mapcar prec
+	  (split-string (buffer-string) "\n")))
 
 (defun rrb-chop (str)
   "Return chopped string"
