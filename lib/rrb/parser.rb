@@ -130,7 +130,7 @@ module RRB
     end
     
     def on__call( receiver, method, args )
-      @scope_stack.last.method_calls << MethodCall.new(method, args)
+      @scope_stack.last.method_calls << MethodCall.new(method, args || []) 
     end
 
     def add_attr( function, args )
@@ -158,12 +158,16 @@ module RRB
       case var.type
       when :id
 	@scope_stack.last.local_vars << var
+        return var
       when :gvar
 	@scope_stack.last.global_vars << var
+        return var
       when :ivar
 	@scope_stack.last.instance_vars << var
+        return var
       when :cvar
 	@scope_stack.last.class_vars << var
+        return var
       when :const
 	const = ConstInfo.new_normal( var )
 	@scope_stack.last.consts << const
@@ -186,8 +190,11 @@ module RRB
       return unless var.kind_of?( IdInfo )
       if @scope_stack.last.local_vars.find{|i| i.name == var.name } then
 	@scope_stack.last.local_vars << var
+        return var
       elsif var.type == :id
-	@scope_stack.last.fcalls << MethodCall.new(var, [])
+        method_call = MethodCall.new(var, [])
+	@scope_stack.last.fcalls << method_call
+        return method_call
       else
 	return add_var( var )
       end
@@ -214,7 +221,7 @@ module RRB
       Array.new
     end
 
-    def on__argadd( args, arg )
+    def on__argadd (args, arg )
       return nil unless args.kind_of?( Array )
       return nil unless arg.kind_of?( IdInfo )
       args << arg
