@@ -112,12 +112,9 @@ module RRB
       @tree.accept( visitor )
       
       target_method = visitor.target_method
-      if target_method.instance_method?
-	new_method = Method.new(target_method.namespace, str_new_method)
-      else
-	new_method = ClassMethod.new(target_method.namespace, str_new_method)
-      end
-
+      new_method = target_method.method_factory.new(target_method.namespace,
+                                                    str_new_method)
+      
       @new_script = RRB.extract_method( @input, new_method,
                                         start_lineno-1, end_lineno-1,
                                         visitor.method_lineno-1,
