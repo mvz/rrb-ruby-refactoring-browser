@@ -4,22 +4,19 @@ module RRB
 
   class GetInstanceVarOwnerVisitor < Visitor
     def initialize(namespace, dumped_info, old_var)
-      @str_namespace = namespace.join('::')
       @old_var = old_var
       @dumped_info = dumped_info
-      @my_info = dumped_info[@str_namespace]
-      @owner = @str_namespace
+      @my_info = dumped_info[namespace.str]
+      @owner = namespace.str
     end
 
     attr_reader :owner
     
     def visit_method(namespace, node)
-      return unless node.instance_vars.map{|i| i.name}.include?(@old_var)
+      return unless node.instance_vars.find{|i| i.name == @old_var}
       ancestor_names = @dumped_info[@owner].ancestor_names
-      index = ancestor_names.index(namespace.str)
-      if index
-        @owner = ancestor_names[index]
-      end
+      new_owner = ancestor_names.find{|anc| anc == namespace.str}
+      @owner = new_owner if new_owner
     end
   end
 
@@ -36,16 +33,16 @@ module RRB
     attr_reader :result
 
     
-    def check_namespace(str_namespace)
-      info = @dumped_info[str_namespace]
+    def check_namespace(namespace)
+      info = @dumped_info[namespace.str]
 
       return false unless info
-      return false unless info.ancestor_names.include?(@owner) || str_namespace == @owner
+      return false unless info.ancestor_names.include?(@owner) || namespace.str == @owner
       return true
     end
 
-    def rename_instance_var(str_namespace, node)
-      if check_namespace(str_namespace)
+    def rename_instance_var(namespace, node)
+      if check_namespace(namespace)
         node.instance_vars.each do |id|
           if id.name == @old_var then
             @result <<
@@ -56,7 +53,7 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      rename_instance_var( namespace.str, node)
+      rename_instance_var( namespace, node)
     end
   end
 
@@ -73,15 +70,15 @@ module RRB
 
     attr_reader :result
 
-    def check_namespace(str_namespace)
-      info = @dumped_info[str_namespace]
+    def check_namespace(namespace)
+      info = @dumped_info[namespace.str]
       return false unless info
-      return false unless info.ancestor_names.include?(@owner) || str_namespace == @owner
+      return false unless info.ancestor_names.include?(@owner) || namespace.str == @owner
       return true
     end
 
-    def rename_instance_var?(str_namespace, node)
-      if check_namespace(str_namespace)
+    def rename_instance_var?(namespace, node)
+      if check_namespace(namespace)
         node.instance_vars.each do |id|
           if id.name == @new_var then
             return false
@@ -92,7 +89,7 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      if !rename_instance_var?( namespace.str, node)
+      if !rename_instance_var?( namespace, node)
         @result = false
       end
     end
