@@ -73,13 +73,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if str_namespace.empty?
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      if @str_namespace == str_namespace
+      if @str_namespace == NodeNamespace.new( node, namespace ).str
         node.method_defs.each do |defs|
           @result = false if defs.name == @new_method
         end
