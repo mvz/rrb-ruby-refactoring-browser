@@ -15,7 +15,7 @@ module RRB
     end
     
     def visit_class(namespace, node)
-      if node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
+      if node.range.contain?( @start_lineno .. @end_lineno )
         @namespace = NodeNamespace.new(node, namespace)
       end
     end
@@ -48,10 +48,9 @@ module RRB
       @method_lineno = 1
       @args = []
       @assigned = []
-      @result = []
     end
 
-    attr_reader :method_lineno, :args, :assigned, :result
+    attr_reader :method_lineno, :args, :assigned 
 
     def visit_node( namespace, node )
       vars = node.local_vars.map{|i| i.name}
@@ -103,15 +102,15 @@ module RRB
     attr_reader :result
 
     def toplevel?(node)
-      return node.name_id.type == :toplevel
+      node.kind_of?( TopLevelNode )
     end
 
     def in_lines?(node)
-      return node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
+      node.range.contain?( @start_lineno .. @end_lineno )
     end
-    def out_lines?(node)      
-      return @end_lineno < node.head_keyword.lineno || node.tail_keyword.lineno < @start_lineno
-
+    
+    def out_lines?(node)
+      node.range.out_of?( @start_lineno .. @end_lineno )
     end
 
 
@@ -211,8 +210,7 @@ module RRB
     def extract_method(new_method, start_lineno, end_lineno)
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
-      @new_script = RRB.replace_str( @input, visitor.result )
-      @new_script = RRB.extract_method( StringIO.new(@new_script), new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
+      @new_script = RRB.extract_method( @input, new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
     end
 
     def extract_method?(str_owner, dumped_info, new_method, start_lineno, end_lineno)
