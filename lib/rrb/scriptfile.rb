@@ -30,6 +30,13 @@ module RRB
       dst << @new_script
       dst << IO_SPLITTER
     end
+
+    def result_rewrite_file
+      return if @new_script.nil?
+      File.open( @path, "w+" ) do |f|
+	f << @new_script
+      end
+    end
     
     attr_reader :new_script, :path
 
