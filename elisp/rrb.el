@@ -150,11 +150,11 @@ matches with rrb-ruby-file-name-regexp'"
     (set-buffer rrb-output-buffer)
     (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
 
-(defun rrb-complist-second-for-type-1 (method)
+(defun rrb-complist-second-for-type-1 (key)
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (goto-char (point-min))
-    (when (search-forward (concat method ";") nil t)
+    (when (search-forward (concat key ";") nil t)
       (mapcar 'list
 	      (split-string (buffer-substring (point) (point-at-eol)) ",")))))
 
@@ -188,6 +188,21 @@ matches with rrb-ruby-file-name-regexp'"
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
   (list (completing-read prompt1 (rrb-complist-type-2))
 	(read-from-minibuffer prompt2)))
+
+;;;
+;;; completion type-3
+;;
+(defun rrb-comp-read-type-3 (compinfo-arg1 prompt1 compinfo-arg2 prompt2)
+  "completion read for Pull up method, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((old-class-method (split-string (completing-read prompt1
+				    (rrb-complist-type-2)) "#")))
+    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (append old-class-method
+	    (list (completing-read prompt2 (rrb-complist-type-2))))))
+    
 
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
@@ -298,4 +313,31 @@ matches with rrb-ruby-file-name-regexp'"
 			;class name is a constant.
 
 	       
-	       
+;;;; Refactoring: Pull up method
+
+(defun rrb-comp-read-pullup-method ()
+  "completion read for pull up method"
+  (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
+
+(defun rrb-pullup-method (old-class method new-class)
+  "Refactor code: Pull up method"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-pullup-method)))
+  (save-current-buffer
+    (rrb-do-refactoring "--pullup-method" old-class method new-class)))
+		 
+;;;; Refactoring: Push down method
+
+(defun rrb-comp-read-pushdown-method ()
+  "completion read for push down method"
+  (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
+
+(defun rrb-pushdown-method (old-class method new-class)
+  "Refactor code: Push down method"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-pushdown-method)))
+  (save-current-buffer
+    (rrb-do-refactoring "--pushdown-method" old-class method new-class)))
+		 
