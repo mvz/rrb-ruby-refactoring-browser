@@ -168,17 +168,20 @@ module RRB
 
     def on__eval_string_end( context, str )
       if str == "}"
-	mcalls, fcalls, lvars =
+	mcalls, fcalls, lvars, gvars, ivars, cvars =
 	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
 				   pointer - @eval_str.size - 1  )
       else
-	mcalls, fcalls, lvars =
+	mcalls, fcalls, lvars, gvars, ivars, cvars =
 	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
 				   pointer - @eval_str.size )
       end
       @scope_stack.last.method_calls.concat mcalls
       @scope_stack.last.fcalls.concat fcalls
       @scope_stack.last.local_vars.concat lvars
+      @scope_stack.last.global_vars.concat gvars
+      @scope_stack.last.instance_vars.concat ivars
+      @scope_stack.last.class_vars.concat cvars
     end
     
   end
@@ -197,17 +200,29 @@ module RRB
     
     def run( input, scope, lineno, pointer )
       @scope_stack = Array.new
-      @scope_stack.push Marshal.load( Marshal.dump(scope) )
+      # push current scope to distinguish local variable from function call
+      new_scope = Scope.new
+      new_scope.local_vars.concat( scope.local_vars )
+      @scope_stack.push new_scope
+      
       self.parse( input )
 
-      method_calls = @scope_stack[0].method_calls[scope.method_calls.size..-1]
-      fcalls = @scope_stack[0].fcalls[scope.fcalls.size..-1]
+      method_calls = @scope_stack[0].method_calls
+      fcalls = @scope_stack[0].fcalls
       local_vars = @scope_stack[0].local_vars[scope.local_vars.size..-1]
-
+      global_vars = @scope_stack[0].global_vars
+      instance_vars = @scope_stack[0].instance_vars
+      class_vars = @scope_stack[0].class_vars
+      
       method_calls = adjust_id( method_calls, lineno, pointer )
       fcalls = adjust_id( fcalls, lineno, pointer )
-      local_vars = adjust_id( local_vars, lineno, pointer ) 
-      return method_calls, fcalls, local_vars
+      local_vars = adjust_id( local_vars, lineno, pointer )
+      global_vars = adjust_id( global_vars, lineno, pointer )
+      instance_vars = adjust_id( instance_vars, lineno, pointer )
+      class_vars = adjust_id( class_vars, lineno, pointer )
+      
+      return method_calls, fcalls, local_vars, global_vars, instance_vars,
+	class_vars
     end
     
   end
