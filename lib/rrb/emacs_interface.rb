@@ -51,7 +51,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
         a, b = str.split( /#/ )
         return Namespace.new(a), MethodName.new(b, true)
       elsif str['.']
-        a, b = str.split( /./ )
+        a, b = str.split( '.' )
         return Namespace.new(a), MethodName.new(b, false)
       end
     end
