@@ -50,13 +50,9 @@ module RRB
     def initialize(start_lineno, end_lineno)
       @start_lineno = start_lineno
       @end_lineno = end_lineno
-      @namespace = nil
-    end
-    attr_reader :namespace
-
-    def visit_toplevel(namespace, node)
       @namespace = NodeNamespace.new_toplevel
     end
+    attr_reader :namespace
 
     def visit_class(namespace, node)
       if node.range.contain?( @start_lineno .. @end_lineno ) then
@@ -72,7 +68,7 @@ module RRB
     def initialize(start_lineno, end_lineno)
       @start_lineno = start_lineno
       @end_lineno = end_lineno
-      @method = nil
+      @method = Method.new_toplevel
     end
     attr_reader :method
 
@@ -98,6 +94,19 @@ module RRB
         return nil
       end
     end
+
+    def get_method_on_region(range)
+      visitor = GetMethodOnRegionVisitor.new(range.begin, range.end)
+      @tree.accept( visitor )
+      visitor.method
+    end
+
+    def get_class_on_region(range)
+      visitor = GetClassOnRegionVisitor.new(range.begin, range.end)
+      @tree.accept( visitor )
+      visitor.namespace
+    end    
+    
   end
 
   class Script
@@ -107,6 +116,22 @@ module RRB
         str_of_method = str_of_method || scriptfile.get_string_of_method(namespace, method_name)
       end
       str_of_method
+    end
+    
+    def get_class_on_region(path, range)
+      @files.each do |scriptfile|
+        if scriptfile.path == path 
+          return scriptfile.get_class_on_region(range)
+        end
+      end
+    end
+    
+    def get_method_on_region(path, range)
+      @files.each do |scriptfile|
+        if scriptfile.path == path
+          return scriptfile.get_method_on_region(range)
+        end
+      end
     end
   end
 end
