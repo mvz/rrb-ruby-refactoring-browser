@@ -21,32 +21,31 @@ class TestScript_PushdownMethod < RUNIT::TestCase
                                                  RRB::NS['C'], filename, 23))
     assert_equals("B#w: already defined at C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'w'),
-                                                 RRB::NS['B'], filename, 7))    
+                                                 RRB::NS['B'], filename, 18))    
     assert_equals("B is not the subclass of C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'asdf'),
-                                                 RRB::NS['B'], filename, 7))    
+                                                 RRB::NS['B'], filename, 18))    
     assert_equals("C#asdf: no definition in C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
                                                  RRB::NS['C'], filename, 23))
     assert_equals("B calls A#a", script.error_message)
 
     assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
-                                                RRB::NS['B'], filename, 7))
+                                                RRB::NS['B'], filename, 18))
   end
 
   def test_pushdown_method
     filename = "samples/pushdown_method_sample.rb"
-    lineno = 10
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
-                           RRB::NS['C'], filename, lineno)
+                           RRB::NS['C'], filename, 23)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
                    dst )    
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
-                           RRB::NS['C::D'], filename, lineno)
+                           RRB::NS['C::D'], filename, 27)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after2.rb' ).read,
@@ -89,7 +88,6 @@ end
 class Derived < Base
   def hoge
   end
-
 end
 
 class Derived < Base
@@ -111,7 +109,6 @@ end
 class Derived < Base
   def hoge
   end
-
 end
 \C-a-- END --\C-a
 "
@@ -133,7 +130,6 @@ end
 class Derived < Base
   def hoge
   end
-
 end
 \C-a-- END --\C-a
 "
@@ -147,7 +143,6 @@ end
 class Derived < Base
   def Derived.hoge
   end
-
 end
 
 class Derived < Base
@@ -168,12 +163,12 @@ end
     assert_equals(false,
                   script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
-    assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+    assert_equals("Specify which definition to push down method to\n", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
-    assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+    assert_equals("Specify which definition to push down method to\n", script.error_message)
 
     assert_equals(false,
                   script.pushdown_method?(RRB::MN.new(RRB::NS['Base'], 'hoge'),
@@ -200,7 +195,7 @@ end
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
-                           '/home/yuichi/work/rrb/private/test.rb', 13)
+                           '/home/yuichi/work/rrb/private/test.rb', 14)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR2, dst)
@@ -208,7 +203,7 @@ end
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.pushdown_method(RRB::MN.new(RRB::NS['Base'], 'hoge'),
                            RRB::NS['Derived'], 
-                           '/home/yuichi/work/rrb/private/test2.rb', 5)
+                           '/home/yuichi/work/rrb/private/test2.rb', 3)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR3, dst)

@@ -84,7 +84,6 @@ OUTPUT_STR1 = "\
 class Base
   def hoge
   end
-
 end
 
 class Base
@@ -106,7 +105,6 @@ end
 class Base
   def hoge
   end
-
 end
 
 class Derived < Base
@@ -133,7 +131,6 @@ end
 class Base
   def hoge
   end
-
 end
 \C-a-- END --\C-a
 "
@@ -142,7 +139,6 @@ OUTPUT_STR4 = "\
 class Base
   def Base.hoge
   end
-
 end
 
 class Base
@@ -167,11 +163,12 @@ end
     assert_equals(false,
                   script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
-    assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+
+    assert_equals("Specify which definition to pull up method to\n", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
-    assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+    assert_equals("Specify which definition to pull up method to\n", script.error_message)
 
     assert_equals(false,
                   script.pullup_method?(RRB::MN.new(RRB::NS['Derived'], 'hoge'),
