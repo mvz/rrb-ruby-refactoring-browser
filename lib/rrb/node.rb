@@ -37,6 +37,7 @@ module RRB
       @global_vars = scope.global_vars
       @instance_vars = scope.instance_vars
       @class_vars = scope.class_vars
+      @consts = scope.consts
       @method_calls = scope.method_calls
       @fcalls = scope.fcalls
       @singleton_method_defs = scope.singleton_method_defs
@@ -45,7 +46,7 @@ module RRB
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
-    attr_reader :global_vars, :instance_vars, :class_vars
+    attr_reader :global_vars, :instance_vars, :class_vars, :consts
     attr_reader :fcalls, :singleton_method_defs, :class_method_defs
     attr_reader :singleton_class_defs
     
@@ -183,4 +184,44 @@ module RRB
     
   end
 
+  class ConstInfo
+    def initialize( toplevel, id, lconst=nil )
+      if lconst == nil
+	@elements_id = [ id ]
+      else
+	@elements_id = lconst.elements_id + [ id ]
+      end
+      @toplevel = toplevel      
+    end
+    
+    def ConstInfo.new_toplevel( id )
+      new( true, id )
+    end
+    
+    def ConstInfo.new_colon2( id, lconst )
+      new( lconst.toplevel?, id, lconst )
+    end
+    
+    def ConstInfo.new_normal( id )
+      new( false, id )
+    end
+
+    def basename
+      @elements_id.map{|i| i.name}.join('::')
+    end
+    
+    def name
+      if @toplevel then
+	'::' + basename
+      else
+	basename
+      end
+    end
+
+    def toplevel?
+      @toplevel
+    end
+    attr_reader :elements_id
+  end
+  
 end
