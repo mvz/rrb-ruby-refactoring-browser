@@ -35,10 +35,12 @@ module RRB
       @fcalls = scope.fcalls
       @singleton_method_defs = scope.singleton_method_defs
       @class_method_defs = scope.class_method_defs
+      @singleton_class_defs = scope.singleton_class_defs
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
     attr_reader :fcalls, :singleton_method_defs, :class_method_defs
+    attr_reader :singleton_class_defs
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
@@ -141,6 +143,16 @@ module RRB
 
     def accept( visitor, namespace )
       visitor.visit_class_method( namespace, self )
+      super
+      accept_children( visitor, namespace )
+    end
+    
+  end
+
+  class SingletonClassNode < Node
+
+    def accept( visitor, namespace )
+      visitor.visit_singleton_class( namespace, self )
       super
       accept_children( visitor, namespace )
     end
