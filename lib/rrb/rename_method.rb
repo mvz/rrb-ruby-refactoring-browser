@@ -26,7 +26,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     end
 
     def rename_method_def( namespace, id, head_keyword )
-      @result << Replacer.new( id.lineno, id.pointer, id.name, @new_method )
+      @result << Replacer.new_from_id( id, @new_method )
       @result << Replacer.new( id.lineno, head_keyword.head_pointer,
 			      "",
 			      warning_piece( namespace,
@@ -36,8 +36,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     def rename_fcalls( fcalls )
       fcalls.each do |fcall|
 	if fcall.name == @old_method then
-	  @result << Replacer.new( fcall.lineno, fcall.pointer, fcall.name,
-				  @new_method )
+	  @result << Replacer.new_from_id( fcall, @new_method )
 	end
       end
     end
