@@ -1,6 +1,9 @@
 
 class TestClassA
 
+  def <=>( a, b )
+  end
+  
   def method_1( a, b )
     c = 3
     call( 3, 2 )
