@@ -4,8 +4,10 @@ require 'rrb/rename_instance_var'
 require 'rrb/rename_class_var'
 require 'rrb/rename_global_var'
 require 'rrb/rename_method_all'
+require 'rrb/rename_constant'
 require 'rrb/extract_method'
 require 'rrb/move_method'
+
 
 module RRB
 
@@ -22,6 +24,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --rename-global-variable  old_var new_var
     * --extract-method path new_method start_lineno end_lineno
     * --rename-method old_method new_method classes...
+    * --rename-constant old_const new_const
 
   io-type
     * --stdin-stdout
@@ -112,6 +115,14 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       @refactoring_method = :rename_method
       @check_method = :rename_method?
     end
+
+    def parse_argv_rename_constant(argv)
+      old_const = argv.shift
+      new_const = argv.shift
+      @args = [old_const, new_const]
+      @refactoring_method = :rename_constant
+      @check_method = :rename_constant?
+    end
     
     def parse_argv( argv )
 
@@ -133,6 +144,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
         parse_argv_move_method(argv)
       when '--rename-method'
         parse_argv_rename_method(argv)
+      when '--rename-constant'
+        parse_argv_rename_constant(argv)
       else
 	raise RRBError, "Unknown refactoring"
       end
@@ -143,10 +156,10 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 	@script = Script.new_from_io( STDIN )
 	@output = proc{ @script.result_to_io( STDOUT ) }
       when '--filein-overwrite'      
-	@script = Script.new_from_filenames( argv )
+	@script = Script.new_from_filenames( *argv )
 	@output = proc{ @script.result_rewrite_file }
       when '--filein-stdout'
-	@script = Script.new_from_filenames( argv )
+	@script = Script.new_from_filenames( *argv )
 	@output = proc{ @script.result_to_io( STDOUT ) }
       else
 	raise RRBError, "Unknown input/output option"
