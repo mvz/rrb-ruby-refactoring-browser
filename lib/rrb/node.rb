@@ -425,7 +425,7 @@ module RRB
     end
 
     def match_node?( namespace, method_node )
-      method_node.kind_of?( MethodNode ) &&
+      method_node.instance_method? &&
         namespace == @namespace &&
         method_node.name == @bare_name 
     end
@@ -482,7 +482,7 @@ module RRB
     end
 
     def match_node?( namespace, method_node )
-      method_node.kind_of?( ClassMethodNode ) &&
+      method_node.class_method? &&
         namespace == @namespace &&
         method_node.name == @bare_name
     end
@@ -531,9 +531,9 @@ module RRB
 
     def name
       if @namespace
-        if @node.kind_of?(MethodNode)
+        if @node.instance_method?
           @namespace.name + '#' + bare_name
-        elsif @node.kind_of?(ClassMethodNode)
+        elsif @node.class_method?
           @namespace.name + '.' + bare_name
         end
       else
