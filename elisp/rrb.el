@@ -86,11 +86,10 @@
   "Return if the file BUFFER is visiting is ruby script or not."
   (and (buffer-file-name buffer)
        (or (string-match rrb-ruby-file-name-regexp (buffer-file-name buffer))
-	   (save-current-buffer
-	     (save-excursion
-	       (set-buffer buffer)
-	       (goto-char (point-min))
-	       (looking-at rrb-first-line-of-ruby-file-regexp))))))
+           (save-excursion
+             (set-buffer buffer)
+             (goto-char (point-min))
+             (looking-at rrb-first-line-of-ruby-file-regexp)))))
 
 (defun rrb-all-ruby-script-buffer ()
   "Return a list containing all ruby script buffers."
@@ -183,7 +182,7 @@
 
 
 (defun rrb-run-process (command &rest args)
-  "Run COMMAND and return the error code."
+  "Run COMMAND with no input from stdin and return the error code."
   (save-current-buffer
     (let ((error-code)
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
@@ -194,7 +193,7 @@
 			      nil
 			      (list rrb-output-buffer tmpfile)
 			      nil
-			      `(,@args)))
+			      args))
       (rrb-output-to-error-buffer tmpfile)
       (delete-file tmpfile)
       error-code)))
@@ -213,7 +212,7 @@
 			      nil
 			      (list rrb-output-buffer tmpfile)
 			      nil
-			     `(,@args)))
+                              args))
       (rrb-output-to-error-buffer tmpfile)
       (delete-file tmpfile)
       error-code)))
@@ -234,12 +233,13 @@
   `(progn
      (setq rrb-now-refactoring-flag t)
      (unwind-protect
-	 (mapc #'(lambda (exp) (eval exp)) ',body)
+         ,@body
        (setq rrb-now-refactoring-flag nil))))
 
 
 (defmacro rrb-setup-refactoring (&rest body)
   (defun rrb-make-marshal-file ()
+    "Run rrb_marchal and make cache file"
     (rrb-setup-buffer 'rrb-insert-input-string
 		      (rrb-all-ruby-script-buffer)
 		      rrb-input-buffer)
@@ -248,6 +248,7 @@
 		   (list "--stdin-fileout" rrb-marshal-file-name)) 0)
 	(error "rrb_marshal: fail to read source files %s" (rrb-error-message))))
   (defun rrb-delete-marshal-file ()
+    "Delete cache marchal file"
     (if (file-readable-p rrb-marshal-file-name)
 	(delete-file rrb-marshal-file-name)))
   (defun rrb-prepare-refactoring ()
@@ -258,7 +259,7 @@
   `(rrb-declare-refactoring
     (rrb-prepare-refactoring)
     (unwind-protect
-	(mapc #'(lambda (exp) (eval exp)) ',body)
+        ,@body
       (rrb-terminate-refactoring))))
     
 
