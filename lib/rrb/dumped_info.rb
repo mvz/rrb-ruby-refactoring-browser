@@ -1,6 +1,6 @@
 
 module RRB
-
+  
   class DumpedInfo
 
     def initialize( hash )
@@ -27,7 +27,7 @@ module RRB
     end
     
     def DumpedInfo.get_dumped_info( io )
-      info_hash = {}
+      info_hash = Hash.new(NullDumpedClassInfo.new)
       while line = io.gets
 	split_list = line.chomp.split( /#/, -1 )
 	info = DumpedClassInfo.new( split_list[0],
@@ -89,4 +89,22 @@ module RRB
     end
   end
 
+  class NullDumpedClassInfo
+    def type; "NullDumpedClass" end
+    def class_name; "NullDumpedClass" end
+    def ancestor_names; [] end
+    def protected_method_names; [] end
+    def private_method_names; [] end
+    def singleton_method_names; [] end
+    def consts; [] end
+    def ancestors; [] end
+    
+    def has_method?( methodname, inherited_too=true )
+      false
+    end
+    def subclass_of?(classname)
+      false
+    end
+    
+  end
 end
