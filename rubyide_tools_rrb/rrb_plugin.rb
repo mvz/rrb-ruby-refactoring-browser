@@ -2,6 +2,7 @@ require 'fox'
 require 'fox/responder'
 
 require 'rrb/script'
+require 'rrb/node'
 require 'rrb/completion'
 require 'rrb/rename_local_var'
 require 'rrb/rename_instance_var'
@@ -119,20 +120,6 @@ module FreeRIDE
       end
     end
 
-    def self.split_method_name( str )
-      if str['#']
-        a, b = str.split( /#/ )
-        namespace = ::RRB::Namespace.new(a)
-        method_name = ::RRB::Method.new(namespace, b)
-        return method_name
-      elsif str['.']
-        a, b = str.split( '.' )
-        namespace = ::RRB::Namespace.new(a)
-        method_name = ::RRB::ClassMethod.new(namespace, b)
-        return method_name
-      end
-    end
-
     class RefactorDialog < FXDialogBox
       include Fox
       include Responder
@@ -161,13 +148,13 @@ module FreeRIDE
       end
 
       def onCmdOK(sender, sel, ptr)
-        begin
+#        begin
           refactor
           FreeRIDE::RRB.rewrite_script(@plugin, @script)
-        rescue
-        ensure
+#        rescue
+#        ensure
           onCmdCancel(sender, sel, ptr)
-        end
+#        end
       end
       
       def onCmdCancel(sender, sel, ptr)
@@ -222,7 +209,7 @@ module FreeRIDE
       def refactor
         method = @script.get_method_on_cursor(@filename, @cursor_line).name
 
-        method_name = FreeRIDE::RRB.split_method_name(method)
+        method_name = ::RRB::Method[method]
         if @script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
           @script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
         end
@@ -361,7 +348,7 @@ module FreeRIDE
       end
 
       def refactor
-        method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
+        method_name = ::RRB::Method[@cmb_target_method.text]
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
         if @script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
@@ -376,7 +363,7 @@ module FreeRIDE
       end
 
       def refactor
-        method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
+        method_name = ::RRB::Method[@cmb_target_method.text]
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
         if @script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
