@@ -48,20 +48,27 @@ module RRB
       @attr_readers = scope.attr_readers
       @attr_writers = scope.attr_writers
       @attr_accessors = scope.attr_accessors
-      @head_keyword = head_kw
-      @tail_keyword = tail_kw
+      @range = SyntaxRange.new( head_kw, tail_kw )
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
     attr_reader :global_vars, :instance_vars, :class_vars, :consts
     attr_reader :fcalls, :singleton_method_defs, :class_method_defs
     attr_reader :singleton_class_defs
-    attr_reader :head_keyword, :tail_keyword
     attr_reader :assigned
     attr_reader :attr_readers, :attr_writers, :attr_accessors
-
+    attr_reader :range
+    
     def calls
       @fcalls + @method_calls
+    end
+
+    def head_keyword
+      @range.head
+    end
+
+    def tail_keyword
+      @range.tail
     end
     
     def method_info( method_name )
@@ -247,6 +254,17 @@ module RRB
     attr_reader :elements_id
   end
 
+  class SyntaxRange
+
+    def initialize( head_kw, tail_kw )
+      @head = head_kw
+      @tail = tail_kw
+    end
+
+    attr_reader :head, :tail
+
+  end
+  
   class NodeNamespace
     extend Forwardable
 
