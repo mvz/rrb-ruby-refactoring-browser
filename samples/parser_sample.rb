@@ -11,7 +11,7 @@ class TestClassA
   def method_2( c = 4, *rest, &block )
     call!
     call
-    call = 3
+    call = nil
     call
     p Const_Accsess
   end
