@@ -32,6 +32,11 @@ end
 class TestClassC < TestClassA
   include Enumerable
 end
+class TestClassD
+  C1 = 7
+  class TestClassE < TestClassA
+  end
+end
 EOS
 
 class TestDumpedInfo < RUNIT::TestCase
@@ -85,6 +90,20 @@ class TestDumpedInfo < RUNIT::TestCase
                    info[RRB::NS["TestClassB"]].superclass )
     assert_equals( info[RRB::NS["TestClassA"]],
                    info[RRB::NS["TestClassC"]].superclass )
+  end
+
+  def test_resolve_const
+    info = make_info
+    assert_equals( RRB::NS[""],
+                   info.resolve_const( RRB::NS["TestClassA"], "TestClassA" ) )
+    assert_equals( RRB::NS["TestClassA"],
+                   info.resolve_const( RRB::NS["TestClassA"], "C1" ) )
+    assert_equals( RRB::NS["TestClassB"],
+                   info.resolve_const( RRB::NS["TestClassB"], "C1" ) )
+    assert_equals( RRB::NS["TestClassD"],
+                   info.resolve_const( RRB::NS["TestClassD::TestClassE"], "C1" ) )
+    assert_equals( nil,
+                   info.resolve_const( RRB::NS["TestClassD::TestClassE"], "C3" ) )
   end
   
   def make_info
