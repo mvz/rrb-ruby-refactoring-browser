@@ -2,15 +2,41 @@ require 'rrb/script'
 
 module RRB
 
+  class GetClassVarOwnerVisitor < Visitor
+    def initialize(namespace, dumped_info, old_var)
+      @str_namespace = namespace.join('::')
+      @old_var = old_var
+      @dumped_info = dumped_info
+      @my_info = dumped_info[@str_namespace]
+      @owner = @str_namespace
+    end
+
+    attr_reader :owner
+   
+    def visit_class(namespace, node)
+      str_namespace = namespace.map{|i| i.name}.join('::')
+      if str_namespace.empty?
+        str_namespace = node.name
+      else
+        str_namespace = str_namespace + '::' + node.name
+      end
+      
+      return false unless node.class_vars.map{|i| i.name}.include?(@old_var)
+      ancestor_names = @dumped_info[@owner].ancestor_names
+      index = ancestor_names.index(str_namespace)
+      if index
+        @owner = ancestor_names[index]
+      end
+    end
+  end
+
   class RenameClassVarVisitor < Visitor
 
-    def initialize( namespace, dumped_info, old_var, new_var )
-      @namespace = namespace
-      @str_namespace = namespace.join('::')
+    def initialize( owner, dumped_info, old_var, new_var )
+      @owner = owner
       @old_var = old_var
       @new_var = new_var
       @dumped_info = dumped_info
-      @my_info = @dumped_info[@str_namespace]
       @result = []
     end
 
@@ -18,12 +44,8 @@ module RRB
     
     def check_namespace(str_namespace)
       info = @dumped_info[str_namespace]
-      unless info
-        return false
-      end
-      unless @my_info.ancestor_names.include?(str_namespace) || info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
-        return false
-      end      
+      return false unless info
+      return false unless info.ancestor_names.include?(@owner) || str_namespace == @owner
       return true
     end
 
@@ -62,13 +84,11 @@ module RRB
 
   class RenameClassVarCheckVisitor < Visitor
     
-    def initialize( namespace, dumped_info, old_var, new_var )
-      @namespace = namespace
-      @str_namespace = namespace.join('::')
+    def initialize(owner, dumped_info, old_var, new_var )
+      @owner = owner
       @dumped_info = dumped_info
       @old_var = old_var
       @new_var = new_var
-      @my_info = @dumped_info[@str_namespace]
       @result = true
     end
 
@@ -76,19 +96,12 @@ module RRB
 
     def check_namespace(str_namespace)
       info = @dumped_info[str_namespace]
-      unless info
-        return false
-      end
-      unless @my_info.ancestor_names.include?(str_namespace) || info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
-        return false
-      end   
+      return false unless info
+      return false unless info.ancestor_names.include?(@owner) || str_namespace == @owner
       return true
     end
 
     def rename_class_var?(str_namespace, node)
-      unless @my_info
-        return false
-      end
       if check_namespace(str_namespace)
         node.class_vars.each do |id|
           if id.name == @new_var then
@@ -129,7 +142,9 @@ module RRB
   class ScriptFile
     
     def rename_class_var( namespace, dumped_info, old_var, new_var )
-      visitor = RenameClassVarVisitor.new( namespace, dumped_info,
+      get_owner = GetClassVarOwnerVisitor.new(namespace, dumped_info, old_var)
+      @tree.accept(get_owner)
+      visitor = RenameClassVarVisitor.new(get_owner.owner, dumped_info,
 					  old_var, new_var )
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
@@ -137,7 +152,9 @@ module RRB
 
     def rename_class_var?( namespace, dumped_info, old_var, new_var )
       return false unless RRB.valid_class_var?( new_var )
-      visitor = RenameClassVarCheckVisitor.new( namespace, dumped_info,
+      get_owner = GetClassVarOwnerVisitor.new(namespace, dumped_info, old_var)
+      @tree.accept(get_owner)
+      visitor = RenameClassVarCheckVisitor.new(get_owner.owner, dumped_info,
 					       old_var, new_var )
       @tree.accept( visitor )
       return visitor.result
