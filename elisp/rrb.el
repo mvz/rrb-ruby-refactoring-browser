@@ -14,8 +14,8 @@
 ;;; Code:
 
 ;;;; Keybind for test new undo
-(global-unset-key "\C-cu")
-(global-set-key "\C-cu" 'rrb-undo)
+;(global-unset-key "\C-cu")
+;(global-set-key "\C-cu" 'rrb-undo)
 
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
