@@ -223,6 +223,17 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
        (add-hook 'before-change-functions 
 		 'rrb-notify-file-changed nil t))
      (rrb-all-ruby-script-buffer))))
+
+
+
+(defmacro rrb-setup-refactoring (&rest body)
+  `(progn
+     (rrb-prepare-refactoring)
+     (let ((exp-list ',body))
+       (while exp-list
+	 (eval (car exp-list))
+	 (setq exp-list (cdr exp-list))))
+     (rrb-terminate-refactoring)))
     
 (defun rrb-prepare-refactoring ()
   "Call this function before Refactoring"
@@ -543,14 +554,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			"Refactored method: " "--local-vars" "Old variable: "
 			"New variable: "))
 
-(defun rrb-rename-local-variable (method old-var new-var)
+(defun rrb-rename-local-variable-impl (method old-var new-var)
+  (rrb-do-refactoring "--rename-local-variable" method old-var new-var))
+
+(defun rrb-rename-local-variable ()
   "Refactor code: rename local variable"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-local-variable)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-local-variable" method old-var new-var))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring 
+   (apply 'rrb-rename-local-variable-impl (rrb-comp-read-rename-local-variable))))
 
 ;;;; Refactoring: Rename method
 ;;;
@@ -569,14 +580,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (read-from-minibuffer "New method: "))))
 
 
-(defun rrb-rename-method (classes old-method new-method)
+(defun rrb-rename-method-impl (classes old-method new-method)
+  (rrb-do-refactoring "--rename-method" classes old-method new-method))  
+
+(defun rrb-rename-method ()
   "Refactor code: rename local variable"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-method)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-method" classes old-method new-method))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-method-impl (rrb-comp-read-rename-method))))
 
 ;;;; Refactoring: Rename method all
 (defun rrb-comp-read-rename-method-all ()
@@ -585,14 +596,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			(rrb-get-value-on-cursor "--bare-name")
 			"Old method: " "New method: "))
 
-(defun rrb-rename-method-all (old-method new-method)
+(defun rrb-rename-method-all-impl (old-method new-method)
+  (rrb-do-refactoring "--rename-method-all" old-method new-method))
+
+(defun rrb-rename-method-all ()
   "Refactor code: rename method all old method as new"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-method-all)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-method-all" old-method new-method))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-method-all-impl (rrb-comp-read-rename-method-all))))
 
 ;;;; Refactoring: Extract method
 (defun rrb-begin-line-num (begin)
@@ -611,14 +622,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-extract-method (begin end new_method)
   "Refactor code: Extract method"
   (interactive "r\nsNew method: ")
-  (save-current-buffer
-    (rrb-prepare-refactoring)
-    (rrb-do-refactoring "--extract-method"
-			(buffer-file-name)
-			new_method
-			(number-to-string (rrb-begin-line-num begin))
-			(number-to-string (rrb-end-line-num end))))
-  (rrb-terminate-refactoring))
+  (rrb-setup-refactoring 
+   (rrb-do-refactoring "--extract-method"
+		       (buffer-file-name)
+		       new_method
+		       (number-to-string (rrb-begin-line-num begin))
+		       (number-to-string (rrb-end-line-num end)))))
 
 ;;;; Refactoring: Rename instance variable
 (defun rrb-comp-read-rename-instance-variable ()
@@ -630,14 +639,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			"Old instance variable: "
 			"New instance variable: " ))
 
-(defun rrb-rename-instance-variable (ns old-var new-var)
+(defun rrb-rename-instance-variable-impl (ns old-var new-var)
+  (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var))
+
+(defun rrb-rename-instance-variable ()
   "Refactor code: Rename instance variable"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-instance-variable)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-instance-variable-impl (rrb-comp-read-rename-instance-variable))))
 
 ;;;; Refactoring: Rename class variable
 (defun rrb-comp-read-rename-class-variable ()
@@ -649,15 +658,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			"Old class variable: " 
 			"New class variable: " ))
 
-(defun rrb-rename-class-variable (ns old-var new-var)
-  "Refactor code: Rename instance variable"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-class-variable)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-class-variable" ns old-var new-var))
-  (rrb-terminate-refactoring))
+(defun rrb-rename-class-variable-impl (ns old-var new-var)
+  (rrb-do-refactoring "--rename-class-variable" ns old-var new-var))
 
+(defun rrb-rename-class-variable ()
+  "Refactor code: Rename instance variable"
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-class-variable-impl (rrb-comp-read-rename-class-variable))))
 
 ;;;; Refactoring: Rename global variable
 (defun rrb-comp-read-rename-global-variable ()
@@ -666,14 +674,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			""
 			"Old global variable: " "New global variable: "))
 
-(defun rrb-rename-global-variable (old-var new-var)
+(defun rrb-rename-global-variable-impl (old-var new-var)
+  (rrb-do-refactoring "--rename-global-variable" old-var new-var))  
+
+(defun rrb-rename-global-variable ()
   "Refactor code: Rename global variable"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-global-variable)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-global-variable" old-var new-var))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-global-variable-impl (rrb-comp-read-rename-global-variable))))
 
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
@@ -682,14 +690,15 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			(rrb-get-value-on-cursor "--class")
 			"Old constant: " "New constant: "))
 
-(defun rrb-rename-constant (old-const new-const)
+(defun rrb-rename-constant-impl (old-const new-const)
+    (rrb-do-refactoring "--rename-constant" old-const new-const))  
+
+(defun rrb-rename-constant ()
   "Refactor code: Rename constant"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-constant)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-constant" old-const new-const))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-constant-impl (rrb-comp-read-rename-constant))))
+
 
 ;;;; Refactoring: Rename class
 
@@ -699,16 +708,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			(rrb-get-value-on-cursor "--class")
 			"Old class/module: " "New class/module: "))
 
-(defun rrb-rename-class (old-class new-class)
+(defun rrb-rename-class-impl (old-class new-class)
+  (rrb-do-refactoring "--rename-constant" old-class new-class))
+					;class name is a constant.
+(defun rrb-rename-class ()
   "Refactor code: Rename class or module"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-rename-class)))
-  (save-current-buffer
-    (rrb-do-refactoring "--rename-constant" old-class new-class))
-  (rrb-terminate-refactoring))
-			;class name is a constant.
-
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-rename-class-impl (rrb-comp-read-rename-class))))
 	       
 ;;;; Refactoring: Pull up method
 
@@ -718,16 +725,17 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			"--classes"
 			(rrb-get-value-on-cursor "--class") "New class: "))
 
-(defun rrb-pullup-method (old-method new-class)
+(defun rrb-pullup-method-impl (old-method new-class)
+  (rrb-do-refactoring "--pullup-method" old-method new-class
+		      (buffer-file-name)
+		      (number-to-string (rrb-current-line))))
+
+
+(defun rrb-pullup-method ()
   "Refactor code: Pull up method"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-pullup-method)))
-  (save-current-buffer
-    (rrb-do-refactoring "--pullup-method" old-method new-class
-			(buffer-file-name)
-			(number-to-string (rrb-current-line))))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-pullup-method-impl (rrb-comp-read-pullup-method))))
 		 
 ;;;; Refactoring: Push down method
 
@@ -737,16 +745,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			"--classes" 
 			(rrb-get-value-on-cursor "--class") "New class: "))
 
-(defun rrb-pushdown-method (old-method new-class)
+(defun rrb-pushdown-method-impl (old-method new-class)
+     (rrb-do-refactoring "--pushdown-method" old-method new-class 
+			 (buffer-file-name)
+			 (number-to-string (rrb-current-line))))
+
+(defun rrb-pushdown-method ()
   "Refactor code: Push down method"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-pushdown-method)))
-  (save-current-buffer
-    (rrb-do-refactoring "--pushdown-method" old-method new-class 
-			(buffer-file-name)
-			(number-to-string (rrb-current-line))))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-pushdown-method-impl (rrb-comp-read-pushdown-method))))
 		 
 ;;;; Refactoring: Extract superclass
 ;;;
@@ -760,15 +768,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	(rrb-comp-read-recursively "--classes" ""
 				   "Targets(type just RET to finish): ")))
 
+(defun rrb-extract-superclass-impl (namespace new-class targets)
+  (rrb-do-refactoring "--extract-superclass" namespace new-class targets
+		      (buffer-file-name)
+		      (number-to-string (rrb-current-line))))
+  
 
-
-(defun rrb-extract-superclass (namespace new-class targets)
+(defun rrb-extract-superclass ()
   "Refactor code: Extract superclass"
-  (interactive (progn
-		 (rrb-prepare-refactoring)
-		 (rrb-comp-read-extract-superclass)))
-  (save-current-buffer
-    (rrb-do-refactoring "--extract-superclass" namespace new-class targets
-			(buffer-file-name)
-			(number-to-string (rrb-current-line))))
-  (rrb-terminate-refactoring))
+  (interactive)
+  (rrb-setup-refactoring
+   (apply 'rrb-extract-superclass-impl (rrb-comp-read-extract-superclass))))
