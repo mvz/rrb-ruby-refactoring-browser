@@ -13,7 +13,7 @@ if $0 == __FILE__ then
       interface.refactor
       interface.output
     else
-      STDERR << "REJECTED\n"
+      STDERR << interface.get_last_error
       exit 1
     end
   rescue
