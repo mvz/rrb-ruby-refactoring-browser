@@ -2,7 +2,8 @@ require 'runit/testcase'
 require 'runit/cui/testrunner'
 
 require 'rrb/scriptfile'
-
+require 'rrb/rename_local_var'
+require 'rrb/rename_method_all'
 
 class TestScriptFile < RUNIT::TestCase
 
