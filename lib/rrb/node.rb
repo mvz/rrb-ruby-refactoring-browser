@@ -20,6 +20,9 @@ module RRB
 
     def visit_class_method( namespace, node )
     end
+
+    def visit_singleton_class( namespace, node )
+    end
     
   end
 
@@ -63,6 +66,7 @@ module RRB
       @method_defs.each{|i| i.accept( visitor, namespace ) }
       @singleton_method_defs.each{|i| i.accept( visitor, namespace ) }
       @class_method_defs.each{|i| i.accept( visitor, namespace ) }
+      @singleton_class_defs.each{|i| i.accept( visitor, namespace ) }
     end
     
   end
@@ -138,6 +142,7 @@ module RRB
       @fcalls = sdef.fcalls
       @singleton_method_defs = sdef.singleton_method_defs
       @class_method_defs = sdef.class_method_defs
+      @singleton_class_defs = sdef.singleton_class_defs
       @s_obj = sdef.s_obj
     end
 
@@ -154,7 +159,9 @@ module RRB
     def accept( visitor, namespace )
       visitor.visit_singleton_class( namespace, self )
       super
+      namespace.push self
       accept_children( visitor, namespace )
+      namespace.pop
     end
     
   end
