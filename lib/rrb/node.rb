@@ -440,14 +440,15 @@ module RRB
     end
     
   end
-  class MethodCall 
+  class MethodCall
+    extend Forwardable
     def initialize(body, args)
       @body = body
       @args = args
     end
 
     attr_reader :body, :args
-
+    def_delegators :@body, :adjust_id!
     def name
       body.name
     end
