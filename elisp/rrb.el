@@ -126,8 +126,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (let ((buffer-point-alist (rrb-buffer-point-alist)))
     (if (/= (apply 'rrb-run-process "rrb" args) 0)
 	(error "fail to refactor: %s" (rrb-error-message)))
-    (rrb-create-undo-file (mapcar 'get-file-buffer
-				  (rrb-get-file-name-list rrb-output-buffer)))
+    (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer)
     (setq rrb-undo-count (+ rrb-undo-count 1))
     (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
@@ -164,18 +163,6 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (save-current-buffer
     (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))))
 
-(defun rrb-make-undo-file-name(undo-count)
-  (format "%s_%d"
-	  (expand-file-name rrb-undo-file-base temporary-file-directory)
-	  undo-count))
-
-(defun rrb-delete-undo-files ()
-  (let ((sub-files 
-	 (directory-files temporary-file-directory t rrb-undo-file-base)))
-    (while (not (null sub-files))
-      (let ((sub-file (car sub-files)))
-	(delete-file sub-file))
-      (setq sub-files (cdr sub-files)))))
 
 
 ;;;; operation for script-buffer
@@ -197,6 +184,10 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
        (setq file-name-list (cons file-name file-name-list))))
     file-name-list
     ))
+
+(defun rrb-get-buffer-list (buffer)
+  (mapcar 'get-file-buffer
+	  (rrb-get-file-name-list buffer)))
 
 
 (defun rrb-output-to-buffer-and-reset-point (alist)
@@ -307,9 +298,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       (set-buffer rrb-output-buffer)
       (buffer-substring (point-min) (point-max)))))
 
-;;;
-;;; Undo, Redo
-;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Undo, Redo
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun rrb-undo-base (undo-file-name)
   "Base of Undo and Redo of the last refactoring"
   (if (file-readable-p undo-file-name)
@@ -318,19 +314,30 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (rrb-clean-buffer rrb-output-buffer)
 	  (set-buffer rrb-output-buffer)
 	  (insert-file-contents undo-file-name)
-	  (rrb-create-undo-file 
-	   (mapcar 'get-file-buffer
-		   (rrb-get-file-name-list rrb-output-buffer)))
+	  (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer))
 	  (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist)))
 	t)
     nil))
 
-(defun rrb-create-undo-file (file-name-list)
+(defun rrb-create-undo-file (buffer-list)
   (save-current-buffer
     (rrb-clean-buffer rrb-undo-buffer)
-    (rrb-setup-buffer rrb-undo-buffer file-name-list)
+    (rrb-setup-buffer rrb-undo-buffer buffer-list)
     (set-buffer rrb-undo-buffer)
     (write-region (point-min) (point-max) (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
+
+(defun rrb-make-undo-file-name(undo-count)
+  (format "%s_%d"
+	  (expand-file-name rrb-undo-file-base temporary-file-directory)
+	  undo-count))
+
+(defun rrb-delete-undo-files ()
+  (let ((sub-files 
+	 (directory-files temporary-file-directory t rrb-undo-file-base)))
+    (while (not (null sub-files))
+      (let ((sub-file (car sub-files)))
+	(delete-file sub-file))
+      (setq sub-files (cdr sub-files)))))
 
 ;;;
 ;;; Undo
@@ -341,8 +348,6 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (if (rrb-undo-base (rrb-make-undo-file-name (- rrb-undo-count 1)))
       (setq rrb-undo-count (- rrb-undo-count 1))))
 					  
-;  (rrb-undo-base (lambda (count) (- count 1))))
-
 ;;;
 ;;; Redo
 ;;
@@ -351,10 +356,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (interactive)
   (if (rrb-undo-base (rrb-make-undo-file-name (+ rrb-undo-count 1)))
       (setq rrb-undo-count (+ rrb-undo-count 1))))
-  
-;  (rrb-undo-base (lambda (count) (+ count 1))))
+	
 
-	  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  Refactoring
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
