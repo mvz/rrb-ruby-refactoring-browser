@@ -35,3 +35,9 @@
 
 * RRB::DumpedClassInfo#subclass_of?(classname)
   self と classname が一致していても真を返す点に注意
+
+* rename methodについて
+  以下の機能が必要である
+  * 指定したクラスから実際に変更する必要のあるクラスをすべて列挙する
+  * 名前がかぶっていないかチェックする
+  * renameする
