@@ -376,5 +376,25 @@ module RRB
 
   # shortcut name
   NS = Namespace
+  class Method
+
+    def initialize( namespace, method_node )
+      @namespace = namespace
+      @node = method_node
+    end
+    
+    def fullname
+      @namespace.str + '#' + @node.name
+    end
+    
+    def local_vars
+      Set.new( @node.local_vars.map{|var| var.name} )
+    end
+
+    def name
+      @node.name
+    end
+    
+  end
   
 end
