@@ -271,6 +271,10 @@ module RRB
     def match?( namespace )
       @nodes.map{|c| c.name} == namespace.ary
     end
+
+    def normal
+      Namespace.new( @nodes.map{|c| c.name} )
+    end
     
     # this methods exist for test_node
     def_delegators :@nodes, :map, :last
