@@ -226,12 +226,12 @@ module RRB
   end
   
   class IdInfo
-    attr_reader :type, :lineno, :pointer, :name
+    attr_reader :type, :lineno, :name, :column
     
-    def initialize( type, lineno, pointer, name )
+    def initialize( type, lineno, column, name )
       @type = type
       @lineno = lineno
-      @pointer = pointer
+      @column = column
       @name = name
     end
 
@@ -244,9 +244,13 @@ module RRB
     end
 
     def head_pointer
-      @pointer - @name.size
+      @column
     end
 
+    def pointer
+      @column + name.size
+    end
+    
     def self?
       @type == :keyword && @name == "self"
     end
