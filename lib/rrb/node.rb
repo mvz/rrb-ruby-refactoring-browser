@@ -4,6 +4,10 @@ module RRB
 
   class Visitor
 
+    def initialize
+      @error_message = ""
+    end
+
     def visit_class( namespace, class_node )
     end
 
@@ -24,7 +28,8 @@ module RRB
 
     def visit_singleton_class( namespace, node )
     end
-    
+
+    attr_reader :error_message
   end
 
   

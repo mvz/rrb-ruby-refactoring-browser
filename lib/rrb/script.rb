@@ -20,6 +20,7 @@ module RRB
     
     def initialize( files )
       @files = files
+      @error_message = ""
     end
     
     def result_to_io( dst )
@@ -108,6 +109,8 @@ module RRB
       end
       return new( files )
     end
+
+    attr_reader :error_message
     
   end
 

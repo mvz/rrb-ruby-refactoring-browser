@@ -9,6 +9,7 @@ module RRB
       @path = path
       @tree = Parser.new.run( input )
       @new_script = nil
+      @error_message = ""
     end
     
     def write_source_to( dir )
@@ -34,7 +35,7 @@ module RRB
       end
     end
     
-    attr_reader :new_script, :path
+    attr_reader :new_script, :path, :error_message
 
   end
 
