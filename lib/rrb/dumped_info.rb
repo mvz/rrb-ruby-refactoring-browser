@@ -90,6 +90,11 @@ module RRB
       classname = classname.str if classname.kind_of?( Namespace )
       @ancestor_names.include?(classname) ||  @class_name == classname
     end
+
+    def superclass
+      ancestors.find{|anc| anc.type == "class"}
+    end
+    
   end
 
   class NullDumpedClassInfo
