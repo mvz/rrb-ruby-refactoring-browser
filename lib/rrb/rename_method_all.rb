@@ -138,7 +138,11 @@ module RRB
 
       refactored_classes = info.classes_having_method( old_method )
       refactored_classes.map!{|c| c.class_name}
-      if Set.new(refactored_classes) != classes_define_method( old_method ) then
+      lhs = Set.new(refactored_classes)
+      rhs = classes_define_method(old_method)
+      diff = (lhs | rhs) - (lhs & rhs)
+
+      if diff.include?(Namespace.new("Kernel"))
         @error_message = "Don't rename kernel method\n"
         return false
       end
