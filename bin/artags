@@ -99,19 +99,19 @@ class TAGS
     end
     
     def visit_class( namespace, class_node )
-      @tags << ClassTAG.new( namespace.str, class_node.name_id )
+      @tags << ClassTAG.new( namespace.name, class_node.name_id )
       class_node.attrs.each do |sym|
-	@tags << MethodTAG.new( RRB::NodeNamespace.new( class_node, namespace ).str,
+	@tags << MethodTAG.new( RRB::NodeNamespace.new( class_node, namespace ).name,
 			       sym )
       end
     end
     
     def visit_class_method( namespace, node )
-      @tags << ClassMethodTAG.new( namespace.str, node.name_id )
+      @tags << ClassMethodTAG.new( namespace.name, node.name_id )
     end
     
     def visit_method( namespace, method_node )
-      @tags << MethodTAG.new( namespace.str, method_node.name_id )
+      @tags << MethodTAG.new( namespace.name, method_node.name_id )
     end
 
     attr_reader :tags

@@ -35,8 +35,8 @@ Usage: rrb_default_value PATH LINENO INFOTYPE IOTYPE
 
   case infotype
   when '--class'
-    print script.get_class_on_cursor(path, lineno).str
+    print script.get_class_on_cursor(path, lineno).name
   when '--method'
-    print script.get_method_on_cursor(path, lineno).fullname
+    print script.get_method_on_cursor(path, lineno).name
   end  
 end
