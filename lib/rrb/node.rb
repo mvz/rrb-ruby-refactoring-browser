@@ -494,6 +494,8 @@ module RRB
       @namespace = namespace
       @node = method_node
     end
+
+    attr_reader :namespace, :node
     
     def bare_name
       if @node
@@ -517,6 +519,18 @@ module RRB
       else
         bare_name
       end
+    end
+
+    def instance_method?
+      if @node.kind_of?(MethodNode)
+        true
+      elsif @node.kind_of?(ClassMethodNode)
+        false
+      end
+    end
+
+    def class_method?
+      not instance_method?
     end
 
     def self.new_toplevel
