@@ -1,0 +1,117 @@
+
+
+* on__eval_string_begin, on__eval_string_end, on__add_eval_string について
+
+  これは#{ }による文字列内に展開する文字列を判定している
+  on__eval_string_begin は #{ を、
+  on__eval_string_end は } を、
+  on__add_eval_string は その中身の文字列を、
+  それぞれ取得できる
+
+* on__string__* や on__eval_string_* における context について
+  "<<" なら ヒアドキュメント
+  "<<\'" ならヒアドキュメント(「'」つき)
+  "\"" なら 普通の文字列
+  "\'" なら ''でくくった文字列
+  "%q!" なら %q! ! でくくった文字列
+  "/" なら正規表現
+  というようになる。
+
+  つまり文字列開始文字列が入っている
+
+* contextについて その2
+  on__new_string, on__new_xstring などの返値によって変化させることができる。
+  しかし、これを変えると parse の結果が変わるので注意
+  ただし変わりうるのは context と Qundefとを比較しているところのみ。
+  普通 context は Qundef にはならない
+  よってこれをなんらかの情報の受渡しに利用できると思われる
+  contextへの代入をしているのは new_*stringとnew_here_document、new_regexp、
+  new_words のみである。
+
+* on_call などについて  
+  Klass#hoge= というメソッド呼びだしも hoge という引数で呼びだされる
+  これはmlhs_nodeのようにすべきでは？ callしてassignが呼ばれるので
+  かまわないのか？
+
+* on__assignable
+  左辺値としてとれるのは変数の文字列そのままだが、これを on__IDENTIFIER
+  を評価した結果としたいかも。
+  エラーチェックを回避する必要がある
+
+* s_dispatch について
+  on__scan を呼ぶ -> on__* を呼ぶとなっているだけ。
+
+* tok()について
+  tok() == parser->token_buffer
+
+* newtok()
+  トークンバッファのクリアをする
+
+* nextc()
+  次の文字を取ってくる
+
+* yacc の type(記号) について
+  * f_args f_arg など..  メソッドの仮引数。
+     farglistがそれらを全てまとめたもの
+  * opt_block_var ブロック (do || ... end )の仮引数
+  * primary .method としてメソッドを呼びだせるもの。ほとんどの文法要素が
+    この範疇にあるようだ
+  * block_call ブロック付メソッド呼びだし
+  * operation 識別子 or 定数 or メソッド識別子
+  * arg primary + 代入文 + 演算子による演算、 メソッドの引数の一つとして使える
+
+* ripperのbug
+  * rip_parse_quotedwords にて、word_spaceのよびだしで空白文字が一つすくない
+  * on__scanでの、文字列中の \n のなどの挙動
+    (これは \nという文字列とすべきだろう)
+
+* on__*について
+  lexerで呼びだされるもの(s_dispatchを使うものがほとんど)とparserで呼びだされる
+  ものは区別しよう
+
+* Ripper#pointer
+  lex_p - lex_pbeg
+
+* Ripper#lineno
+  これは 1 から、 File.lineno は 0 から
+
+* 複数行にわたる#{}は利用できないということににしておこう
+
+* local variable の定義は
+  * 代入の右辺
+  * メソッドの仮引数
+  * ブロックの仮引数
+
+* block localのスコープは無視する
+  (そのうち let とかでてくるとそうもいかないだろう)
+
+* 識別子の取り扱いについて
+  * IDENTIFIER
+    * 明らかに method call だとわかるもの(fcall,callなど)はmethodとみなす
+    * 同じスコープで local variable の定義が存在し、
+      method call であるかどうか不明の時は local variable とみなる
+      (Rubyの複雑なスコープ規則は無視して単純化する)
+    * どれにもあてはまらないものは method call
+  * CONSTANT
+    * 明らかに method call だとわかるもの(fcall,callなど)はmethodとみなす
+    * それ以外はすべて普通の定数として扱う
+  * IVAR CVAR GVAR FID は自明
+  
+  * IDENTIFIERの取り扱いを正確にしようとすれば、
+
+    local variable の定義を見るときに、ブロックスコープを見ることと、
+    使われている所より上のみを見ることとすればよい
+
+* on__begin_do と on__end_do、push_local と pop_local のような対について
+
+  スコープの管理に利用できる。i.e. スコープの管理が楽できる
+
+* local_cnt
+  f_block_argでも呼ぶようにした
+
+* on__sdef と on__def
+  引数をそろえたほうが良いと思う
+
+* on__block と on__end_do
+  一箇所呼ぶ順序が逆のところがある。
+  いれかえた

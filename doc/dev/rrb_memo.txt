@@ -1,0 +1,9 @@
+* Object#singleton_methodsについて
+  Moduleクラスのインスタンス(==module object)にこれを呼ぶと、
+  継承元の特異メソッドも含まれていることに注意
+
+* 関数のように見えるメソッド
+  class Object の private method として定義される
+
+* class ScriptFile について
+  input が String のインスタンスのときは StringIO を使おう

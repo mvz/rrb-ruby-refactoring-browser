@@ -1,0 +1,54 @@
+require 'rrb/emacs_interface'
+
+def print_usage
+
+  print "\
+Usage: rrb [refactoring type] [refactoring parameter]
+
+  refactoring type
+    * rename-local-variable Class#method old_var new_var
+"
+end
+
+
+def rename_local_variable( namaspace, method_name, old_var, new_var )
+
+  script = RRB::Script.new_from_io( STDIN )
+  unless script.rename_local_var?( namaspace, method_name, old_var, new_var )
+    STDOUT << "ERROR: cannot rename local variable"
+    STDOUT << RRB::STREAM_SPLITTER
+    return
+  end
+
+  script.rename_local_var( namaspace, method_name, old_var, new_var )
+  script.result_to_io( STDOUT )
+end
+
+def split_method_name( str )
+  a, b = str.split( /#/ )
+  return a.split(/::/), b
+end
+
+if $0 == __FILE__ then
+
+  if ARGV.size == 0 then
+    print_usage
+    exit
+  end
+
+  begin
+    
+    case ARGV[0]
+    when 'rename-local-variable'
+      namespace, method_name = split_method_name ARGV[1]
+      rename_local_variable namespace, method_name, ARGV[2], ARGV[3]
+    end
+    
+  rescue
+    STDOUT << "ERROR: exeption raised: #{$!.message}"
+    STDOUT << RRB::STREAM_SPLITTER
+    exit 1
+  end
+    
+  
+end

@@ -1,0 +1,15 @@
+CFLAGS += -DRIPPER -DRRB_RIPPER
+# CFLAGS += -DDEBUG
+# CFLAGS += -Wall
+
+ripper.o: ripper.c dispids.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+ripper.c: ripper.y Makefile resword.c
+	bison ripper.y -o ripper.c
+
+dispids.h: ripper.y create.rb in.ripper.rb
+	ruby create.rb
+
+resword.c: keywords
+	gperf -p -j1 -i 1 -g -o -t -N rip_reserved_word -k'1,3,$$' $< > $@

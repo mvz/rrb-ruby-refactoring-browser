@@ -1,0 +1,13 @@
+TODO
+* all terminals have VALUE
+* snapshot
+* check all dispatch(new_...) is disp0
+* check dispatch names
+* implement local_id()
+- dispatch string literal scan event correctly
+- dispatch all scan events
+- check all dispatch(...add, obj, item) does not overwrite OBJ
+- never dispatch Qundef
+- delete yylval.node from source
+
+NOTE

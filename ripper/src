@@ -1,0 +1,70 @@
+# this
+# is
+# comment!
+
+$~
+1 unless false
+not 1
+a ||= 5
+self
+1 && 5
+"before #{dyna} after"
+p( /regexp #{dyna} after/ )
+n = $5
+defined? f
+
+s = <<HERE
+  ...
+ ...
+...
+HERE
+
+class A
+  def a
+    print 'ok'
+    print( 'ok' )
+    var = 'ok'
+    p var
+    command_call
+    command_call()
+    command_call('ok')
+    command_call('ok', var)
+  end
+
+  def b
+  end
+
+  def c( arg, arg2, arg3 )
+  end
+
+  def d( arg, arg2, *rest )
+  end
+
+  def e( arg, arg2, *rest, &block )
+  end
+
+  def f( arg, arg2, arg3, arg4, &block )
+  end
+
+  def g( *rest )
+  end
+
+  def h( &block )
+  end
+
+  print a
+end
+
+class << A
+  def self.a
+    puts 'ok'
+  end
+end
+
+[1,2,3].each do |i|
+  print i
+end
+{1=>true}.each do |k,v|
+  puts k
+end
+[1,2,3].each {|i| print i }

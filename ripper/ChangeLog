@@ -1,0 +1,30 @@
+= Change Log
+
+== version 0.0.5 (2001-11-01)
+
+  * [fix] modify pack miss.
+  * [new] Ripper#pointer
+  * [new] terminals takes VALUE as token value (incomplete)
+
+== version 0.0.4 (2001-10-25)
+
+  * [new] dispatches all scan events correctly (except here document).
+  * [fix] emb-document line which is beginning with '=', been not dispatched.
+  * [new] new method Ripper.parse
+
+== version 0.0.3 (2001-10-25)
+
+  * [new] dispatches almost all scan events.
+  * [fix] $~ causes SEGV (thanks Koji Arai)
+  * [fix] wrongly dispatched non-VALUE on set_line (patched Koji Arai)
+
+== version 0.0.2 (2001-10-22)
+
+  * [fix] wrongly detected parse error on unless-mod
+  * [new] Ripper#parse is thread safe
+  * [new] Ripper::Version
+
+== version 0.0.1 (2001-10-21)
+
+  * first release.
+
