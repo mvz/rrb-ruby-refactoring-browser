@@ -332,17 +332,15 @@ module RRB
     
     @@cache = Hash.new
 
-    unless defined?($rrb_run_for_reflection)
-      class << self
-        alias _new new
-      end
+    class << self
+      alias _new new
+    end
     
-      def Namespace.new( ns )
-        if @@cache.has_key?( ns ) then
-          @@cache[ns]
-        else
-          _new( ns )
-        end
+    def Namespace.new( ns )
+      if @@cache.has_key?( ns ) then
+        @@cache[ns]
+      else
+        _new( ns )
       end
     end
   
