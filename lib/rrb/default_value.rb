@@ -3,37 +3,15 @@ require 'rrb/common_visitor'
 
 
 module RRB
-  class ScriptFile
-
-    def get_method_on_cursor(lineno)
-      visitor = GetMethodOnRegionVisitor.new(lineno, lineno)
-      @tree.accept( visitor )
-      visitor.method
-    end
-
-    def get_class_on_cursor(lineno)
-      visitor = GetClassOnRegionVisitor.new(lineno, lineno)
-      @tree.accept( visitor )
-      visitor.namespace
-    end    
-  end
   
   class Script
 
     def get_class_on_cursor(path, lineno)
-      @files.each do |scriptfile|
-        if scriptfile.path == path 
-          return scriptfile.get_class_on_cursor(lineno)
-        end
-      end
+      get_class_on_region(path, lineno..lineno)
     end
 
     def get_method_on_cursor(path, lineno)
-      @files.each do |scriptfile|
-        if scriptfile.path == path
-          return scriptfile.get_method_on_cursor(lineno)
-        end
-      end
+      get_method_on_region(path, lineno..lineno)
     end
   end
 end
