@@ -2,6 +2,7 @@ require 'runit/testcase'
 require 'runit/cui/testrunner'
 
 require 'rrb/dumped_info.rb'
+require 'rrb/dump_modules'
 
 WORK_DIR = '/tmp/rrbtest'
 RUBY_SCRIPT_NAME = "#{WORK_DIR}/script.rb"
@@ -63,10 +64,8 @@ class TestDumpedInfo < RUNIT::TestCase
   def setup
     Dir.mkdir WORK_DIR
     File.open( RUBY_SCRIPT_NAME, "w" ) do |output|
-      File.open( "lib/rrb/dump_modules.rb", "r" ) do |input|
-	output <<  DUMPED_SCRIPT
-	output << input.read
-      end
+      output << DUMPED_SCRIPT
+      output << RRB::DUMP_MODULES_SCRIPT
     end
     
     system "ruby #{RUBY_SCRIPT_NAME} > #{DUMPED_FILE_NAME}"    
