@@ -26,6 +26,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --extract-method path new_method start_lineno end_lineno
     * --rename-method old_method new_method classes...
     * --rename-constant old_const new_const
+    * --pullup-method old_class method new_class
+    * --pushdown-method old_class method new_class
 
   io-type
     * --stdin-stdout
@@ -151,7 +153,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 	parse_argv_rename_local_variable(argv)
       when '--rename-instance-variable'
 	parse_argv_rename_instance_variable(argv)
-      when '--rename-class-variablnae'
+      when '--rename-class-variable'
         parse_argv_rename_class_variable(argv)
       when '--rename-global-variable'
         parse_argv_rename_global_variable(argv)
