@@ -21,11 +21,11 @@ rrb/sublibに rrb_ripper.so を置き、rrb/sublib/rrb に ripper.rb を置いている。
 テストを実行する場合はカレントディレクトリはrrb/でなければならない。
 以下のようにして実行する
 
-  [~/src/rrb]% ruby -Ilib -Isublib tests/all.rb
+  [~/src/rrb]% RUBYLIB=$RUBYLIB:~/src/rrb/reflection ruby -Ilib -Isublib tests/all.rb
 
 == 実行ファイルを動かしてみる
 実行ファイルは bin/rrb で、以下のようにして実行できます。
   
-  [~/src/rrb]% ruby -Ilib -Isublib bin/rrb --rename-local-variable 'Rename#method_1' i j < samples/rename_var_sample_stream > output
+  [~/src/rrb]% RUBYLIB=$RUBYLIB:~/src/rrb/reflection ruby -Ilib -Isublib bin/rrb --rename-local-variable 'Rename#method_1' i j < samples/rename_var_sample_stream > output
 
   
