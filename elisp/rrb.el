@@ -245,6 +245,24 @@ matches with rrb-ruby-file-name-regexp'"
   (save-current-buffer
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
+;;;; Refactoring: Rename method
+(defun rrb-comp-read-rename-method ()
+  "Completion read for Rename method"
+  (rrb-comp-read-type-4 "--classs" 
+			(rrb-get-value-on-cursor "--class")
+			"Refactored classes: "
+			"--bare-methods"
+			"Old method: "
+			"New method: "))
+
+(defun rrb-rename-method (classes old-method new-method)
+  "Refactor code: rename local variable"
+  (interactive (progn
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
+		 (rrb-comp-read-rename-method)))
+  (save-current-buffer
+    (rrb-do-refactoring "--rename-method" classes old-method new-method)))
+
 ;;;; Refactoring: Rename method all
 (defun rrb-comp-read-rename-method-all ()
   "Completion read for Rename method all"
