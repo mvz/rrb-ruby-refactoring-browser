@@ -10,7 +10,7 @@ class TestDefaultValue < RUNIT::TestCase
     assert_equals('TestClassA#method_2', script.get_method_on_cursor('samples/parser_sample.rb', 15).name)
     assert_equals('TestClassA::[sclass]#method_7', script.get_method_on_cursor('samples/parser_sample.rb', 46).name)
     assert_equals('TestClassA#method_8', script.get_method_on_cursor('samples/parser_sample.rb', 53).name)
-    assert_equals(nil, script.get_method_on_cursor('samples/parser_sample.rb', 69))
+    assert_equals("", script.get_method_on_cursor('samples/parser_sample.rb', 69).name)
   end
 
   def test_get_class_on_cursor
