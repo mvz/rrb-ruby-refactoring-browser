@@ -19,6 +19,10 @@ class TestMethodName < RUNIT::TestCase
     assert( RRB::MN.new(RRB::NS.new("A::B"), 'me') != RRB::CMN.new(RRB::NS.new("A::B"), 'me') ) 
   end
 
+  def test_hash
+    assert(RRB::MN["A::B#me"].hash == RRB::MN.new(RRB::NS.new("A::B"),"me").hash)
+  end
+
   def test_inspect
     assert_equals( '#<RRB::MethodName A::B#me>',
                    RRB::MN.new(RRB::NS.new("A::B"), 'me').inspect )
