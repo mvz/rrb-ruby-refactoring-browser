@@ -268,6 +268,13 @@ module RRB
       new( nil, nil )
     end
 
+    def str
+      @nodes.map{|c| c.name}.join('::')
+    end
+
+    def match?( namespace )
+      @nodes.map{|c| c.name} == namespace
+    end
     
     def_delegators :@nodes, :map, :empty?, :+, :last
     
