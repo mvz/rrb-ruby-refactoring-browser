@@ -71,8 +71,8 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
       end
     end
   when '--bare-methods'
-    script.refactable_methods.each do |method|
-      print method.bare_name,","
+    script.refactable_methods.map{|m| m.bare_name}.sort.uniq.each do |method|
+      print method,","
     end
     print "\n"
   when '--methods'
