@@ -15,9 +15,9 @@ module RRB
     attr_reader :result
     
     def visit_method( namespace, method_node )
-      unless method_node.name == @method_name && namespace.match?( @namespace ) then
-	return
-      end
+      return unless @method_name.instance_method?
+      return unless method_node.name == @method_name.name
+      return unless namespace.match?(@namespace)
 	
       method_node.local_vars.each do |id|
 	if id.name == @old_var then
@@ -42,11 +42,10 @@ module RRB
     attr_reader :result
 
     def visit_method( namespace, method_node )
-      unless method_node.name == @method_name &&
-	  namespace.match?( @namespace ) then
-	return
-      end
-	
+      return unless @method_name.instance_method?
+      return unless method_node.name == @method_name.name
+      return unless namespace.match?(@namespace)
+
       if method_node.local_vars.find{|i| i.name == @new_var} then
         @error_message = "#{@new_var}: already used\n"
 	@result = false

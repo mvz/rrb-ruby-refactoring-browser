@@ -16,7 +16,9 @@ module RRB
     attr_reader :parameter_index
 
     def visit_method( namespace, node )
-      if namespace.match?( @namespace ) &&  @method_name == node.name
+      return unless @method_name.instance_method?
+
+      if namespace.match?( @namespace ) &&  @method_name.name == node.name
         @parameter_index = node.args.map{|arg| arg.name}.index(@target_parameter)
       end
     end
@@ -49,13 +51,14 @@ module RRB
     end
     
     def visit_method( namespace, node )
-      
-      if namespace.match?( @namespace ) &&  @method_name == node.name
+      return unless @method_name.instance_method?
+
+      if namespace.match?( @namespace ) &&  @method_name.name == node.name
         remove_method_def_parameter(node)
       end
       if namespace.match?( @namespace )
         node.fcalls.each do|fcall|
-          if fcall.body.name == @method_name
+          if fcall.body.name == @method_name.name
             remove_fcall_parameter(fcall)
           end
         end
@@ -73,8 +76,10 @@ module RRB
     end
 
     def visit_method(namespace, node)
+      return unless @method_name.instance_method?
+
       if namespace.match?(@namespace) 
-        if @method_name == node.name
+        if @method_name.name == node.name
           unless node.args.map{|arg| arg.name}.include?(@target_parameter)
             @error_message = "#{@target_parameter}: no such parameter\n"
             @result = false
@@ -87,7 +92,7 @@ module RRB
           end
         end
 
-        node.fcalls.find_all{|fcall| fcall.name == @method_name}.each do |fcall|
+        node.fcalls.find_all{|fcall| fcall.name == @method_name.name}.each do |fcall|
           if fcall.args.include?(nil) || fcall.args == []
             @error_message = "parameter is too complex\n"
             @result = false
@@ -144,7 +149,7 @@ module RRB
     
     def remove_parameter?(namespace, method_name, target_parameter)
       unless get_dumped_info[namespace.name].has_method?(method_name, false)
-        @error_message = "#{method_name} isn't defined at #{namespace.name}\n"
+        @error_message = "#{method_name.name} isn't defined at #{namespace.name}\n"
         return false
       end
 

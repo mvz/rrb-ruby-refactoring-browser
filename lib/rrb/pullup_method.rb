@@ -18,13 +18,15 @@ module RRB
     attr_reader :result
 
     def visit_method(namespace, node)
-      if namespace.match?(@old_namespace) && node.name == @method_name
-        subclass_info = @dumped_info[@old_namespace]
-        node.calls.each do |call|
-          if subclass_info.has_method?(call.name, false)
-            @result = false
-            @error_message = "#{@old_namespace.name}##{@method_name} uses #{call.name} defined at #{@old_namespace.name}\n"
-          end
+      return unless @method_name.instance_method?
+      return unless node.name == @method_name.name
+      return unless namespace.match?(@old_namespace)
+      
+      subclass_info = @dumped_info[@old_namespace]
+      node.calls.each do |call|
+        if subclass_info.has_method?(MethodName.new(call.name, true), false)
+          @result = false
+          @error_message = "#{@old_namespace.name}##{@method_name.name} uses #{call.name} defined at #{@old_namespace.name}\n"
         end
       end
     end
@@ -67,7 +69,7 @@ module RRB
     def pullup_method?(old_namespace, method_name, new_namespace,
                        path, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{method_name}: no definition at #{old_namespace.name}\n"
+        @error_message = "#{method_name.name}: no definition at #{old_namespace.name}\n"
         return false
       end
 
@@ -77,7 +79,7 @@ module RRB
       end
 
       if get_dumped_info[new_namespace].has_method?(method_name)
-        @error_message = "#{method_name}: already defined at #{new_namespace.name}\n"
+        @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
         return false
       end
 

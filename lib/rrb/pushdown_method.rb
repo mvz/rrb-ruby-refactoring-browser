@@ -18,25 +18,27 @@ module RRB
     attr_reader :result
 
     def visit_method(namespace, node)
+      return unless @method_name.instance_method?
+
       if namespace.match?(@old_namespace)
-        if node.name == @method_name
+        if node.name == @method_name.name
           node.calls.each do |call|
             if @dumped_info[@old_namespace].private_method_names.include?(call.name)
               @result = false
-              @error_message = "#{@old_namespace.name}##{@method_name} calls private function \"#{call.name}\"\n"
+              @error_message = "#{@old_namespace.name}##{@method_name.name} calls private function \"#{call.name}\"\n"
             end
           end
         else
-          if node.calls.any?{|call| call.name == @method_name}
+          if node.calls.any?{|call| call.name == @method_name.name}
             @result = false
-            @error_message = "#{@old_namespace.name}##{@method_name}: called by other function\n"
+            @error_message = "#{@old_namespace.name}##{@method_name.name}: called by other function\n"
           end
         end
       elsif not @dumped_info[namespace.normal].subclass_of?(@new_namespace)
         if @dumped_info[namespace.normal].subclass_of?(@old_namespace) && !@dumped_info[namespace.normal].has_method?(@method_name, false)
-	  if node.calls.any?{|call| call.name == @method_name}
+	  if node.calls.any?{|call| call.name == @method_name.name}
 	    @result = false
-	    @error_message = "Other subclass calls #{@old_namespace.name}##{@method_name}\n"
+	    @error_message = "Other subclass calls #{@old_namespace.name}##{@method_name.name}\n"
 	  end
 	end
       end
@@ -82,7 +84,7 @@ module RRB
     def pushdown_method?(old_namespace, method_name, new_namespace,
                          path, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{method_name}: no definition in #{old_namespace.name}\n"
+        @error_message = "#{method_name.name}: no definition in #{old_namespace.name}\n"
         return false
       end
 
@@ -92,7 +94,7 @@ module RRB
       end
 
       if get_dumped_info[new_namespace].has_method?(method_name, false)
-        @error_message = "#{method_name}: already defined at #{new_namespace.name}\n"
+        @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
         return false
       end
 
