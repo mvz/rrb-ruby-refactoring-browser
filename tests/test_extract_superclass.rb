@@ -101,6 +101,8 @@ EOS
                                                [RRB::NS['K']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "K: No such class\n", 
+                   script.error_message)
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'NEW',
                                                [RRB::NS['B'],
@@ -108,39 +110,54 @@ EOS
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "B and A::D are not sibling classes\n",
+                   script.error_message)
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'C',
                                                [RRB::NS['B'],
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "B and A::D are not sibling classes\n",
+                   script.error_message)
+
     assert_equals( false,
                    script.extract_superclass?( RRB::NS['A'], 'CONST',
                                                [RRB::NS['B'],RRB::NS['C']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "CONST: already exists\n",
+                   script.error_message)
 
     assert_equals( false,
                    script.extract_superclass?( RRB::NS['A'], 'D',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "D: already exists\n",
+                   script.error_message)
+
     assert_equals( false,
                    script.extract_superclass?( RRB::NS['A::D'], 'D',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
                                                19 ))
+    assert_equals( "D: already exists\n",
+                   script.error_message)
 
     assert_equals( true,
                    script.extract_superclass?( RRB::NS['A'], 'NEW',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
                                                3 ))
-      assert_equals( false,
-                     script.extract_superclass?( RRB::NS['A'], 'NEW',
-                                                 [RRB::NS['B']],
+    assert_equals( false,
+                   script.extract_superclass?( RRB::NS['A'], 'NEW',
+                                               [RRB::NS['B']],
                                                  '/home/heke/temp/file1.rb',
                                                  14 ))
+    assert_equals( "Invalid Position to define new class\n",
+                   script.error_message)
+
   end
 
   def test_extract_superclass
