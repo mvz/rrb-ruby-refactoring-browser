@@ -34,7 +34,7 @@ module RRB
 
     
     def check_namespace(namespace)
-      @dumped_info[namespace.str].subclass_of?(@owner)
+      @dumped_info[namespace.str].subclass_of?(@owner.str)
     end
 
     def rename_instance_var(namespace, node)
@@ -66,7 +66,7 @@ module RRB
     attr_reader :result
 
     def check_namespace(namespace)
-      return @dumped_info[namespace.str].subclass_of?(@owner)
+      return @dumped_info[namespace.str].subclass_of?(@owner.str)
     end
 
     def rename_instance_var?(namespace, node)
@@ -92,7 +92,7 @@ module RRB
     def get_ancestral_ivar_owner( namespace, dumped_info, var )
       get_owner = GetInstanceVarOwnerVisitor.new(namespace, dumped_info, var)
       @tree.accept(get_owner)
-      get_owner.owner
+      Namespace.new( get_owner.owner )
     end
     
     def rename_instance_var( real_owner, dumped_info, old_var, new_var )
