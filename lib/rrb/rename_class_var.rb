@@ -41,8 +41,7 @@ module RRB
       if check_namespace(namespace)
         node.class_vars.each do |id|
           if id.name == @old_var then
-            @result <<
-                     Replacer.new( id.lineno, id.pointer, @old_var, @new_var )
+            @result << Replacer.new_from_id( id, @new_var )
           end
         end  
       end
@@ -120,7 +119,9 @@ module RRB
       visitor = RenameClassVarVisitor.new(real_owner, dumped_info,
 					  old_var, new_var )
       @tree.accept( visitor )
-      @new_script = RRB.replace_str( @input, visitor.result )
+      unless visitor.result.empty? then
+	@new_script = RRB.replace_str( @input, visitor.result )
+      end
     end
 
     def rename_class_var?( namespace, dumped_info, old_var, new_var )
