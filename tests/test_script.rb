@@ -115,113 +115,6 @@ end
     assert_equals(true, script.rename_class_var?(RRB::NS['X::A'], '@@a', '@@f'))
   end
 
-  RENAME_METHOD_ALL_INPUT = "\
-/home/ohai/ruby/main.rb\C-a
-require 'sub.rb'
-
-class B < A
-
-  def foo( x )
-    @i += x*2
-  end
-
-  def bar
-    hek = 5
-    foo 1 
-    baz
-  end
-    
-end
-
-if __FILE__ == $0 then
-  obj = B.new
-  
-  obj.foo
-  p obj.bar
-end
-
-\C-a/home/ohai/ruby/sub.rb\C-a
-
-class A
-
-  def initialize
-    @i = 0
-  end
-  
-  def foo( x )
-    @i += x
-  end
-
-  def baz
-    @i
-  end
-  
-end
-\C-a-- END --\C-a
-"
-
-  RENAME_METHOD_ALL_OUTPUT = "\
-/home/ohai/ruby/main.rb\C-a
-require 'sub.rb'
-
-class B < A
-
-  def foofee( x )
-    @i += x*2
-  end
-
-  def bar
-    hek = 5
-    foofee 1 
-    baz
-  end
-    
-end
-
-if __FILE__ == $0 then
-  obj = B.new
-  
-  obj.foofee
-  p obj.bar
-end
-
-\C-a/home/ohai/ruby/sub.rb\C-a
-
-class A
-
-  def initialize
-    @i = 0
-  end
-  
-  def foofee( x )
-    @i += x
-  end
-
-  def baz
-    @i
-  end
-  
-end
-\C-a-- END --\C-a
-"
-
-  def test_rename_method_all?
-    script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
-    assert_equals( true, script.rename_method_all?( 'foo', 'foobar' ) )
-    assert_equals( false, script.rename_method_all?( 'foo', 'bar' ) )
-    assert_equals( false, script.rename_method_all?( 'foo', 'baz' ) )
-    assert_equals( false, script.rename_method_all?( 'foo', 'Foo' ) )
-    assert_equals( false, script.rename_method_all?( 'foo', 'hek' ) )
-    assert_equals( false, script.rename_method_all?( 'send', 'foobar' ) )
-  end
-
-  def test_rename_method_all
-    script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
-    script.rename_method_all( 'foo', 'foofee' )
-    dst = ''      
-    script.result_to_io( dst )
-    assert_equals( RENAME_METHOD_ALL_OUTPUT, dst )
-  end
   
   def test_pullup_method?
     script = RRB::Script.new_from_filenames("samples/pullup_method_sample.rb")
@@ -262,10 +155,11 @@ end
 
 
   def test_dump
-    script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
+    script = RRB::Script.new_from_io( StringIO.new( RENAME_LOCAL_VAR_INPUT ) )
     info = script.get_dumped_info
-    assert_equals( "class", info["B"].type )
-    assert_equals( ["foo","bar"].sort, info["B"].public_method_names.sort )
+    assert_equals( "class", info["Rename"].type )
+    assert_equals( ["method_1","method_2"].sort,
+                   info["Rename"].public_method_names.sort )
   end
   
 end
