@@ -32,7 +32,15 @@ module RRB
             @error_message = "Other function uses #{@old_namespace.name}##{@method_name}\n"
           end
         end
+      elsif not @dumped_info[namespace.normal].subclass_of?(@new_namespace)
+        if @dumped_info[namespace.normal].subclass_of?(@old_namespace) && !@dumped_info[namespace.normal].has_method?(@method_name, false)
+	  if node.calls.any?{|call| call.name == @method_name}
+	    @result = false
+	    @error_message = "Other subclass uses #{@old_namespace.name}##{@method_name}\n"
+	  end
+	end
       end
+      
     end
   end
 
