@@ -78,8 +78,8 @@ matches with rrb-ruby-file-name-regexp'"
   (set-buffer rrb-error-buffer)
   (erase-buffer))
 
-(defun rrb-output-to-buffer ()
-  "Rewrite all ruby script buffer from \" *rrb-output\""
+(defun rrb-output-to-buffer-and-reset-point (alist)
+  "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (let ((list-top (split-string (buffer-string) rrb-io-splitter)))
@@ -87,6 +87,7 @@ matches with rrb-ruby-file-name-regexp'"
 	(set-buffer (get-file-buffer (car list-top)))
 	(erase-buffer)
 	(insert (cadr list-top))
+	(goto-char (cdr (assq (current-buffer) alist)))
 	(setq list-top (cddr list-top))))))
 
 (defun rrb-output-to-error-buffer (filename)
@@ -104,9 +105,10 @@ matches with rrb-ruby-file-name-regexp'"
     
 (defun rrb-do-refactoring (&rest args)
   "Do refactoring"
-  (if (/= (apply 'rrb-run-process "rrb" args) 0)
-      (error "fail to refactor: %s" (rrb-error-message)))
-    (rrb-output-to-buffer))
+  (let ((buffer-point-alist (rrb-buffer-point-alist)))
+    (if (/= (apply 'rrb-run-process "rrb" args) 0)
+	(error "fail to refactor: %s" (rrb-error-message)))
+    (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
 (defun rrb-make-temp-name (base)
   (make-temp-name (expand-file-name base temporary-file-directory)))
@@ -127,6 +129,13 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-output-to-error-buffer tmpfile)
     (delete-file tmpfile)
     error-code))
+
+(defun rrb-buffer-point-alist ()
+  (save-current-buffer
+    (mapcar (lambda (buf)
+	      (set-buffer buf)
+	      (cons buf (point)))
+	    (rrb-all-ruby-script-buffer))))
 
 ;;;; Refactoring: Rename local variable 
 (defun rrb-complist-method-fullname ()
