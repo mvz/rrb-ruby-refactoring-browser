@@ -58,7 +58,19 @@
   "Return the vertical position of point..."
   (+ (count-lines (point-min) (point))
      (if (= (current-column) 0) 1 0)))
-     
+
+;;;; Compatibility (for old emacs)
+
+;;;point-at-bol => line-beginning-position
+;;;point-at-eol => line-end-position
+
+(if (not (fboundp 'point-at-bol))
+    (defun point-at-bol ()
+       (line-beginning-position)))
+(if (not (fboundp 'point-at-eol))
+    (defun point-at-eol ()
+       (line-end-position)))
+
 ;;;; Main functions
 
 (defun rrb-ruby-script-p (buffer)
