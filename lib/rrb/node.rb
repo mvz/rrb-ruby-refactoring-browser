@@ -11,6 +11,9 @@ module RRB
 
     def visit_toplevel( namespace, top_node )
     end
+
+    def visit_node( namespace, node )
+    end
     
   end
 
@@ -41,6 +44,10 @@ module RRB
       @name_id.name
     end
 
+    def accept( visitor, namespace )
+      visitor.visit_node( namespace, self )
+    end
+    
     def accept_children( visitor, namespace )
       @class_defs.each{|i| i.accept( visitor, namespace ) }
       @method_defs.each{|i| i.accept( visitor, namespace ) }
@@ -53,6 +60,7 @@ module RRB
 
     def accept( visitor )
       visitor.visit_toplevel( [], self )
+      super visitor, []
       accept_children( visitor, [] )
     end
     
@@ -63,6 +71,7 @@ module RRB
     
     def accept( visitor, namespace )
       visitor.visit_class( namespace, self )
+      super
       namespace.push self
       accept_children( visitor, namespace )
       namespace.pop 
@@ -80,6 +89,7 @@ module RRB
 
     def accept( visitor, namespace )
       visitor.visit_method( namespace, self )
+      super
       accept_children( visitor, namespace )
     end
     
