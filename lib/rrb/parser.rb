@@ -15,13 +15,14 @@ module RRB
 	@global_vars = []
 	@instance_vars = []
 	@class_vars = []
+	@consts = []
 	@fcalls = []
 	@singleton_method_defs = []
 	@class_method_defs = []
 	@singleton_class_defs = []      
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
-      attr_reader :global_vars, :instance_vars, :class_vars
+      attr_reader :global_vars, :instance_vars, :class_vars, :consts
       attr_reader :singleton_method_defs, :class_method_defs
       attr_reader :singleton_class_defs
     end
@@ -82,6 +83,7 @@ module RRB
       @scope_stack.last.singleton_method_defs.delete_if do |sdef|
 	if sdef.s_obj.name == class_name.name then
 	  @scope_stack.last.class_method_defs << ClassMethodNode.new( sdef )
+	  @scope_stack.last.consts.delete( sdef.s_obj )
 	  true
 	else
 	  false
@@ -136,9 +138,13 @@ module RRB
 	@scope_stack.last.instance_vars << var
       when :cvar
 	@scope_stack.last.class_vars << var
+      when :const
+	const = ConstInfo.new_normal( var )
+	@scope_stack.last.consts << const
+	return const
       end      
     end
-    
+
     def on__assignable( var, arg )
       return unless var.kind_of?( IdInfo )
       add_var( var )
@@ -157,11 +163,24 @@ module RRB
       elsif var.type == :id
 	@scope_stack.last.fcalls << var
       else
-	add_var( var )
+	return add_var( var )
       end
-      var
     end
 
+    def on__toplevel_const_get( const_id )
+      const = ConstInfo.new_toplevel( const_id )
+      @scope_stack.last.consts << const
+      return const
+    end
+
+    def on__const_get( lconst, const_id )
+      return nil unless lconst.kind_of?( ConstInfo )
+      const = ConstInfo.new_colon2( const_id, lconst )
+      @scope_stack.last.consts.delete( lconst )
+      @scope_stack.last.consts << const
+      return const
+    end
+    
     def on__add_eval_string( context, str )
       @eval_str = str
     end
