@@ -134,13 +134,23 @@ matches with rrb-ruby-file-name-regexp'"
 	      (cons buf (point)))
 	    (rrb-all-ruby-script-buffer))))
 
-;;;; Refactoring: Rename local variable 
-(defun rrb-complist-method-fullname ()
+;;;; Completion
+
+;;;
+;;; completion type-1
+;;
+;; rrb_compinfo output example
+;;
+;;  A#x;heke,uhe,hoge
+;;  A::B#y;hoge
+;;  a::B#z;i,j,k,l
+;;
+(defun rrb-complist-first-for-type-1 ()
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
 
-(defun rrb-complist-local-var (method)
+(defun rrb-complist-second-for-type-1 ()
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (goto-char (point-min))
@@ -148,15 +158,42 @@ matches with rrb-ruby-file-name-regexp'"
       (mapcar 'list
 	      (split-string (buffer-substring (point) (point-at-eol)) ",")))))
 
+(defun rrb-comp-read-type-1 (compinfo-arg prompt1 prompt2 prompt3)
+  "completion read for Rename local variable, Rename instance variable, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((method (completing-read prompt1
+				 (rrb-complist-first-for-type-1))))
+    (list method
+ 	  (completing-read prompt2 (rrb-complist-local-var method))
+ 	  (read-from-minibuffer prompt3))))
+
+;;;
+;;; completion type-2
+;;
+;; rrb_compinfo output example
+;;
+;;  A,A::B,A::C,A::C::C1,A::C::C2,
+;;
+(defun rrb-complist-type-2 ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (goto-char (point-min))
+    (mapcar 'list
+            (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
+
+(defun rrb-comp-read-type-2 (compinfo-arg prompt1 prompt2)
+  "Completion read for Rename method all, Rename Constant, etc.."
+  (when (/= 0 (rrb-run-process "rrb_compinfo" compinfo-arg))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (list (completing-read prompt1 (rrb-complist-type-2))
+	(read-from-minibuffer prompt2)))
+
+;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
-  (when (/= (rrb-run-process "rrb_compinfo" "--methods-local-vars") 0)
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((method (completing-read "Refactored method: "
-				 (rrb-complist-method-fullname))))
-    (list method
- 	  (completing-read "Old variable: " (rrb-complist-local-var method))
- 	  (read-from-minibuffer "New variable: "))))
+  (rrb-comp-read-type-1 "--methods-local-vars" "Refactored method: "
+                        "Old variable: " "New variable: "))
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
@@ -167,19 +204,9 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
 ;;;; Refactoring: Rename method all
-(defun rrb-complist-method ()
-  (save-current-buffer
-    (set-buffer rrb-output-buffer)
-    (goto-char (point-min))
-    (mapcar 'list
-     (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
-
 (defun rrb-comp-read-rename-method-all ()
   "Completion read for Rename method all"
-  (when (/= 0 (rrb-run-process "rrb_compinfo" "--methods"))
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (list (completing-read "Old method: " (rrb-complist-method))
-	(read-from-minibuffer "New variable: ")))
+  (rrb-comp-read-type-2 "--methods" "Old method: " "New method: "))
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
@@ -215,24 +242,10 @@ matches with rrb-ruby-file-name-regexp'"
 			(number-to-string (rrb-end-line-num end)))))
 
 ;;;; Refactoring: Rename instance variable
-(defun rrb-complist-class ()
-  (save-current-buffer
-    (set-buffer rrb-output-buffer)
-    (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
-
-(defun rrb-complist-instance-var (ns)
-  (rrb-complist-local-var ns))
-
 (defun rrb-comp-read-rename-instance-variable ()
   "completion read for rename instance variable"
-  (when (/= 0 (rrb-run-process "rrb_compinfo" "--classes-instance-vars"))
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((ns (completing-read "refactored class: "
-			     (rrb-complist-class))))
-    (list ns
-	  (completing-read "Old instance variable: "
-			   (rrb-complist-instance-var ns))
-	  (read-from-minibuffer "New instance variable: "))))
+  (rrb-comp-read-type-1 "--classes-instance-vars" "Refactord class: "
+                        "Old instance variable: " "New instance variable: " ))
 
 (defun rrb-rename-instance-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
@@ -243,21 +256,9 @@ matches with rrb-ruby-file-name-regexp'"
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
 
 ;;;; Refactoring: Rename constant
-
-(defun rrb-complist-consts ()
-  (save-current-buffer
-    (set-buffer rrb-output-buffer)
-    (goto-char (point-min))
-    (mapcar 'list
-	    (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
-
 (defun rrb-comp-read-rename-constant ()
   "compleion read for rename constant"
-  (when (/= 0 (rrb-run-process "rrb_compinfo" "--constants"))
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (list (completing-read "Old constant: " (rrb-complist-consts))
-	(read-from-minibuffer "New constant: ")))
-  
+  (rrb-comp-read-type-2 "--constants" "Old constant: " "New constant: "))
 
 (defun rrb-rename-constant (old-const new-const)
   "Refactor code: Rename constant"
