@@ -34,15 +34,18 @@ mkdir rrb/ext
 # - ripper
 mv rrb/ripper rrb/ext/
 cd rrb/ext/ripper/
+touch MANIFEST
 bison ripper.y -o ripper.c
 ruby create.rb
 cp ripper.rb ../../lib/rrb/
 cd ../../../
 # - reflection
 mv rrb/reflection rrb/ext/
+touch rrb/ext/reflection/MANIFEST
 
 # - make package
 mv rrb rrb-$VERSION
 tar zcf rrb-$VERSION.tar.gz rrb-$VERSION
 rm -r rrb-$VERSION/
 echo "made package 'rrb-$VERSION.tar.gz'."
+
