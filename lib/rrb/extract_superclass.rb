@@ -1,4 +1,5 @@
 require 'rrb/script'
+require 'rrb/default_value'
 
 module RRB
 
@@ -104,7 +105,7 @@ module RRB
       unless namespace.contain?( get_class_on_cursor( path, lineno ).normal )
         return false
       end
-      
+
       return true
     end
     
