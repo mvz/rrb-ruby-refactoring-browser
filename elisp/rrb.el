@@ -136,7 +136,7 @@
   (save-current-buffer
     (set-buffer rrb-error-buffer)
     (goto-char (point-min))
-    (substring (thing-at-point 'line) 0 -1)))
+    (substring (thing-at-point 'line) 0 nil)))
     
 (defun rrb-do-refactoring (&rest args)
   "Do refactoring."
