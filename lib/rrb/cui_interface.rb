@@ -319,7 +319,7 @@ USG
       def run
         old_var = select_one("Old variable: ", gvars)
         new_var = input_str("New variable: ")
-        execute("rename_gloval_var", old_var, new_var)
+        execute("rename_global_var", old_var, new_var)
       end
     end
     
