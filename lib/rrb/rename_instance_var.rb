@@ -17,6 +17,10 @@ module RRB
     
     def check_namespace(str_namespace)
       info = @dumped_info[str_namespace]
+
+      unless info
+        return false
+      end
       unless info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
         return false
       end      
@@ -38,21 +42,6 @@ module RRB
       str_namespace = namespace.map{|i| i.name}.join('::')
       rename_instance_var(str_namespace, node)
     end
-
-    def visit_singleton_method(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      rename_instance_var(str_namespace, node)
-    end
-
-    def visit_class( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if str_namespace.empty?
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      rename_instance_var(str_namespace, node)
-    end
   end
 
 
@@ -71,9 +60,12 @@ module RRB
 
     def check_namespace(str_namespace)
       info = @dumped_info[str_namespace]
+      unless info
+        return false
+      end
       unless info.ancestor_names.include?(@str_namespace) || str_namespace == @str_namespace
         return false
-      end      
+      end   
       return true
     end
 
@@ -94,26 +86,6 @@ module RRB
         @result = false
       end
     end
-
-    def visit_singleton_method(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if !rename_instance_var?(str_namespace, node)
-        @result = false
-      end
-    end
-
-    def visit_class( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if str_namespace == ''
-        str_namespace = node.name
-      else
-        str_namespace = str_namespace + '::' + node.name
-      end
-      if !rename_instance_var?(str_namespace, node)
-        @result = false
-      end
-    end
-    
   end
 
   class ScriptFile
