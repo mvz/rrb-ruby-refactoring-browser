@@ -91,6 +91,10 @@ end
 		  script.rename_method?( [ RRB::MN['B#foo'] ], '@@bar' ) )
     assert_equals( "@@bar is not a valid name for methods\n",
                    script.error_message)
+    assert_equals( false,
+                   script.rename_method?( [RRB::MN['C#foo'],RRB::MN['B#bar']],
+                                                   'foobar' ) )
+    assert_equals( "All method should be same name", script.error_message )
   end
 
   def test_rename_method
