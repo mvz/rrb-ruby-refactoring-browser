@@ -229,8 +229,9 @@
 (defmacro rrb-declare-refactoring (&rest body)
   `(progn
      (setq rrb-now-refactoring-flag t)
-     (mapc #'(lambda (exp) (eval exp)) ',body)
-     (setq rrb-now-refactoring-flag nil)))
+     (unwind-protect
+	 (mapc #'(lambda (exp) (eval exp)) ',body)
+       (setq rrb-now-refactoring-flag nil))))
 
 
 (defmacro rrb-setup-refactoring (&rest body)
@@ -243,7 +244,8 @@
 		   (list "--stdin-fileout" rrb-marshal-file-name)) 0)
 	(error "rrb_marshal: fail to read source files %s" (rrb-error-message))))
   (defun rrb-delete-marshal-file ()
-    (delete-file rrb-marshal-file-name))
+    (if (file-readable-p rrb-marshal-file-name)
+	(delete-file rrb-marshal-file-name)))
   (defun rrb-prepare-refactoring ()
     (rrb-add-change-hook-to-all-ruby-script)
     (rrb-make-marshal-file))
@@ -251,8 +253,9 @@
     (rrb-delete-marshal-file))
   `(rrb-declare-refactoring
     (rrb-prepare-refactoring)
-    (mapc #'(lambda (exp) (eval exp)) ',body)
-    (rrb-terminate-refactoring)))
+    (unwind-protect
+	(mapc #'(lambda (exp) (eval exp)) ',body)
+      (rrb-terminate-refactoring))))
     
 
 
@@ -443,6 +446,7 @@
 	  (directory-files rrb-undo-directory t))
 	 (delete-directory rrb-undo-directory)))
   (setq rrb-undo-count 0))
+
 
 (defun rrb-notify-file-changed (start end)
   (if (not rrb-now-refactoring-flag)
