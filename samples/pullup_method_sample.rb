@@ -2,6 +2,8 @@ class Base
   def hoge
     p 1
   end
+  def asdf
+  end
 end
 
 class Derived < Base
@@ -11,5 +13,7 @@ class Derived < Base
   def bar
     hoge
     p 2
+  end
+  def asdf
   end
 end

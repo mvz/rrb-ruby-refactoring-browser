@@ -6,11 +6,15 @@ samples/pullup_method_sample.rbclass Base
   def hoge
     p 1
   end
+  def asdf
+  end
 end
 
 class Derived < Base
   def foo
     bar
+  end
+  def asdf
   end
 end
 -- END --
