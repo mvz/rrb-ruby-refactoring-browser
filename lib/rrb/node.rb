@@ -299,7 +299,7 @@ module RRB
     end
 
     def match?( namespace )
-      @nodes.map{|c| c.name} == namespace.ary
+      self.normal == namespace
     end
 
     def normal
