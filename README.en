@@ -18,7 +18,7 @@ Type these lines on command line to install core libraries:
   $ ruby setup.rb setup
   # ruby setup.rb install
 
-So, you should copy elisp/rrb.el in load-path.
+Next, you should copy elisp/rrb.el in load-path and load rrb.el to Emacs.
 = Documentation
 Sorry.
 No English document is prepared yet.
