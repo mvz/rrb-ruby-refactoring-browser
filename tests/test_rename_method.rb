@@ -60,21 +60,21 @@ end
     result
   end
   
-  def test_classes_access_method
+  def test_classes_respond_to
     script = RRB::Script.new_from_io( StringIO.new( input_str ) )
     assert_equals( %w( C ).map{|x| RRB::NS.new(x)},
-		  script.classes_access_method( [ RRB::NS.new( 'C' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'C' ) ], 'foo' ) )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_access_method( [ RRB::NS.new( 'A' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'A' ) ], 'foo' ) )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_access_method( [ RRB::NS.new( 'B' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'B' ) ], 'foo' ) )
     assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
-		  script.classes_access_method( [ RRB::NS.new( 'C::D' ) ], 'foo' ) )
+		  script.classes_respond_to( [ RRB::NS.new( 'C::D' ) ], 'foo' ) )
     script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_access_method( [ RRB::NS.new( 'G' ) ], 'foo' ) )
+		  script2.classes_respond_to( [ RRB::NS.new( 'G' ) ], 'foo' ) )
     assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
-		  script2.classes_access_method( [ RRB::NS.new( 'F' ) ], 'foo' ) )
+		  script2.classes_respond_to( [ RRB::NS.new( 'F' ) ], 'foo' ) )
   end
 
   def test_rename_method?
