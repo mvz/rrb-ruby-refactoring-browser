@@ -47,6 +47,10 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
       print method,","
     end
     print "\n"
+  when '--methods-fullname'
+    script.refactable_methods.each do |method|
+      print method.fullname, ','
+    end
   when '--classes'
     script.refactable_classes.each do |klass|
       print klass, ","
