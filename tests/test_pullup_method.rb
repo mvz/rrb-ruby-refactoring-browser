@@ -61,13 +61,16 @@ class Base
 end
 
 class Base
-
+  def Base.fuga
+  end
 end
 
 class Derived < Base
   def hoge
   end
   def Derived.hoge
+  end
+  def Derived.fuga
   end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
@@ -87,11 +90,14 @@ class Base
 end
 
 class Base
-
+  def Base.fuga
+  end
 end
 
 class Derived < Base
   def Derived.hoge
+  end
+  def Derived.fuga
   end
 end
 \C-a-- END --\C-a
@@ -105,10 +111,14 @@ end
 class Base
   def hoge
   end
+  def Base.fuga
+  end
 end
 
 class Derived < Base
   def Derived.hoge
+  end
+  def Derived.fuga
   end
 end
 \C-a-- END --\C-a
@@ -120,11 +130,14 @@ class Base
 end
 
 class Base
-
+  def Base.fuga
+  end
 end
 
 class Derived < Base
   def Derived.hoge
+  end
+  def Derived.fuga
   end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
@@ -142,11 +155,14 @@ class Base
 end
 
 class Base
-
+  def Base.fuga
+  end
 end
 
 class Derived < Base
   def hoge
+  end
+  def Derived.fuga
   end
 end
 \C-a-- END --\C-a
@@ -178,6 +194,11 @@ end
                   script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'hoge'),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
     assert_equals("Specify which definition to pull up method to\n", script.error_message)
+
+    assert_equals(false,
+                  script.pullup_method?(RRB::CMN.new(RRB::NS['Derived'], 'fuga'),
+                                        RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
+    assert_equals("Base.fuga is already defined\n", script.error_message)
 
   end
 
