@@ -1,4 +1,11 @@
 #!/usr/bin/env ruby
+=begin
+Copyright (C) 2004  OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
+Copyright (C) 2004  Kyoto univ. Microcomputer Club
+
+RRB is distributed under the same term as Ruby.
+=end
+
 require 'rrb/emacs_interface'
 
 if $0 == __FILE__ then
