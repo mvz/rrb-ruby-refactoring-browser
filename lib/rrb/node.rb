@@ -43,6 +43,7 @@ module RRB
       @singleton_method_defs = scope.singleton_method_defs
       @class_method_defs = scope.class_method_defs
       @singleton_class_defs = scope.singleton_class_defs
+      @first_assign = scope.first_assign
       @head_keyword = head_kw
       @tail_keyword = tail_kw
     end
@@ -52,6 +53,7 @@ module RRB
     attr_reader :fcalls, :singleton_method_defs, :class_method_defs
     attr_reader :singleton_class_defs
     attr_reader :head_keyword, :tail_keyword
+    attr_reader :first_assign
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
@@ -146,11 +148,15 @@ module RRB
       @class_defs = sdef.class_defs
       @method_defs = sdef.method_defs
       @local_vars = sdef.local_vars
+      @instance_vars = sdef.instance_vars
+      @class_vars = sdef.class_vars
+      @consts = sdef.consts
       @method_calls = sdef.method_calls
       @fcalls = sdef.fcalls
       @singleton_method_defs = sdef.singleton_method_defs
       @class_method_defs = sdef.class_method_defs
       @singleton_class_defs = sdef.singleton_class_defs
+      @first_assign = sdef.first_assign
       @s_obj = sdef.s_obj
       @head_keyword = sdef.head_keyword
       @tail_keyword = sdef.tail_keyword
