@@ -1,4 +1,4 @@
-class Base
+samples/remove_parameter_sample.rbclass Base
   def base_function(heke)
 
   end
@@ -13,9 +13,11 @@ class Derived < Base
   end
 
   def dummy
-    target_function(0)
-    using_parameter_function(0)
-    base_function(0)
+    a = b = 0
+    target_function()
+    using_parameter_function(a, b)
+    base_function(a)
   end
   
 end
+-- END --
