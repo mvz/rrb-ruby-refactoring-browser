@@ -26,6 +26,13 @@ Emacsでは、M-x rrb-rename-local-variableなどとし、必要な情報(変数名など)
 を入力してください。
 M-x rrb-undoでundoができます。
 
+= FreeRIDEプラグインのインストール
+まず、上記のインストールを終えてください。
+次にrubyide_tools_rrb/をディレクトリごと${FreeRIDE}/plugins/にコピーし
+て下さい。
+あとはFreeRIDEを起動すれば、メニューバーにRefactorというメニューが追加
+され、リファクタリングができるようになっています。
+
 = ドキュメント
 ユーザ向けのドキュメントは用意していません。開発者向けのものがdoc/dev/に置い
 てあります。

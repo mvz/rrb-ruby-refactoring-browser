@@ -20,6 +20,12 @@ Type these lines on command line to install core libraries:
 
 Next, you should copy elisp/rrb.el in load-path and load rrb.el to Emacs.
 
+= Installation of FreeRIDE plugin
+At first, finish the installation mentioned above.
+Then, copy rubyide_tools_rrb/ to ${FreeRIDE}/plugins/.
+So, the menu "Refactor" is added to the menubar of FreeRIDE, and you
+can enjoy refactoring with it.
+
 = How to use
 On Emacs, type M-x rrb-rename-local-variable(or rrb-rename-instance-variable, etc)
 and input required information such as the name of variable.
