@@ -15,7 +15,7 @@ def main
         arity = arity.to_i
         puts
         puts "  def on__#{id}(#{argdecl(arity)})"
-        puts "    #{arity == 0 ? 'nil' : 'a'}"
+        puts "    nil"
         puts "  end"
       end
     when /\A\#include handlers2/
