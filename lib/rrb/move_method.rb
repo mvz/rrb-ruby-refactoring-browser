@@ -24,12 +24,12 @@ module RRB
     def visit_class(namespace, node)
       str_namespace = NodeNamespace.new(node, namespace).name
       if @str_old_namespace == str_namespace
-        unless class_include_the_method? (node)
+        unless class_include_the_method?(node)
           @result = false 
         end 
       end
       if @str_new_namespace == str_namespace
-        if class_include_the_method? (node)
+        if class_include_the_method?(node)
           @result = false
         end
       end
