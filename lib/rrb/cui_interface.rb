@@ -1,7 +1,7 @@
 require 'tempfile'
 require 'readline'
 require 'getoptlong'
-require 'curses'
+#require 'curses'
 require 'rrb/rrb'
 require 'rrb/completion'
 
@@ -245,13 +245,20 @@ USG
         @script.__send__(refactoring, *args)
         output_diff
       end
-    end
 
-    class RenameLocalVariable < UI
+      def input_new_namespace
+        result = CUI.select_one("What namespace is your new class in: ", classes)
+        return Namespace::Toplevel if result == nil
+        return Namespace[result]
+      end
+
       def methods
         @script.refactable_methods.map{|method| method.name}
       end
+    end
 
+    class RenameLocalVariable < UI
+      
       def vars(method)
         @script.refactable_methods.find{|m| m.name == method}.local_vars.to_a
       end
@@ -307,6 +314,42 @@ USG
         check_and_execute("rename_global_var", old_var, new_var)
       end
     end
+
+    class RenameConstant < UI
+      def consts
+        @script.refactable_consts
+      end
+
+      def run
+        old_const = select_one("Old contant: ", consts)
+        new_const = input_str("New constant: ")
+        check_and_execute("rename_constant", old_const, new_const)
+      end
+    end
+
+    class RenameClass < UI
+      def classes
+        @scripts.refactable_classes
+      end
+
+      def run
+        old_class = select_one("Old class: ", classes)
+        new_class = input_str("New class: ")
+        check_and_execute("rename_constant", old_class, new_class)
+      end
+    end
+
+    class RenameMethodAll < UI
+      def methods
+        @script.refactable_methods.map{|m| m.bare_name}.sort.uniq
+      end
+
+      def run
+        old_method = select_one("Old method: ", methods)
+        new_method = input_str("New method: ")
+        check_and_execute("rename_method_all", old_method, new_method)
+      end
+    end
     
     class ExtractMethod < UI
       def run
@@ -319,11 +362,6 @@ USG
     end
 
     class ExtractSuperclass < UI
-      def input_new_namespace
-        result = CUI.select_one("What namespace is your new class in: ", classes)
-        return Namespace::Toplevel if result == nil
-        return Namespace[result]
-      end
       
       def run
         path = select_one("What file new class is created?: ", files)
@@ -337,20 +375,41 @@ USG
       end
     end
 
+    class PullupMethod < UI
+      def run
+        method = select_one("Old method: ", methods)
+        new_namespace = input_new_namespace
+        path = select_one("What file #{method} is pulled up?: ", files)
+        lineno = select_line(@script.files.find{|sf| sf.path == path})
+        check_and_execute("pullup_method", Method[method], new_namespace,
+                          path, lineno)
+      end
+    end
+
+    class PushDownMethod < UI
+      def run
+        method = select_one("Old method: ", methods)
+        new_namespace = input_new_namespace
+        path = select_one("What file #{method} is pushed down?: ", files)
+        lineno = select_line(@script.files.find{|sf| sf.path == path})
+        check_and_execute("pushdown_method", Method[method], new_namespace,
+                          path, lineno)
+      end
+    end
     
     REFACTORING_MAP = {
       'rename-local-variable' => RenameLocalVariable,
       'rename-instance-variable' => RenameInstanceVariable,
       'rename-class-variable' => RenameClassVariable,
       'rename-global-variable' => RenameGlobalVariable,
-      'rename-constant' => nil,
-      'rename-class' => nil,
-      'rename-method-all' => nil,
+      'rename-constant' => RenameConstant,
+      'rename-class' => RenameClass,
+      'rename-method-all' => RenameMethodAll,
       'rename-method' => nil,
       'extract-method' => ExtractMethod,
       'extract-superclass' => ExtractSuperclass,
-      'pullup-method' => nil,
-      'pushdown-method' => nil,
+      'pullup-method' => PullupMethod,
+      'pushdown-method' => PushDownMethod,
     }
 
     REFACTORING = REFACTORING_MAP.map{|name, klass| name}
