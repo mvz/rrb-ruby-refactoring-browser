@@ -91,7 +91,7 @@ module RRB
       end
       
       if namespace.match?(@namespace) 
-        node.fcalls.find_all{|fcall| fcall.name == @method_name.str_method_name}.each do |fcall|
+        node.fcalls.find_all{|fcall| fcall.name == @method_name.bare_name}.each do |fcall|
           if fcall.args.include?(nil) || fcall.args == []
             @error_message = "parameter is too complex\n"
             @result = false

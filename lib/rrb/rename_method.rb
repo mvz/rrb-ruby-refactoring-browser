@@ -11,7 +11,7 @@ module RRB
 
     def initialize( old_methods, new_method )
       @classes = old_methods.map{|x| x.namespace}
-      @old_method = old_methods.first.str_method_name
+      @old_method = old_methods.first.bare_name
       @new_method = new_method
       @result = []
     end
@@ -72,8 +72,28 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
 
   end
 
+  class GetAllFCallVisitor < Visitor
+    def initialize
+      @result = Set.new
+    end
+
+    attr_reader :result
+    
+    def visit_method( namespace, node )
+      node.fcalls.each do |fcall|
+        @result.add MethodName.new( namespace.normal, fcall.name )
+      end
+    end
+  end
+  
   class Script
 
+    def all_fcalls
+      @files.inject(Set.new) do |result,scriptfile|
+        result + scriptfile.all_fcalls
+      end
+    end
+    
     def classes_call_method( methodname )
       @files.inject(Set.new) do |result, scriptfile|
         result.merge scriptfile.classes_call_method(methodname)
@@ -106,32 +126,66 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
 
       result
     end
+
+    def supermethod?( method1, method2 )
+      unless get_dumped_info[method2.namespace].subclass_of?( method1.namespace )
+        return false
+      end
+      return false unless method1.bare_name == method2.bare_name
+      return true
+    end
+
+    def supermethods( method )
+      get_dumped_info[method.namespace].ancestors.find_all do |ancestor|
+        ancestor.has_method?( method.bare_name, false ) 
+      end.map{|klass| MethodName.new( klass.class_name, method.bare_name ) } +
+          [ method ]
+    end
+    
+    def methods_related_with( methods )
+      basis = Set.new
+      methods.each do |method|
+        basis.merge( supermethods(method) )
+      end
+      basis.merge all_fcalls.find_all{|fcall|
+        methods.any?{|m| supermethod?( fcall, m )}
+      }
+      result = Set.new
+      get_dumped_info.each do |classinfo|
+        basis.each do |basemethod|
+          if classinfo.subclass_of?( basemethod.namespace )
+            result.add MethodName.new( classinfo.class_name, basemethod.bare_name )
+          end
+        end
+      end
+      result
+    end
     
     def rename_method( old_methods, new_method )
-      base_classes = old_methods.map{|x| x.namespace}
-      old_method = old_methods.first.str_method_name
-      
-      real_classes = classes_respond_to( base_classes, old_method )
-      renamed_methods = real_classes.map{|x| MethodName.new( x, old_method )}
+      renamed_methods = methods_related_with( old_methods ).to_a
       @files.each do |scriptfile|
 	scriptfile.rename_method( renamed_methods, new_method )
       end
     end
 
     def rename_method?(  old_methods, new_method )
-      old_method = old_methods.first.str_method_name
+      old_method = old_methods.first.bare_name
       base_classes = old_methods.map{|x| x.namespace}
       unless RRB.valid_method?( new_method )
         @error_message = "#{new_method} is not a valid name for methods\n"
         return false
       end
 
-      classes_respond_to( base_classes, old_method ).each do |ns|
-	if get_dumped_info[ns.name].has_method?( new_method ) then
-          @error_message = "#{new_method}: already defined at #{ns.name}\n"
+      unless old_methods.all?{|m| m.bare_name == old_methods}
+        @error_message = "All method should be same"
+      end
+      
+      methods_related_with( old_methods ).each do |method|
+        if get_dumped_info[method.namespace].has_method?( new_method )
+         @error_message = "#{new_method}: already defined at #{method.namespace.name}\n"
 	  return false
 	end
-      end
+      end 
       true
     end
     
@@ -151,7 +205,11 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
-
+    def all_fcalls
+      visitor = GetAllFCallVisitor.new
+      @tree.accept( visitor )
+      visitor.result
+    end
+    
   end
-  
 end

@@ -56,10 +56,10 @@ module RRB
 
     def exist?( methodname, inherited_too=true )
       if methodname.instance_method?
-        self[methodname.namespace].has_method?( methodname.str_method_name,
+        self[methodname.namespace].has_method?( methodname.bare_name,
                                                 inherited_too )
       else
-        self[methodname.namespace].has_class_method?( methodname.str_method_name,
+        self[methodname.namespace].has_class_method?( methodname.bare_name,
                                                       inherited_too )
       end
     end
@@ -68,7 +68,7 @@ module RRB
       if methodname.class_method?
         raise
       end
-      self[methodname.namespace].real_method( methodname.str_method_name )
+      self[methodname.namespace].real_method( methodname.bare_name )
     end
     
     def DumpedInfo.get_dumped_info( io )

@@ -22,8 +22,8 @@ module RRB
       return if @method_name.match_node?( namespace, node )
       return unless @dumped_info[namespace.normal].subclass_of?(@old_namespace)
       return if @dumped_info[namespace.normal].subclass_of?(@new_namespace)
-      return unless node.fcalls.any?{|fcall| fcall.name == @method_name.str_method_name}
-      called_method = MethodName.new( namespace.normal, @method_name.str_method_name )
+      return unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
+      called_method = MethodName.new( namespace.normal, @method_name.bare_name )
       if @dumped_info.real_method( called_method ) == @method_name
         @result = false
         @error_message = "#{namespace.name} calls #{@method_name.name}"
@@ -93,7 +93,7 @@ module RRB
         return false
       end
 
-      if get_dumped_info[new_namespace].has_method?(method_name.str_method_name, false)
+      if get_dumped_info[new_namespace].has_method?(method_name.bare_name, false)
         @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
         return false
       end

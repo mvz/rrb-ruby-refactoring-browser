@@ -91,7 +91,7 @@ module RRB
         return false
       end
 
-      super_method = get_dumped_info[old_namespace].superclass.real_method( method_name.str_method_name )
+      super_method = get_dumped_info[old_namespace].superclass.real_method( method_name.bare_name )
       if super_method != nil
         @error_message = "#{super_method.name} is already defined\n"
         return false

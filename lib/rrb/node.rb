@@ -416,12 +416,12 @@ module RRB
   NS = Namespace
 
   class MethodName
-    def initialize( namespace, str_method_name )
+    def initialize( namespace, bare_name )
       @namespace = namespace
-      @str_method_name = str_method_name
+      @bare_name = bare_name
     end
 
-    attr_reader :str_method_name, :namespace
+    attr_reader :bare_name, :namespace
 
     def instance_method?
       true
@@ -433,7 +433,7 @@ module RRB
 
     def ==(other)
       return false unless other.kind_of?( MethodName )
-      return false unless @str_method_name == other.str_method_name
+      return false unless @bare_name == other.bare_name
       return false unless @namespace == other.namespace
       return true
     end
@@ -441,12 +441,12 @@ module RRB
     def match_node?( namespace, method_node )
       return false unless method_node.kind_of?( MethodNode ) 
       return false unless namespace.match?( @namespace ) 
-      return false unless method_node.name == @str_method_name 
+      return false unless method_node.name == @bare_name 
       return true
     end
     
     def name
-      @namespace.name + '#' + @str_method_name
+      @namespace.name + '#' + @bare_name
     end
 
     def inspect
@@ -458,7 +458,7 @@ module RRB
     end
 
     def hash
-      @namespace.hash ^ @str_method_name.hash
+      @namespace.hash ^ @bare_name.hash
     end
     
     def MethodName.[](str)
@@ -475,12 +475,12 @@ module RRB
   end
 
   class ClassMethodName
-    def initialize( namespace, str_method_name )
+    def initialize( namespace, bare_name )
       @namespace = namespace
-      @str_method_name = str_method_name
+      @bare_name = bare_name
     end
 
-    attr_reader :str_method_name, :namespace
+    attr_reader :bare_name, :namespace
     
     def instance_method?
       false
@@ -492,17 +492,17 @@ module RRB
 
     def ==(other)
       return false unless other.instance_of?( ClassMethodName )
-      return false unless @str_method_name == other.str_method_name
+      return false unless @bare_name == other.bare_name
       return false unless @namespace == other.namespace
       return true
     end
 
     def match_node?( namespace, method_node )
-      method_node.kind_of?( ClassMethodNode ) && namespace.match?( @namespace ) && method_node.name == @str_method_name
+      method_node.kind_of?( ClassMethodNode ) && namespace.match?( @namespace ) && method_node.name == @bare_name
     end
     
     def name
-      @namespace.name + '.' + @str_method_name
+      @namespace.name + '.' + @bare_name
     end
 
     def inspect
