@@ -33,11 +33,9 @@ module RRB
       dst << "\n"
     end
 
-    def result_overwrite_file
+    def result_rewrite_file
       @files.each do |scriptfile|
-	File.open( scriptfile.path, "w+" ) do |f|
-	  f << scriptfile.new_script
-	end
+	scriptfile.result_rewrite_file
       end
     end
 
