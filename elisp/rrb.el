@@ -164,12 +164,12 @@ matches with rrb-ruby-file-name-regexp'"
       (mapcar 'list
 	      (split-string (buffer-substring (point) (point-at-eol)) ",")))))
 
-(defun rrb-comp-read-type-1 (compinfo-arg prompt1 prompt2 prompt3)
+(defun rrb-comp-read-type-1 (compinfo-arg default-arg prompt1 prompt2 prompt3)
   "completion read for Rename local variable, Rename instance variable, etc.."
   (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg) 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
   (let ((method (completing-read prompt1
-				 (rrb-complist-first-for-type-1))))
+				 (rrb-complist-first-for-type-1) nil nil default-arg)))
     (list method
  	  (completing-read prompt2 (rrb-complist-second-for-type-1 method))
  	  (read-from-minibuffer prompt3))))
@@ -212,27 +212,18 @@ matches with rrb-ruby-file-name-regexp'"
 ;;; default value
 ;;    
 (defun rrb-get-value-on-cursor (args)
-  (if (/= (rrb-run-process "rrb_default_value" (buffer-file-name) (number-to-string (rrb-current-line)) args) 0)
-      ""
-    (save-current-buffer
-      (set-buffer rrb-output-buffer)
-      (buffer-substring (point-min) (point-max)))))
+  (save-current-buffer
+    (rrb-setup-input-buffer (list (current-buffer)))
+    (if (/= (rrb-run-process "rrb_default_value" (buffer-file-name) (number-to-string (rrb-current-line)) args) 0)
+	""
+      (save-current-buffer
+	(set-buffer rrb-output-buffer)
+	(buffer-substring (point-min) (point-max))))))
   
-(defun rrb-get-class-on-cursor ()
-  (save-current-buffer
-    (rrb-setup-input-buffer (list (current-buffer)))
-    (rrb-get-value-on-cursor "--class")))
-
-(defun rrb-get-method-on-cursor ()
-  (save-current-buffer
-    (rrb-setup-input-buffer (list (current-buffer)))
-    (rrb-get-value-on-cursor "--method")))
-
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
-  (rrb-comp-read-type-1 "--methods-local-vars" "Refactored method: "
-                        "Old variable: " "New variable: "))
+  (rrb-comp-read-type-1 "--methods-local-vars" (rrb-get-value-on-cursor "--method") "Refactored method: " "Old variable: " "New variable: "))
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
@@ -245,7 +236,9 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename method all
 (defun rrb-comp-read-rename-method-all ()
   "Completion read for Rename method all"
-  (rrb-comp-read-type-2 "--bare-methods" "" "Old method: " "New method: "))
+  (rrb-comp-read-type-2 "--bare-methods" 
+			(rrb-get-value-on-cursor "--bare-name")
+			"Old method: " "New method: "))
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
@@ -283,8 +276,10 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename instance variable
 (defun rrb-comp-read-rename-instance-variable ()
   "completion read for rename instance variable"
-  (rrb-comp-read-type-1 "--classes-instance-vars" "Refactord class: "
-                        "Old instance variable: " "New instance variable: " ))
+  (rrb-comp-read-type-1 "--classes-instance-vars" 
+			(rrb-get-value-on-cursor "--class") 
+			"Refactord class: " "Old instance variable: "
+			"New instance variable: " ))
 
 (defun rrb-rename-instance-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
@@ -297,8 +292,10 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename class variable
 (defun rrb-comp-read-rename-class-variable ()
   "completion read for rename instance variable"
-  (rrb-comp-read-type-1 "--classes-class-vars" "Refactord class: "
-                        "Old class variable: " "New class variable: " ))
+  (rrb-comp-read-type-1 "--classes-class-vars"
+			(rrb-get-value-on-cursor "--class") 
+			"Refactord class: " "Old class variable: " 
+			"New class variable: " ))
 
 (defun rrb-rename-class-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
@@ -312,7 +309,8 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename global variable
 (defun rrb-comp-read-rename-global-variable ()
   "compleion read for rename global variable"
-  (rrb-comp-read-type-2 "--global-vars" ""
+  (rrb-comp-read-type-2 "--global-vars"
+			""
 			"Old global variable: " "New global variable: "))
 
 (defun rrb-rename-global-variable (old-var new-var)
@@ -326,7 +324,9 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
   "compleion read for rename constant"
-  (rrb-comp-read-type-2 "--constants" (rrb-get-class-on-cursor) "Old constant: " "New constant: "))
+  (rrb-comp-read-type-2 "--constants" 
+			(rrb-get-value-on-cursor "--class")
+			"Old constant: " "New constant: "))
 
 (defun rrb-rename-constant (old-const new-const)
   "Refactor code: Rename constant"
@@ -340,7 +340,9 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-rename-class ()
   "compleion read for rename class"
-  (rrb-comp-read-type-2 "--classes" (rrb-get-class-on-cursor) "Old class/module: " "New class/module: "))
+  (rrb-comp-read-type-2 "--classes" 
+			(rrb-get-value-on-cursor "--class")
+			"Old class/module: " "New class/module: "))
 
 (defun rrb-rename-class (old-class new-class)
   "Refactor code: Rename class or module"
@@ -356,7 +358,9 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pullup-method ()
   "completion read for pull up method"
-  (rrb-comp-read-type-3 "--methods" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods"
+			(rrb-get-value-on-cursor "--method")
+			"Old Method: " "--classes" "New class: "))
 
 (defun rrb-pullup-method (old-method new-class)
   "Refactor code: Pull up method"
@@ -370,7 +374,9 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-pushdown-method ()
   "completion read for push down method"
-  (rrb-comp-read-type-3 "--methods" (rrb-get-method-on-cursor) "Old Method: " "--classes" "New class: "))
+  (rrb-comp-read-type-3 "--methods"
+			(rrb-get-value-on-cursor "--method")
+			"Old Method: " "--classes" "New class: "))
 
 (defun rrb-pushdown-method (old-method new-class)
   "Refactor code: Push down method"
