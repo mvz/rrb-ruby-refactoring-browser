@@ -37,7 +37,8 @@ module RRB
                                       new_namespace)
       @tree.accept( visitor )
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
-                                   visitor.delete_range, pullupped_method)
+                                   visitor.delete_range, pullupped_method,
+                                   true)
     end
 
     def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)

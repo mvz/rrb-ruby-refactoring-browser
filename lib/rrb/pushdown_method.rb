@@ -66,7 +66,7 @@ module RRB
       visitor = MoveMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
-                                   visitor.delete_range, pushdowned_method)
+                                   visitor.delete_range, pushdowned_method, true)
     end
 
     def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)
