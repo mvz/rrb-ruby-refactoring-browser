@@ -13,11 +13,9 @@ module RRB
 
     attr_reader :result
 
-    def visit_node( namespace, node )      
-      node.calls.each do |call|
-	if call.name == @old_method then
-	  @result << Replacer.new_from_id( call, @new_method )
-	end
+    def visit_node( namespace, node )
+      node.calls.find_all(){|call| call.name == @old_method}.each do |call|
+        @result << Replacer.new_from_id( call, @new_method )
       end
     end
     

@@ -96,14 +96,10 @@ module RRB
         return false
       end
 
-      @files.each do |scriptfile|
-	if not scriptfile.rename_local_var?( namespace, method_name,
-					    old_var, new_var ) then
-          @error_message = scriptfile.error_message
-	  return false
-	end
+      if error_scriptfile = @files.find(){|scriptfile| not scriptfile.rename_local_var?( namespace, method_name, old_var, new_var ) }
+        @error_message = error_scriptfile.error_message
+        return false        
       end
-
       return true
       
     end

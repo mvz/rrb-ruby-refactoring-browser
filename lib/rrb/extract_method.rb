@@ -109,7 +109,10 @@ module RRB
     def extract_method(new_method, start_lineno, end_lineno)
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
-      @new_script = RRB.extract_method( @input, new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
+      @new_script = RRB.extract_method( @input, new_method,
+                                        start_lineno-1, end_lineno-1,
+                                        visitor.method_lineno-1,
+                                        visitor.args, visitor.assigned)
     end
   end
 

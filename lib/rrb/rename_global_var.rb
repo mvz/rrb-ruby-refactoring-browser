@@ -13,10 +13,8 @@ module RRB
     attr_reader :result
 
     def visit_node( namespace, node)
-      node.global_vars.each do |id|
-        if id.name == @old_var then
-          @result << Replacer.new_from_id( id, @new_var )
-        end
+      node.global_vars.find_all(){|id| id.name == @old_var}.each do |id|
+        @result << Replacer.new_from_id(id, @new_var)
       end
     end
   end
@@ -74,11 +72,12 @@ module RRB
       end
 
       @files.each do |scriptfile|
-	if not scriptfile.rename_global_var?(old_var, new_var ) then
+        unless scriptfile.rename_global_var?(old_var, new_var )
           @error_message = scriptfile.error_message
-	  return false
-	end
+          return false
+        end
       end
+
       return true
     end
 

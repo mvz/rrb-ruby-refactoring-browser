@@ -39,11 +39,9 @@ module RRB
 
     def rename_instance_var(namespace, node)
       if check_namespace(namespace)
-        node.instance_vars.each do |id|
-          if id.name == @old_var then
-            @result << Replacer.new_from_id( id, @new_var )
-          end
-        end  
+        node.instance_vars.find_all{|id| id.name == @old_var}.each do |id|
+          @result << Replacer.new_from_id(id, @new_var)
+        end
       end
     end
 
@@ -71,12 +69,10 @@ module RRB
 
     def rename_instance_var?(namespace, node)
       if check_namespace(namespace)
-        node.instance_vars.each do |id|
-          if id.name == @new_var then
-            @error_message = "#{namespace.name} already has #{@new_var}\n"
-            return false
-          end
-        end  
+        if node.instance_vars.any?{|id| id.name == @new_var}
+          @error_message = "#{namespace.name} already has #{@new_var}\n"
+          return false
+        end
       end
       return true
     end
@@ -139,18 +135,15 @@ module RRB
       end
       
       owner = get_real_ivar_owner( namespace, old_var )
+
       @files.each do |scriptfile|
-	if not scriptfile.rename_instance_var?( owner, get_dumped_info,
-					    old_var, new_var ) then
+        unless scriptfile.rename_instance_var?(owner, get_dumped_info,
+                                               old_var, new_var)
           @error_message = scriptfile.error_message
-	  return false
-	end
+          return false          
+        end
       end
-
       return true
-      
     end
-
   end
-  
 end

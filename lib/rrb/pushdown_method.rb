@@ -23,11 +23,8 @@ module RRB
       if cur_namespace.match?(@new_namespace) 
         @subclass_lineno = node.range.head.lineno
       elsif cur_namespace.match?(@old_namespace)
-        node.method_defs.each do |method|
-          if method.name == @method_name 
-            @superclass_range = method.range
-          end
-        end
+        target_method = node.method_defs.find{|method| method.name == @method_name}
+        @superclass_range = target_method && target_method.range
       end      
     end
   end
@@ -53,11 +50,9 @@ module RRB
             end
           end
         else
-          node.calls.each do |call|
-            if call.name == @method_name
-              @result = false
-              @error_message = "Other function uses #{@old_namespace.name}##{@method_name}\n"
-            end
+          if node.calls.any?{|call| call.name == @method_name}
+            @result = false
+            @error_message = "Other function uses #{@old_namespace.name}##{@method_name}\n"
           end
         end
       end
@@ -70,11 +65,13 @@ module RRB
     def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
       visitor = MoveMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.insert_str(@input, visitor.insert_lineno, visitor.delete_range, pushdowned_method)
+      @new_script = RRB.insert_str(@input, visitor.insert_lineno,
+                                   visitor.delete_range, pushdowned_method)
     end
 
     def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)
-      visitor = PushdownMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
+      visitor = PushdownMethodCheckVisitor.new(dumped_info, old_namespace,
+                                               method_name, new_namespace)
       @tree.accept(visitor)
       @error_message = visitor.error_message unless visitor.result 
       return visitor.result
@@ -85,7 +82,8 @@ module RRB
     def pushdown_method(old_namespace, method_name, new_namespace)
       pushdowned_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
-	scriptfile.pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
+	scriptfile.pushdown_method(old_namespace, method_name,
+                                   new_namespace, pushdowned_method)
       end      
     end
 
@@ -105,12 +103,13 @@ module RRB
         return false
       end
       @files.each do |scriptfile|
-        unless scriptfile.pushdown_method?(get_dumped_info, old_namespace, method_name, new_namespace)
+        unless scriptfile.pushdown_method?(get_dumped_info, old_namespace,
+                                           method_name, new_namespace)
           @error_message = scriptfile.error_message
-          return false
-          
+          return false          
         end
       end
+
       return true
     end
   end

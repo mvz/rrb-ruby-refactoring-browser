@@ -19,11 +19,8 @@ module RRB
       if cur_namespace.match?(@new_namespace) 
         @insert_lineno = node.range.head.lineno
       elsif cur_namespace.match?(@old_namespace)
-        node.method_defs.each do |method|
-          if method.name == @method_name 
-            @delete_range = method.range
-          end
-        end
+        target_method = node.method_defs.find(){|method| method.name == @method_name}
+        @delete_range = target_method && target_method.range
       end      
     end
   end
@@ -88,11 +85,7 @@ module RRB
       visitor = GetStringOfMethodVisitor.new(namespace, method_name)
       @tree.accept(visitor)
       range = visitor.result_range
-      if range
-        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
-      else
-        return nil
-      end
+      range && @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
     end
 
     def get_method_on_region(range)
@@ -111,27 +104,19 @@ module RRB
 
   class Script
     def get_string_of_method(namespace, method_name)
-      str_of_method = nil
-      @files.each do |scriptfile|
-        str_of_method = str_of_method || scriptfile.get_string_of_method(namespace, method_name)
+      @files.inject(nil) do |result, scriptfile|
+        result ||= scriptfile.get_string_of_method(namespace, method_name)
       end
-      str_of_method
     end
     
     def get_class_on_region(path, range)
-      @files.each do |scriptfile|
-        if scriptfile.path == path 
-          return scriptfile.get_class_on_region(range)
-        end
-      end
+      target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
+      target_scriptfile && target_scriptfile.get_class_on_region(range)
     end
     
     def get_method_on_region(path, range)
-      @files.each do |scriptfile|
-        if scriptfile.path == path
-          return scriptfile.get_method_on_region(range)
-        end
-      end
+      target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
+      target_scriptfile && target_scriptfile.get_method_on_region(range)
     end
   end
 end

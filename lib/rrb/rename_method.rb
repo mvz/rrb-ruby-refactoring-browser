@@ -34,10 +34,8 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
     end
 
     def rename_fcalls( fcalls )
-      fcalls.each do |fcall|
-	if fcall.name == @old_method then
-	  @result << Replacer.new_from_id( fcall, @new_method )
-	end
+      fcalls.find_all(){|fcall| fcall.name == @old_method}.each do |fcall|
+        @result << Replacer.new_from_id( fcall, @new_method )        
       end
     end
     
@@ -77,11 +75,9 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
   class Script
 
     def classes_call_method( methodname )
-      classes = Set.new
-      @files.each do |scriptfile|
-	classes.merge scriptfile.classes_call_method( methodname )
+      @files.inject(Set.new) do |result, scriptfile|
+        result.merge scriptfile.classes_call_method(methodname)
       end
-      classes
     end
     
     def classes_respond_to( basis, methodname )

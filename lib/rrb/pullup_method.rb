@@ -20,7 +20,7 @@ module RRB
     def visit_method(namespace, node)
       if namespace.match?(@old_namespace) && node.name == @method_name
         subclass_info = @dumped_info[@old_namespace]
-        node.calls.each do |call| 
+        node.calls.each do |call|
           if subclass_info.has_method?(call.name, false)
             @result = false
             @error_message = "#{@old_namespace.name}##{@method_name} uses #{call.name} defined at #{@old_namespace.name}\n"
@@ -33,13 +33,16 @@ module RRB
   class ScriptFile
 
     def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
-      visitor = MoveMethodVisitor.new(old_namespace, method_name,  new_namespace)
+      visitor = MoveMethodVisitor.new(old_namespace, method_name,
+                                      new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.insert_str(@input, visitor.insert_lineno, visitor.delete_range, pullupped_method)
+      @new_script = RRB.insert_str(@input, visitor.insert_lineno,
+                                   visitor.delete_range, pullupped_method)
     end
 
     def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
-      visitor = PullupMethodCheckVisitor.new(dumped_info, old_namespace, method_name, new_namespace)
+      visitor = PullupMethodCheckVisitor.new(dumped_info, old_namespace,
+                                             method_name, new_namespace)
       @tree.accept(visitor)
       @error_message = visitor.error_message unless visitor.result
       return visitor.result
@@ -50,7 +53,8 @@ module RRB
     def pullup_method(old_namespace, method_name, new_namespace)
       pullupped_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
-	scriptfile.pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
+	scriptfile.pullup_method(old_namespace, method_name,
+                                 new_namespace, pullupped_method)
       end      
     end
 
@@ -70,13 +74,13 @@ module RRB
         return false
       end
 
-
       @files.each do |scriptfile|
         unless scriptfile.pullup_method?(get_dumped_info, old_namespace, method_name, new_namespace)
           @error_message = scriptfile.error_message
-          return false
+          return false          
         end
       end
+
       return true
     end
   end
