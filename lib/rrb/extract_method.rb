@@ -3,6 +3,43 @@ require 'stringio'
 
 module RRB
 
+  class ExtractMethodGetNamespaceVisitor < Visitor
+    def initialize(start_lineno, end_lineno)
+      @start_lineno = start_lineno
+      @end_lineno = end_lineno
+    end
+    attr_reader :namespace
+
+    def visit_toplevel(namespace, node)
+      @namespace = namespace
+    end
+    
+    def visit_class(namespace, node)
+      if node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
+        @namespace = namespace
+      end
+    end
+  end
+  
+  class ExtractMethodOwnerVisitor < Visitor
+    def initialize(namespace, dumped_info, new_method)
+      @new_method = new_method
+      @dumped_info = dumped_info
+      @my_info = dumped_info[namespace.str]
+      @owner = namespace
+    end
+
+    attr_reader :owner
+    
+    def visit_method(namespace, node)
+      return unless node.method_defs.find{|i| i.name == @new_method}
+      ancestor_names = @dumped_info[@owner.str].ancestor_names
+      new_owner = namespace if ancestor_names.find{|anc| anc == namespace.str}
+      @owner = new_owner if new_owner
+    end
+  end
+
+  
   class ExtractMethodVisitor < Visitor
 
     def initialize(start_lineno, end_lineno)
@@ -15,7 +52,7 @@ module RRB
     end
 
     attr_reader :method_lineno, :args, :assigned, :result
-    
+
     def visit_node( namespace, node )
       vars = node.local_vars.map{|i| i.name}
       out_vars = []
@@ -26,8 +63,23 @@ module RRB
       end
       return if in_vars.empty?
 
-      @args = out_vars.map{|i| i.name} & in_vars.map{|i| i.name}
+      in_assigned = (node.assigned & in_vars)
+      in_var_ref = in_vars - in_assigned
       @assigned = (node.assigned & in_vars).map{|i| i.name} & out_vars.map{|i| i.name}
+      candidates = out_vars.map{|i| i.name} & in_vars.map{|i| i.name}
+      candidates.each do |id|
+        first_var_ref = in_var_ref.find{|i| i.name == id}
+        first_assigned = in_assigned.find{|i| i.name == id}
+        next unless first_var_ref
+        unless first_assigned
+          @args << id
+          next
+        end
+  
+        @args << id if first_var_ref.lineno <= first_assigned.lineno
+      end
+      @args.uniq!
+
       
       if node.name_id.name == 'toplevel'
         @method_lineno = @start_lineno
@@ -39,7 +91,9 @@ module RRB
 
   class ExtractMethodCheckVisitor < Visitor
     
-    def initialize(new_method, start_lineno, end_lineno)
+    def initialize(str_owner, dumped_info, new_method, start_lineno, end_lineno)
+      @str_owner = str_owner
+      @dumped_info = dumped_info
       @new_method = new_method
       @start_lineno = start_lineno
       @end_lineno = end_lineno
@@ -61,10 +115,6 @@ module RRB
     end
 
 
-    def visit_toplevel(namespace, node)
-      @str_namespace = get_namespace(node)
-    end
-
     def visit_node(namespace, node)
       return if toplevel?(node)
       return if in_lines?(node)
@@ -73,33 +123,13 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      if @str_namespace == NodeNamespace.new( node, namespace ).str
+      if @dumped_info[namespace.str].subclass_of?(@str_owner)
         node.method_defs.each do |defs|
           @result = false if defs.name == @new_method
         end
       end
     end
 
-    def get_namespace(node)
-      unless node.class_defs.empty?
-        node.class_defs.each do |class_def|
-          str_namespace = get_namespace(class_def)
-          unless str_namespace.nil?
-            if toplevel?(node)
-              return str_namespace
-            else
-              return node.name +  '::' + str_namespace
-            end
-          end
-        end
-      else
-        if toplevel?(node)
-          return ""
-        elsif in_lines?(node)
-          return node.name
-        end
-      end
-    end
   end
 
   def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
@@ -149,6 +179,19 @@ module RRB
   module_function :extract_method
 
   class ScriptFile
+    def get_emethod_namespace(start_lineno, end_lineno)
+      get_namespace = ExtractMethodGetNamespaceVisitor.new(start_lineno, end_lineno)
+      @tree.accept(get_namespace)
+      get_namespace.namespace
+    end
+
+    
+    def get_ancestral_emethod_owner(namespace, dumped_info, new_method )
+      get_owner = ExtractMethodOwnerVisitor.new(namespace, dumped_info, new_method)
+      @tree.accept(get_owner)
+      get_owner.owner
+    end
+    
     def extract_method(new_method, start_lineno, end_lineno)
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
@@ -156,9 +199,9 @@ module RRB
       @new_script = RRB.extract_method( StringIO.new(@new_script), new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
     end
 
-    def extract_method?(new_method, start_lineno, end_lineno)
+    def extract_method?(str_owner, dumped_info, new_method, start_lineno, end_lineno)
       return false unless RRB.valid_method?(new_method)
-      visitor = ExtractMethodCheckVisitor.new(new_method, start_lineno, end_lineno)
+      visitor = ExtractMethodCheckVisitor.new(str_owner, dumped_info, new_method, start_lineno, end_lineno)
       @tree.accept( visitor )
       return visitor.result
     end
@@ -166,6 +209,13 @@ module RRB
   end
 
   class Script
+
+    
+    def get_real_emethod_owner(namespace, new_method)
+      @files.inject(namespace ) do |owner,scriptfile|
+	scriptfile.get_ancestral_emethod_owner(owner, get_dumped_info, new_method)
+      end
+    end    
     
     def extract_method(path, new_method, start_lineno, end_lineno)
       @files.each do |scriptfile|
@@ -175,9 +225,18 @@ module RRB
     end
 
     def extract_method?(path, new_method, start_lineno, end_lineno)
+      namespace = ""
       @files.each do |scriptfile|
 	next unless scriptfile.path == path
-	if not scriptfile.extract_method?(new_method, start_lineno, end_lineno)
+        namespace = scriptfile.get_emethod_namespace(start_lineno, end_lineno)
+      end
+      return false unless namespace
+      owner = get_real_emethod_owner(namespace, new_method)
+      return false unless owner
+      
+      @files.each do |scriptfile|
+	next unless scriptfile.path == path
+	if not scriptfile.extract_method?(owner.str, get_dumped_info, new_method, start_lineno, end_lineno)
           return false
 	end
       end
