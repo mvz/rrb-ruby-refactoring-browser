@@ -180,7 +180,7 @@ end
 
   def test_classes_call_method
     scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT_STR ), 'test.rb' )
-    assert_equals( [ 'B', 'C::D' ],
+    assert_equals( [ RRB::NS['B'], RRB::NS['C::D'] ],
 		  scriptfile.classes_call_method( 'foo' ) )
   end
   
