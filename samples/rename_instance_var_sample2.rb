@@ -1,15 +1,16 @@
 
+require 'samples/rename_instance_var_sample'
 module X
-  class A
+  class C < A
     def method_1
       @a = 0
-      @b = 0
+      @d = 0
     end
   end
-  class B < A
+  class D < B
     def method_1
       @a = 0
-      @c = 0
+      @e = 0
     end
   end
 end
