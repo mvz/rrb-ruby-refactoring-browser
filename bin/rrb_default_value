@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+require 'rrb/default_value'
+
+if $0 == __FILE__ then
+  
+  def print_usage
+    print "\
+Usage: rrb_default_value PATH LINENO INFOTYPE IOTYPE
+
+  INFOTYPE
+    * --method
+    * --class
+  IOTYPE
+    * --stdin-stdout
+    * --filein-stdout FILES..
+"
+  end
+  
+  if ARGV.size == 0 || ARGV[0] == '--help' then
+    print_usage
+    exit
+  end
+
+  path = ARGV.shift
+  lineno = ARGV.shift.to_i
+  infotype = ARGV.shift
+
+  case ARGV.shift
+  when '--stdin-stdout'
+    script = RRB::Script.new_from_io( STDIN )
+  when '--filein-stdout'
+    script = RRB::Script.new_from_filenames( *ARGV )
+  end
+
+  case infotype
+  when '--class'
+    print script.get_class_on_cursor(path, lineno).str
+  when '--method'
+    print script.get_method_on_cursor(path, lineno).str
+  end  
+end
