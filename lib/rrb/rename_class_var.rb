@@ -34,10 +34,7 @@ module RRB
     attr_reader :result
     
     def check_namespace(namespace)
-      info = @dumped_info[namespace.str]
-      return false unless info
-      return false unless info.ancestor_names.include?(@owner) || namespace.str == @owner
-      return true
+      @dumped_info[namespace.str].subclass_of?(@owner)
     end
 
     def rename_class_var(namespace, node)
@@ -78,10 +75,7 @@ module RRB
     attr_reader :result
 
     def check_namespace(namespace)
-      info = @dumped_info[namespace.str]
-      return false unless info
-      return false unless info.ancestor_names.include?(@owner) || namespace.str == @owner
-      return true
+      @dumped_info[namespace.str].subclass_of?(@owner)
     end
 
     def rename_class_var?(namespace, node)
