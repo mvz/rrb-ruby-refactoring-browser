@@ -2,6 +2,32 @@ require 'rrb/node'
 
 module RRB
 
+  class MoveMethodVisitor < Visitor
+
+    def initialize(old_namespace, method_name, new_namespace)
+      @method_name = method_name
+      @old_namespace = old_namespace
+      @new_namespace = new_namespace
+      @delete_range = nil
+      @insert_lineno = nil
+    end
+
+    attr_reader :delete_range, :insert_lineno
+
+    def visit_class(namespace, node)
+      cur_namespace = NodeNamespace.new(node, namespace)
+      if cur_namespace.match?(@new_namespace) 
+        @insert_lineno = node.range.head.lineno
+      elsif cur_namespace.match?(@old_namespace)
+        node.method_defs.each do |method|
+          if method.name == @method_name 
+            @delete_range = method.range
+          end
+        end
+      end      
+    end
+  end
+
   class GetStringOfMethodVisitor < Visitor
     def initialize(namespace, method_name)
       @method_name = method_name
