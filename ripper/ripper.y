@@ -1796,7 +1796,7 @@ variable	: tIDENTIFIER
 		| tCONSTANT
 		| tCVAR
 		| kNIL {$$ = rip_tok2sym("nil");}
-		| kSELF {$$ = rip_tok2sym("self");}
+                | kSELF /* {$$ = rip_tok2sym("self");} */
 		| kTRUE {$$ = rip_tok2sym("true");}
 		| kFALSE {$$ = rip_tok2sym("false");}
 		| k__FILE__ {$$ = rip_tok2sym("__FILE__");}
