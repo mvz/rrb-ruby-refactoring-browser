@@ -304,6 +304,7 @@ TEST_CLASS_A_METHOD_1 =
   def test_get_class_on_region
     script = RRB::Script.new_from_filenames('samples/parser_sample.rb')
     assert_equals('TestClassA', script.get_class_on_region('samples/parser_sample.rb', 3..6).name)
+    assert_equals(true, script.get_class_on_region('samples/parser_sample.rbrb', 3..6).nil?)
     assert_equals(true, script.get_class_on_region('samples/parser_sample.rb', 26..28).nil?)
     assert_equals('', script.get_class_on_region('samples/parser_sample.rb', 1..1).name)
   end
@@ -311,6 +312,7 @@ TEST_CLASS_A_METHOD_1 =
   def test_get_method_on_region
     script = RRB::Script.new_from_filenames('samples/parser_sample.rb')
     assert_equals('TestClassA#method_1', script.get_method_on_region('samples/parser_sample.rb', 8..11).name)
+    assert_equals(true, script.get_method_on_region('samples/parser_sample.rbrb', 8..11).nil?)
     assert_equals(true, script.get_method_on_region('samples/parser_sample.rb', 7..11).nil?)
     assert_equals("", script.get_method_on_region('samples/parser_sample.rb', 38..38).name)
   end
