@@ -175,18 +175,6 @@ matches with rrb-ruby-file-name-regexp'"
  	  (read-from-minibuffer prompt3))))
 
 ;;;
-(defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
-  "completion read for Pull up method, etc.."
-  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((retval-1 (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1)))
-    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2 "--target" retval-1) 0)
-      (error "rrb_info: fail to get information %s" (rrb-error-message)))
-    (list retval-1
-	  (completing-read prompt2 (rrb-complist-type-2))
-	  (read-from-minibuffer prompt3))))
-
-;;;
 ;;; completion type-2  ( str,str,...,str, )
 ;;
 ;; rrb_compinfo output example
@@ -221,6 +209,42 @@ matches with rrb-ruby-file-name-regexp'"
 	  (completing-read prompt2 (rrb-complist-type-2)))))
 
 ;;;
+;;; completion type-4
+(defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
+  "completion read for rename instance variable, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((retval-1 (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1)))
+    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2 "--target" retval-1) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (list retval-1
+	  (completing-read prompt2 (rrb-complist-type-2))
+	  (read-from-minibuffer prompt3))))
+
+;;;
+;;; completionm type-5
+(defun rrb-comp-read-type-5 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
+  "completion read for rename method, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((retval-1 "")
+	(result)
+	(looped nil))
+    (while (progn 
+	     (setq result (completing-read prompt1 (rrb-complist-type-2) nil nil (if looped "" default-arg1)))
+	     (not (string= result "")))
+      (setq looped t)
+      (setq retval-1 (format "%s %s" retval-1 result))
+      (message (format "%s %s" "inputed data: " retval-1))
+      (sit-for 1))
+    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2 "--target" retval-1) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (list retval-1
+	  (completing-read prompt2 (rrb-complist-type-2))
+	  (read-from-minibuffer prompt3))))
+
+
+;;;
 ;;; default value
 ;;    
 (defun rrb-get-value-on-cursor (args)
@@ -248,9 +272,9 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename method
 (defun rrb-comp-read-rename-method ()
   "Completion read for Rename method"
-  (rrb-comp-read-type-4 "--classs" 
+  (rrb-comp-read-type-5 "--classes" 
 			(rrb-get-value-on-cursor "--class")
-			"Refactored classes: "
+			"Refactored classes(type just RET to finish): "
 			"--bare-methods"
 			"Old method: "
 			"New method: "))
