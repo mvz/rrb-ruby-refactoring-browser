@@ -32,3 +32,17 @@ rrb/sublibに rrb_ripper.so を置き、rrb/sublib/rrb に ripper.rb を置いている。
   [~/src/rrb]% RUBYLIB=$RUBYLIB:~/src/rrb/reflection ruby -Ilib -Isublib bin/rrb --rename-local-variable 'Rename#method_1' i j < samples/rename_var_sample_stream > output
 
   
+== emacs上から実行する
+まずは設定。~/src/rrb/bin以下のファイル(rrb,rrb_compinfo)に実行を許可しておく。
+
+そして環境変数は、
+  export RUBYLIB=~/src/rrb/reflection:~/src/rrb/lib:~/src/rrb/sublib
+  export PATH=$PATH:~/src/rrb/bin
+  
+.emacsには
+  (setq load-path (cons "~/emacs" load-path))
+そして、emacsを起動し、M-x load-libraryでrrbを指定。
+
+あとは M-x rrb-rename-local-variable などで動作します。
+
+  
