@@ -95,9 +95,16 @@ module RRB
         return false
       end
 
-      if get_dumped_info[new_namespace].has_method?(method_name.bare_name, false)
-        @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
-        return false
+      if method_name.instance_method?
+        if get_dumped_info[new_namespace].has_method?(method_name.bare_name, false)
+          @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
+          return false
+        end
+      elsif method_name.class_method?
+        if get_dumped_info[new_namespace].has_class_method?(method_name.bare_name, false)
+          @error_message = "#{new_namespace.name}.#{method_name.bare_name}: already defined at #{new_namespace.name}\n"
+          return false
+        end
       end
 
 
