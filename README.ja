@@ -23,7 +23,7 @@ doc/dev/init.rdを参照してください。
 Copyright (C) 2004  OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
 Copyright (C) 2004  Kyoto univ. Microcomputer Club
 
-RRB is distributed under the same term as Ruby.
+Ruby Refactoring Browser is distributed under the same term as Ruby.
 
 = 開発者
 大林一平 <ohai@kmc.gr.jp>

@@ -1,11 +1,15 @@
 ;;; rrb.el -- Ruby Refactoring Brower emacs interface
 
-;; Copyright (C) 2003 OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
+;; Copyright (C) 2004 OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
+;; Copyright (C) 2004  Kyoto univ. Microcomputer Club
 
 ;; Author: OHBAYASHI Ippei <ohai@kmc.gr.jp>
 ;;	YOSHIDA Yuichi <oxy@kmc.gr.jp>
 ;;	HARA Yutaka <yhara@kmc.gr.jp>
 ;; Keywords: ruby refactoring browser
+
+;; This file is part of Ruby Refactoring Browser.
+;; Ruby Refactoring Browser is distributed under the same term as Ruby.
 
 ;;; Code:
 
