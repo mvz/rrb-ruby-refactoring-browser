@@ -48,15 +48,17 @@ module RRB
     def pushdown_method( method_name, new_namespace, 
                         pushdowned_method,
                         ignore_new_namespace, specified_lineno)
-      visitor = MoveMethodVisitor.new(method_name,
-                                      new_namespace, 
-                                      ignore_new_namespace, specified_lineno)
-      @tree.accept( visitor )
       if method_name.class_method?
         pushdowned_method.gsub!(/^((\s)*def\s+)(.*)\./) {|s| $1 + new_namespace.name + '.'}
       end
-      @new_script = RRB.insert_str(@input, visitor.insert_lineno,
-                                   visitor.delete_range, pushdowned_method, true)
+      
+      specified_lineno = nil if ignore_new_namespace
+      visitor = MoveMethodVisitor.new( method_name, specified_lineno )
+      @tree.accept( visitor )
+      pushdowned_method =
+        RRB.reindent_str_node( pushdowned_method, visitor.inserted )
+      @new_script = RRB.insert_str(@input, specified_lineno,
+                                   visitor.delete_range, pushdowned_method )
     end
 
     def pushdown_method?(dumped_info, method_name, new_namespace)
@@ -98,19 +100,13 @@ module RRB
         return false
       end
 
-      definition_count = count_namespace_definition(path, new_namespace)
-      if definition_count == 0
-        @error_message = "No definition of #{new_namespace.name} in #{path}\n"
+
+      target_class = class_on(path, lineno)
+      unless target_class && new_namespace == target_class
+        @error_message = "Specify which definition to push down method to\n"
         return false
-      elsif definition_count > 1
-        target_class = get_class_on_cursor(path, lineno)
-        unless target_class && new_namespace.contain?(target_class)
-          @error_message = "Specify which definition to push down method to\n"
-          return false
-        end
       end
-
-
+      
       @files.each do |scriptfile|
         unless scriptfile.pushdown_method?(get_dumped_info,
                                            method_name, new_namespace)
