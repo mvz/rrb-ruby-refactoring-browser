@@ -16,7 +16,7 @@ module RRB
     
     def visit_class(namespace, node)
       if node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
-        @namespace = namespace
+        @namespace = NodeNamespace.new(node, namespace)
       end
     end
   end
@@ -31,10 +31,10 @@ module RRB
 
     attr_reader :owner
     
-    def visit_method(namespace, node)
-      return unless node.method_defs.find{|i| i.name == @new_method}
+    def visit_class(namespace, node)
+      class_node = NodeNamespace.new(node, namespace)
       ancestor_names = @dumped_info[@owner.str].ancestor_names
-      new_owner = namespace if ancestor_names.find{|anc| anc == namespace.str}
+      new_owner = class_node if ancestor_names.find{|anc| anc == class_node.str}
       @owner = new_owner if new_owner
     end
   end
@@ -123,9 +123,12 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      if @dumped_info[namespace.str].subclass_of?(@str_owner)
+      if @dumped_info[NodeNamespace.new(node, namespace).str].subclass_of?(@str_owner)
         node.method_defs.each do |defs|
           @result = false if defs.name == @new_method
+        end
+        node.local_vars.each do |var|
+          @result = false if var.name == @new_method
         end
       end
     end
