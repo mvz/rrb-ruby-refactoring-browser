@@ -286,6 +286,23 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 
 
+(defun rrb-comp-read-recursively (compinfo-arg default-arg prompt)
+  "completion read for rename method, etc.."
+  (let ((compound-result "")
+	(result))
+    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (while (progn 
+	     (setq result (completing-read 
+			   prompt
+			   (rrb-complist-type-2)
+			   nil nil default-arg))
+	     (not (string= result "")))
+      (setq default-arg "")
+      (setq compound-result (format "%s %s" compound-result result))
+      (message (format "%s %s" "inputed data: " compound-result))
+      (sit-for 1))
+    compound-result))
 
 ;;;
 ;;; default value
@@ -381,25 +398,15 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;;
 (defun rrb-comp-read-rename-method ()
   "completion read for rename method, etc.."
-  (let ((retval-1 "")
-	(result)
-	(default-arg (rrb-get-value-on-cursor "--class")))
-    (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
-      (error "rrb_info: fail to get information %s" (rrb-error-message)))
-    (while (progn 
-	     (setq result (completing-read 
-			   "Refactored classes(type just RET to finish): "
-			   (rrb-complist-type-2)
-			   nil nil default-arg))
-	     (not (string= result "")))
-      (setq default-arg "")
-      (setq retval-1 (format "%s %s" retval-1 result))
-      (message (format "%s %s" "inputed data: " retval-1))
-      (sit-for 1))
+  (let ((compound-result 
+	 (rrb-comp-read-recursively
+	  "--classes"
+	  (rrb-get-value-on-cursor "--class")
+	  "Refactored classes(type just RET to finish): ")))
     (when (/= (rrb-run-process "rrb_compinfo" "--bare-methods"
-			       "--target" retval-1) 0)
+			       "--target" compound-result) 0)
       (error "rrb_info: fail to get information %s" (rrb-error-message)))
-    (list retval-1
+    (list compound-result
 	  (completing-read "Old method: " (rrb-complist-type-2))
 	  (read-from-minibuffer "New method: "))))
 
@@ -579,20 +586,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   "completion read for extract superclass"
   (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((namespace (completing-read "Location: " (rrb-complist-type-2) nil nil 
-				    (rrb-get-value-on-cursor "--class")))
-	(new-class (read-from-minibuffer "New Class: ")))
-    (let ((targets "")
-	  (result))
-      (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
-	(error "rrb_info: fail to get information %s" (rrb-error-message)))
-      (while (progn 
-	       (setq result (completing-read "Targets(type just RET to finish): " (rrb-complist-type-2)))
-	       (not (string= result "")))
-	(setq targets (format "%s %s" targets result))
-	(message (format "%s %s" "inputed data: " targets))
-	(sit-for 1))
-      (list namespace new-class targets))))
+  (list (completing-read "Location: " (rrb-complist-type-2) nil nil 
+			 (rrb-get-value-on-cursor "--class"))
+	(read-from-minibuffer "New Class: ")
+	(rrb-comp-read-recursively "--classes" "" "Targets(type just RET to finish): ")))
+
+
 
 (defun rrb-extract-superclass (namespace new-class targets)
   "Refactor code: Extract superclass"
