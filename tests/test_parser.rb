@@ -17,16 +17,22 @@ class TestParser < RUNIT::TestCase
 
     # test method_calls
     method_1_info = class_info.method_info("method_1")
-    assert_equals( %w(call each print) ,
+    assert_equals( %w(each) ,
 		  method_1_info.method_calls.map{|info| info.name} )
-
+    assert_equals( %w(call print),
+		  method_1_info.fcalls.map{|info| info.name} )
+    
     method_2_info = class_info.method_info("method_2")
-    assert_equals( %w(call! call p),
+    assert_equals( [],
 		  method_2_info.method_calls.map{|info| info.name} )
+    assert_equals( %w(call! call p),
+		  method_2_info.fcalls.map{|info| info.name} )
 
     method_3_info = class_info.method_info("method_3")
-    assert_equals( %w(ConstNameCall),
+    assert_equals( [],
 		  method_3_info.method_calls.map{|info| info.name} )
+    assert_equals( %w(ConstNameCall),
+		  method_3_info.fcalls.map{|info| info.name} )
 
     # test local_vars
     assert_equals( %w(a b c a x x b c),
