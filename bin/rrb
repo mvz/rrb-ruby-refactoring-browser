@@ -54,14 +54,17 @@ if $0 == __FILE__ then
     # refactoring
     case refactor_type
     when 'rename-local-variable'
+      unless script.rename_local_var?( namespace, method_name, old_var, new_var )
+	STDERR << "REJECTED\n"
+	exit 1
+      end
       script.rename_local_var( namespace, method_name, old_var, new_var )
       output.call
     end
     
   rescue
-    STDOUT << "ERROR: exeption raised: #{$!.message}"
-    STDOUT << RRB::STREAM_SPLITTER
-    exit 1
+    STDERR << "ERROR: exeption raised: #{$!.message}\n"
+    exit 2
   end
     
   
