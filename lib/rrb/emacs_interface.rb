@@ -126,19 +126,19 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def parse_argv_pullup_method(argv)
-      method_name = argv.shift
       old_namespace = Namespace.new(argv.shift)
+      method_name = argv.shift
       new_namespace = Namespace.new(argv.shift)
-      @args = [method_name, old_namespace, new_namespace]
+      @args = [old_namespace, method_name, new_namespace]
       @refactoring_method = :pullup_method
       @check_method = :pullup_method?
     end
 
     def parse_argv_pushdown_method(argv)
-      method_name = argv.shift
       old_namespace = Namespace.new(argv.shift)
+      method_name = argv.shift
       new_namespace = Namespace.new(argv.shift)
-      @args = [method_name, old_namespace, new_namespace]
+      @args = [old_namespace, method_name, new_namespace]
       @refactoring_method = :pushdown_method
       @check_method = :pushdown_method?
     end
