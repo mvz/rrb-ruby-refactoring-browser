@@ -4,6 +4,7 @@ require 'runit/cui/testrunner'
 require 'rrb/script.rb'
 require 'rrb/rename_local_var'
 require 'rrb/rename_instance_var'
+require 'rrb/rename_class_var'
 require 'rrb/rename_method_all'
 
 class TestScript < RUNIT::TestCase
@@ -87,6 +88,22 @@ end
     assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@b'))
     assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@c'))
     assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', 'dd'))
+  end
+
+  def test_rename_class_var
+    script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
+    script.rename_class_var(['X', 'A'], '@@a', '@@c')
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(File.open('samples/rename_class_var_sample_after.rb').read, dst)
+                    
+  end
+
+
+  def test_rename_class_var?
+    script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
+    assert_equals(true, script.rename_class_var?(['X', 'A'], '@@a', '@@c'))
+    assert_equals(false, script.rename_class_var?(['X', 'A'], '@@a', '@@b'))
   end
 
   RENAME_METHOD_ALL_INPUT = "\
