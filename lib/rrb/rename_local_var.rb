@@ -14,8 +14,7 @@ module RRB
 
     attr_reader :result
     
-    def visit_method( namespace, method_node )
-      return unless @method_name.instance_method?
+    def rename_local_var(namespace, method_node)
       return unless method_node.name == @method_name.name
       return unless namespace.match?(@namespace)
 	
@@ -24,9 +23,17 @@ module RRB
 	  @result << Replacer.new_from_id( id, @new_var )
 	end
       end
-      
     end
-    
+
+    def visit_method( namespace, method_node )
+      return unless @method_name.instance_method?
+      rename_local_var(namespace, method_node)
+    end
+
+    def visit_class_method(namespace, method_node)
+      return unless @method_name.class_method?
+      rename_local_var(namespace, method_node)
+    end
   end
 
   class RenameLocalVarCheckVisitor < Visitor
@@ -41,8 +48,7 @@ module RRB
 
     attr_reader :result
 
-    def visit_method( namespace, method_node )
-      return unless @method_name.instance_method?
+    def rename_local_var?(namespace, method_node)
       return unless method_node.name == @method_name.name
       return unless namespace.match?(@namespace)
 
@@ -54,7 +60,17 @@ module RRB
         @error_message = "#{@new_var}: already used as a function\n"
 	@result = false
       end
-      
+    end
+
+
+    def visit_method( namespace, method_node )
+      return unless @method_name.instance_method?
+      rename_local_var?(namespace, method_node)
+    end
+
+    def visit_class_method(namespace, method_node)
+      return unless @method_name.class_method?
+      rename_local_var?(namespace, method_node)      
     end
     
   end
