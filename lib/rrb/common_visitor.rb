@@ -85,13 +85,13 @@ module RRB
   class GetMethodOnRegionVisitor < Visitor
     def initialize( range)
       @range = range
-      @method = Method.new_toplevel
+      @method = NodeMethod.new_toplevel
     end
     attr_reader :method
 
     def visit_method(namespace, node)
       if node.range.contain?( @range ) then
-        @method = Method.new(namespace, node)
+        @method = NodeMethod.new(namespace, node)
       else
         unless node.range.out_of?( @range ) then
           @method = nil

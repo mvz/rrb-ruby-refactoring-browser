@@ -46,7 +46,7 @@ module RRB
     def visit_node( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @old_method } &&
 	  node.local_vars.find{|var| var.name == @new_method } then
-        @error_message = "#{@new_method}: already used as a local variable at #{Method.new(namespace, node).name}\n"
+        @error_message = "#{@new_method}: already used as a local variable at #{NodeMethod.new(namespace, node).name}\n"
 	@result = false
       end
     end

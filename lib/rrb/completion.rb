@@ -12,7 +12,7 @@ module RRB
     end
     
     def visit_method( namespace, method_node )
-      @methods.push Method.new( namespace, method_node )
+      @methods.push NodeMethod.new( namespace, method_node )
     end
 
     attr_reader :methods
@@ -25,7 +25,7 @@ module RRB
     end
     
     def visit_class_method( namespace, method_node )
-      @class_methods.push Method.new( namespace, method_node )
+      @class_methods.push NodeMethod.new( namespace, method_node )
     end
 
     attr_reader :class_methods

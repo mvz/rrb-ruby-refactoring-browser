@@ -486,7 +486,7 @@ module RRB
   MN = MethodName
   CMN = ClassMethodName
   
-  class Method
+  class NodeMethod
 
     def initialize( namespace, method_node )
       @namespace = namespace

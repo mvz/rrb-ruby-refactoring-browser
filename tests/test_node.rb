@@ -199,7 +199,7 @@ class TestMethod < RUNIT::TestCase
     attr_reader :methods
 
     def visit_method(namespace, node)
-      @methods << RRB::Method.new(namespace, node)
+      @methods << RRB::NodeMethod.new(namespace, node)
     end
   end
   def test_name
