@@ -15,10 +15,7 @@ module RRB
       classname = NodeNamespace.new( node, namespace )
       return unless @targets.find{|klass| classname.match?(klass)} 
       return if node.superclass == nil
-      @result << Replacer.new( node.superclass.body.lineno,
-                               node.superclass.body.pointer,
-                               node.superclass.name,
-                               @new_superclass )
+      @result << Replacer.new_from_id( node.superclass.body, @new_superclass )
     end
   end
   
@@ -30,44 +27,59 @@ module RRB
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
-    def add_new_superclass( namespace, new_class, old_superclass, dumped_info )
-      @new_script << new_superclass_def(namespace, new_class, old_superclass, dumped_info )
-    end
-
-    def new_superclass_def( namespace, new_class, old_superclass, dumped_info )
-      result = [ "class #{new_class} < ::#{old_superclass.class_name.name}", "end" ]
-
-      ns = namespace
-      until ns == Namespace::Toplevel
-        result = indent_lines( result )
-        result.unshift( "#{dumped_info[ns].type} #{ns.ary[-1]}" )
-        result.push( "end" )
-        ns = ns.chop
-      end
-
-      result.push("")
-      result.join("\n")
+    def reindent_lines_node( lines, node )
+      RRB.reindent_lines( lines, node.range.head.head_pointer + INDENT_LEVEL )
     end
     
-    def indent_lines( lines, lv = 1 )
-      lines.map{|line| " " * ( INDENT_LEVEL * lv ) + line }
+    def reindent_lines_in( lines, namespace )
+      return lines if namespace.match?( Namespace::Toplevel ) 
+      reindent_lines_node( lines, namespace.body_node )
     end
+    
+    def add_superclass_def( lines, lineno )
+      indented = reindent_lines_in( lines, class_on( lineno ) ).join
+      @new_script = RRB.insert_str( @new_script, lineno, nil, indented, nil )
+    end
+
+    def class_on( lineno )
+      get_class_on_region( lineno..lineno )
+    end
+    
   end
   
   class Script
 
-    def extract_superclass( namespace, new_class, targets, path )
+    def superclass_def( namespace, new_class, old_superclass, where )
+      result = [
+        "class #{new_class} < ::#{old_superclass.name}\n",
+        "end\n"
+      ]
+
+      ns = namespace
+      until ns == where
+        result = RRB.reindent_lines( result, INDENT_LEVEL )
+        result.unshift( "#{get_dumped_info[ns].type} #{ns.ary[-1]}\n" )
+        result.push( "end\n" )
+        ns = ns.chop
+      end
+
+      result
+    end
+    
+    def extract_superclass( namespace, new_class, targets, path, lineno )
       @files.each do |scriptfile|
         scriptfile.extract_superclass( namespace, new_class, targets )
       end
       
       deffile = @files.find{|scriptfile| scriptfile.path == path}
-      deffile.add_new_superclass( namespace, new_class,
-                                  get_dumped_info[targets.first].superclass,
-                                  get_dumped_info )
+      new_superclass = get_dumped_info[targets.first].superclass.class_name
+      def_str = superclass_def( namespace, new_class,
+                                new_superclass,
+                                deffile.class_on(lineno).normal )
+      deffile.add_superclass_def( def_str, lineno )
     end
     
-    def extract_superclass?( namespace, new_class, targets )
+    def extract_superclass?( namespace, new_class, targets, path, lineno )
       # check namespace exists?
       unless namespace == RRB::Namespace::Toplevel then
         return false if get_dumped_info[namespace] == NullDumpedClassInfo.instance
@@ -84,12 +96,16 @@ module RRB
       end
 
       # check name collision
-      if get_dumped_info.resolve_const( namespace, new_class ).nil? then
-        return true
-      else
+      unless get_dumped_info.resolve_const( namespace, new_class ).nil? then
+        return false
+      end
+
+      # check where new class is defined
+      unless namespace.contain?( get_class_on_cursor( path, lineno ).normal )
         return false
       end
       
+      return true
     end
     
   end
