@@ -3,7 +3,8 @@ require 'stringio'
 
 module RRB
 
-  STREAM_SPLITTER = "\C-l"
+  IO_SPLITTER = "\C-l"
+  IO_TERMINATOR = '-- END --'
   
   class Script
 
@@ -34,13 +35,13 @@ module RRB
 
       @files.each do |scriptfile|
 	dst << scriptfile.name
-	dst << STREAM_SPLITTER
+	dst << IO_SPLITTER
 	dst << scriptfile.new_script
-	dst << STREAM_SPLITTER
+	dst << IO_SPLITTER
       end
 
-      dst << '-- END --'
-      dst << STREAM_SPLITTER
+      dst << IO_TERMINATOR
+      dst << IO_SPLITTER
       dst << "\n"
     end
 
@@ -57,9 +58,9 @@ module RRB
 
       files = []
       loop do	
-	name = input.gets( STREAM_SPLITTER ).chop
-	break if name == "-- END --"
-	content = input.gets( STREAM_SPLITTER ).chop
+	name = input.gets( IO_SPLITTER ).chop
+	break if name == IO_TERMINATOR
+	content = input.gets( IO_SPLITTER ).chop
 	files << ScriptFile.new( StringIO.new( content ), name )
       end
 
@@ -75,5 +76,5 @@ module RRB
     end
     
   end
-  
+
 end
