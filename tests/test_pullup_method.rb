@@ -122,7 +122,10 @@ end
                   script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 3))
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
-    assert_equals("Specify where to pull up method\n", script.error_message)
+    assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+    assert_equals(false,
+                  script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
+    assert_equals("Specify which definition to pull up method to\n", script.error_message)
 
   end
 
