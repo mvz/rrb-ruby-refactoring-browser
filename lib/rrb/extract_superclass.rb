@@ -106,7 +106,7 @@ module RRB
       end
 
       # check where new class is defined
-      unless namespace.contain?( get_class_on_cursor( path, lineno ).normal )
+      unless get_class_on_cursor( path, lineno ).normal.contain?( namespace )
         @error_message = "Invalid Position to define new class\n"
         return false
       end
