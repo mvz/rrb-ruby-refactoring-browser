@@ -15,8 +15,7 @@ module RRB
     attr_reader :result
     
     def visit_method( namespace, method_node )
-      unless method_node.name == @method_name &&
-	  namespace.map{|i| i.name} == @namespace then
+      unless method_node.name == @method_name && namespace.match?( @namespace ) then
 	return
       end
 	
@@ -45,7 +44,7 @@ module RRB
 
     def visit_method( namespace, method_node )
       unless method_node.name == @method_name &&
-	  namespace.map{|i| i.name} == @namespace then
+	  namespace.match?( @namespace ) then
 	return
       end
 	
