@@ -40,6 +40,18 @@ class TestScriptFile < RUNIT::TestCase
     end
     
   end
+
+  
+  def test_rename_method_all
+
+    File.open('samples/rename_method_sample.rb') do |file|
+      script_file = RRB::ScriptFile.new( file, file.path )
+      script_file.rename_method_all( 'foo', 'feefoo' )
+      assert_equals( File.open( 'samples/rename_method_sample_after.rb' ).read,
+		    script_file.new_script )
+    end
+    
+  end
   
 end
 
