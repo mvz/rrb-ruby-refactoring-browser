@@ -82,6 +82,8 @@ module RRB
   end
 
   def insert_str(src, insert_lineno, delete_range, insert_str)
+    return nil if insert_lineno == nil && delete_range == nil
+    
     dst = ''
     lines = src.split(/^/)
 
