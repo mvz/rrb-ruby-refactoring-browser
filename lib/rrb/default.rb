@@ -1,8 +1,19 @@
 
 module RRB
 
-  WORK_DIR_BASENAME = "/tmp/rrb_work"
-  TAB_WIDTH = 8
-  INDENT_LEVEL = 2
+  CONF = {
+    'WORK_DIR_BASENAME' => "/tmp/rrb_work",
+    'TAB_WIDTH' => 8,
+    'INDENT_LEVEL' => 2
+  }
   
+  begin
+    load "#{ENV["HOME"]}/.rrbrc"
+  rescue LoadError
+  end
+  
+  WORK_DIR_BASENAME = CONF["WORK_DIR_BASENAME"]
+  TAB_WIDTH = CONF["TAB_WIDTH"]
+  INDENT_LEVEL = CONF["INDENT_LEVEL"]
+    
 end
