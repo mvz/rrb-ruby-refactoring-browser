@@ -175,12 +175,18 @@ module RRB
     return dst
   end
 
+  Keywords = [ "__LINE__","__FILE__","BEGIN","END","alias","and","begin","break","case","class","def","defined?","do","else","elsif","end","ensure","false","for","if","in","module","next","nil","not","or","redo","rescue","retry","return","self","super","then","true","undef","unless","until","when","while","yield" ]
+
+  def keyword?( id )
+    Keywords.include?( id )
+  end
+  
   def valid_local_var?( id )
-    /^[a-z_][a-zA-Z0-9_]*$/ =~ id
+    /^[a-z_][a-zA-Z0-9_]*$/ =~ id && !keyword?( id )
   end
 
   def valid_const_var?( id )
-    /^[A-Z][a-zA-Z0-9_]*$/ =~ id
+    /^[A-Z][a-zA-Z0-9_]*$/ =~ id && !keyword?( id )
   end
  
 
