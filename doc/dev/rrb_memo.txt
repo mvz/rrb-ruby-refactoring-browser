@@ -81,3 +81,6 @@
     end
   end
   となってしまう
+
+* RRB::Namespaceのオブジェクトのキャッシュ
+Test suiteで、3.4sec -> 2.8secと向上
