@@ -1,5 +1,8 @@
 require 'rrb/scriptfile.rb'
 require 'stringio'
+require 'fileutils'
+require 'find'
+require 'rrb/dumped_info.rb'
 
 module RRB
 
@@ -31,6 +34,15 @@ module RRB
       
     end
 
+    def rename_method_all?( old_method, new_method )      
+      @files.each do |scriptfile|
+	unless scriptfile.rename_method_all?( old_method, new_method ) then
+	  return false
+	end
+      end
+      return true
+    end
+    
     def result_to_io( dst )
 
       @files.each do |scriptfile|
@@ -53,6 +65,31 @@ module RRB
       end
     end
 
+    def get_dumped_info( work_dir )
+      Dir.mkdir( work_dir )
+      begin
+	@files.each do |scriptfile|
+	  scriptfile.write_source_to( work_dir )
+	end
+	dirs = []
+	Find.find( work_dir ) do |filepath|
+	  dirs << filepath if FileTest.directory?( filepath )
+	end
+	run_file_path = File.join( work_dir, 'rrb_dump.rb' )
+	run_file = File.open( run_file_path, "w" ) 
+	dirs.each do |dirpath|
+	  run_file << "$:.unshift '#{dirpath}'\n"
+	end
+	run_file << "require '#{@files[0].name[1..-1]}'\n"
+	run_file << IO.read(File.join( File.dirname(__FILE__),"dump_modules.rb"))
+	run_file.close
+	IO.popen("ruby #{run_file_path}") do |io|
+	  return DumpedInfo.get_dumped_info( io )
+	end
+      ensure
+	FileUtils.rm_r work_dir
+      end
+    end
     
     def Script.new_from_io( input )
 
