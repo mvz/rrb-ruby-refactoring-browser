@@ -250,7 +250,10 @@ module RRB
     def adjust_id!( lineno, pointer )
       @elements_id.last.adjust_id!( lineno, pointer )
     end
-    
+
+    def body
+      @elements_id.last
+    end
     attr_reader :elements_id
   end
 
