@@ -12,37 +12,24 @@ module RRB
     attr_reader :namespace, :m_node
 
     def visit_toplevel(namespace, node)
-      @namespace = namespace
       @m_node = node
+      @namespace = namespace
     end
-    
+
     def visit_method(namespace, node)
       if node.range.contain?( @start_lineno .. @end_lineno ) then
         @m_node = node
         @namespace = namespace
+      else
+        unless node.range.out_of?(@start_lineno .. @end_lineno) then
+          @m_node = nil
+          @namespace = nil
+        end
       end
+      
     end
     
   end
-  
-  class ExtractMethodOwnerVisitor < Visitor
-    def initialize(namespace, dumped_info, new_method)
-      @new_method = new_method
-      @dumped_info = dumped_info
-      @my_info = dumped_info[namespace.str]
-      @owner = namespace
-    end
-
-    attr_reader :owner
-    
-    def visit_class(namespace, node)
-      class_node = NodeNamespace.new(node, namespace)
-      ancestor_names = @dumped_info[@owner.str].ancestor_names
-      new_owner = class_node if ancestor_names.find{|anc| anc == class_node.str}
-      @owner = new_owner if new_owner
-    end
-  end
-
   
   class ExtractMethodVisitor < Visitor
 
@@ -92,52 +79,6 @@ module RRB
     end
   end
 
-  class ExtractMethodCheckVisitor < Visitor
-    
-    def initialize(owner, dumped_info, new_method, start_lineno, end_lineno)
-      @owner = owner
-      @dumped_info = dumped_info
-      @new_method = new_method
-      @start_lineno = start_lineno
-      @end_lineno = end_lineno
-      @result = true
-    end
-
-    attr_reader :result
-
-    def toplevel?(node)
-      node.kind_of?( TopLevelNode )
-    end
-
-    def in_lines?(node)
-      node.range.contain?( @start_lineno .. @end_lineno )
-    end
-    
-    def out_lines?(node)
-      node.range.out_of?( @start_lineno .. @end_lineno )
-    end
-
-
-    def visit_node(namespace, node)
-      return if toplevel?(node)
-      return if in_lines?(node)
-      return if out_lines?(node)
-      @result = false
-    end
-
-    def visit_class(namespace, node)
-      if @dumped_info[NodeNamespace.new(node, namespace).normal].subclass_of?(@owner.normal)
-        node.method_defs.each do |defs|
-          @result = false if defs.name == @new_method
-        end
-        node.local_vars.each do |var|
-          @result = false if var.name == @new_method
-        end
-      end
-    end
-
-  end
-
   def space_width( str )
     result = 0
     str.each_byte do |c|
@@ -156,24 +97,17 @@ module RRB
 
     lines = src.readlines
 
-    imp_space_num =  RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
-    if imp_space_num < INDENT_LEVEL
-      def_space_num = 0
-      offset_space_num = INDENT_LEVEL
-      call_space_num = 0
-    else
-      def_space_num = imp_space_num - INDENT_LEVEL
-      call_space_num = imp_space_num
-      offset_space_num = 0
-    end
-
+    def_space_num =  RRB.space_width(/^(\s*)/.match(lines[method_lineno])[0])
+    call_space_num = RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
+    imp_space_num = def_space_num + 2
+    
     0.upto(lines.length-1) do |lineno|
       if lineno == method_lineno
         dst << "\s" * def_space_num + "def #{new_method}("
         dst << args.join(", ")
         dst << ")\n"
         for i in start_lineno..end_lineno
-          dst << "\s" * offset_space_num + lines[i]
+          dst << "\s" * imp_space_num + /^(\s*)(.*)/.match(lines[i])[2] + "\n"
         end
         unless assigned.empty?
           dst << "\s" * imp_space_num + "return " + assigned.join(", ") + "\n"
@@ -203,27 +137,12 @@ module RRB
       @tree.accept(get_namespace)
       get_namespace.namespace
     end
-
-    
-    def get_ancestral_emethod_owner(namespace, dumped_info, new_method )
-      get_owner = ExtractMethodOwnerVisitor.new(namespace, dumped_info, new_method)
-      @tree.accept(get_owner)
-      get_owner.owner
-    end
     
     def extract_method(new_method, start_lineno, end_lineno)
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
       @new_script = RRB.extract_method( @input, new_method, start_lineno-1, end_lineno-1, visitor.method_lineno-1, visitor.args, visitor.assigned)
     end
-
-    def extract_method?(str_owner, dumped_info, new_method, start_lineno, end_lineno)
-      return false unless RRB.valid_method?(new_method)
-      visitor = ExtractMethodCheckVisitor.new(str_owner, dumped_info, new_method, start_lineno, end_lineno)
-      @tree.accept( visitor )
-      return visitor.result
-    end
-
   end
 
   class Script
@@ -249,15 +168,8 @@ module RRB
         namespace = scriptfile.get_emethod_namespace(start_lineno, end_lineno)
       end
       return false unless namespace
-      owner = get_real_emethod_owner(namespace, new_method)
-      return false unless owner
+      return false if get_dumped_info[namespace.str].has_method?(new_method)
       
-      @files.each do |scriptfile|
-	next unless scriptfile.path == path
-	if not scriptfile.extract_method?(owner, get_dumped_info, new_method, start_lineno, end_lineno)
-          return false
-	end
-      end
       return true
     end
   end
