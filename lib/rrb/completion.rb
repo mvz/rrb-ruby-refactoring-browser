@@ -76,6 +76,12 @@ module RRB
       @classes[class_name].merge(node.class_vars.map{|cvar| cvar.name})
     end
 
+    def visit_class_method(namespace, node)
+      class_name = namespace.name
+      @classes[class_name] ||= Set.new
+      @classes[class_name].merge(node.class_vars.map{|cvar| cvar.name})
+    end
+
     attr_reader :classes
   end
 
