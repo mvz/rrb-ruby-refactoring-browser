@@ -12,25 +12,26 @@ Emacs 20.7 or later.
 = Tested Emvironment
 Emacs 20.7.2/21.3, Ruby 1.6.7/1.8.0 on Debian GNU/Linux.
 
-= Installation
+= Installation / RRB core
 Type these lines on command line to install core libraries:
   $ ruby setup.rb config
   $ ruby setup.rb setup
   # ruby setup.rb install
 
-Next, you should copy elisp/rrb.el in load-path and load rrb.el to Emacs.
+= Installation / Emacs interface
+Copy elisp/rrb.el in load-path.
 
-= Installation of FreeRIDE plugin
-At first, finish the installation mentioned above.
-Then, copy rubyide_tools_rrb/ to ${FreeRIDE}/plugins/.
-So, the menu "Refactor" is added to the menubar of FreeRIDE, and you
-can enjoy refactoring with it.
-
-= How to use
-On Emacs, type M-x rrb-rename-local-variable(or rrb-rename-instance-variable, etc)
+How to use: First, load rrb.el to Emacs.
+Type M-x rrb-rename-local-variable(or rrb-rename-instance-variable, etc)
 and input required information such as the name of variable.
 Completion is available with [TAB] key.
 And you can undo one refactoring to type M-x rrb-undo.
+
+= Installation / FreeRIDE plugin
+At first, finish the installation of RRB core.
+Then, copy rubyide_tools_rrb/ to ${FreeRIDE}/plugins/.
+So, the menu "Refactor" is added to the menubar of FreeRIDE, and you
+can enjoy refactoring with it.
 
 = Documentation
 Sorry.
