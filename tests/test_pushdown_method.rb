@@ -15,16 +15,16 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     assert_equals(false, script.pushdown_method?(RRB::NS['B'], 'y', RRB::NS['C'], filename, 23))
     assert_equals("B#y calls private function \"z\"\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['B'], 'z', RRB::NS['C'], filename, 23))
-    assert_equals("Other function uses B#z\n", script.error_message)
+    assert_equals("B#z: called by other function\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['B'], 'w', RRB::NS['C'], filename, 23))
-    assert_equals("C already has w\n", script.error_message)
+    assert_equals("w: already defined at C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['C'], 'w', RRB::NS['B'], filename, 7))    
     assert_equals("B is not the subclass of C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['C'], 'asdf', RRB::NS['B'], filename, 7))    
-    assert_equals("C doesn't have a function called asdf\n", script.error_message)
+    assert_equals("asdf: no definition in C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::NS['A'], 
 						 'a', RRB::NS['C'], filename, 23))
-    assert_equals("Other subclass uses A#a\n", script.error_message)
+    assert_equals("Other subclass calls A#a\n", script.error_message)
 
     assert_equals(true, script.pushdown_method?(RRB::NS['A'], 'a', RRB::NS['B'], filename, 7))
   end

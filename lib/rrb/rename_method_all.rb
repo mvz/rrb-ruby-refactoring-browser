@@ -47,7 +47,7 @@ module RRB
     def visit_node( namespace, node )
       if node.fcalls.find{|fcall| fcall.name == @old_method } &&
 	  node.local_vars.find{|var| var.name == @new_method } then
-        @error_message = "#{@new_method} is already used as a local variable at #{Method.new(namespace, node).name}\n"
+        @error_message = "#{@new_method}: already used as a local variable at #{Method.new(namespace, node).name}\n"
 	@result = false
       end
     end
@@ -115,7 +115,7 @@ module RRB
     
     def rename_method_all?( old_method, new_method )
       unless RRB.valid_method?( new_method )
-        @error_message = "#{new_method} is not a valid name for methods\n"
+        @error_message = "#{new_method}: not a valid name for methods\n"
         return false
       end
 
@@ -125,7 +125,7 @@ module RRB
 	has_old_method = class_info.has_method?( old_method ) 
 	has_new_method = class_info.has_method?( new_method ) 
 	if has_old_method && has_new_method
-          @error_message = "#{class_info.class_name.name} already has #{new_method}\n"
+          @error_message = "#{new_method}: already defined at #{class_info.class_name.name}\n"
           return false
         end
       end

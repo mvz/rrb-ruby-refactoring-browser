@@ -48,11 +48,11 @@ module RRB
       end
 	
       if method_node.local_vars.find{|i| i.name == @new_var} then
-        @error_message = "#{@new_var} is already used\n"
+        @error_message = "#{@new_var}: already used\n"
 	@result = false
       end
       if method_node.fcalls.find{|i| i.name == @new_var} then
-        @error_message = "#{@new_var} is already used as a function\n"
+        @error_message = "#{@new_var}: already used as a function\n"
 	@result = false
       end
       
@@ -90,7 +90,7 @@ module RRB
 
     def rename_local_var?( namespace, method_name, old_var, new_var )
       unless RRB.valid_local_var?( new_var )
-        @error_message = "#{new_var} is not a valid name for local variables\n"
+        @error_message = "#{new_var}: not a valid name for local variables\n"
         return false
       end
 

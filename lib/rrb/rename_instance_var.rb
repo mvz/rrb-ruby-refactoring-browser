@@ -70,7 +70,7 @@ module RRB
     def rename_instance_var?(namespace, node)
       if check_namespace(namespace)
         if node.instance_vars.any?{|id| id.name == @new_var}
-          @error_message = "#{namespace.name} already has #{@new_var}\n"
+          @error_message = "#{@new_var}: already used by #{namespace.name}\n"
           return false
         end
       end
@@ -128,7 +128,7 @@ module RRB
 
     def rename_instance_var?( namespace, old_var, new_var )
       unless RRB.valid_instance_var?( new_var )
-        @error_message = "#{new_var} is not a valid name for instance variables\n"
+        @error_message = "#{new_var}: not a valid name for instance variables\n"
         return false
       end
       

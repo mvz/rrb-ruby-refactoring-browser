@@ -14,11 +14,11 @@ class TestScript_PullupMethod < RUNIT::TestCase
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 'foo', RRB::NS['Base'], filename, 2))
     assert_equals("Derived#foo uses bar defined at Derived\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 'hoge', RRB::NS['Base'], filename, 2))
-    assert_equals("Derived doesn't have a function called hoge\n", script.error_message)    
+    assert_equals("hoge: no definition at Derived\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Base'], 'hoge', RRB::NS['Derived'], filename, 11))
     assert_equals("Derived is not the superclass of Base\n", script.error_message)    
     assert_equals(false, script.pullup_method?(RRB::NS['Derived'], 'asdf', RRB::NS['Base'], filename, 11))
-    assert_equals("Base already has asdf\n", script.error_message)    
+    assert_equals("asdf: already defined at Base\n", script.error_message)    
   end
 
   def test_pullup_method

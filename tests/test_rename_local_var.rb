@@ -62,7 +62,7 @@ end
     assert_equals( false,
 		  script.rename_local_var?(RRB::NS.new('Rename'),'method_1',
 					   'x','y') )
-    assert_equals("y is already used\n", script.error_message)    
+    assert_equals("y: already used\n", script.error_message)    
     script = RRB::Script.new_from_filenames("samples/rename_var_sample.rb")   
     
     assert_equals( true, script.rename_local_var?( RRB::NS.new('Rename'),
@@ -72,27 +72,27 @@ end
     assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
                                                     'method_1',
                                                     'z', 'x' ) )
-    assert_equals("x is already used\n", script.error_message)    
+    assert_equals("x: already used\n", script.error_message)    
     assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
                                                     'method_1',
                                                     'z', 'i' ) )
-    assert_equals("i is already used\n", script.error_message)    
+    assert_equals("i: already used\n", script.error_message)    
     # invalid identifier 
     assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
                                                     'method_1',
                                                     'z', 'Z' ) )
-    assert_equals("Z is not a valid name for local variables\n",
+    assert_equals("Z: not a valid name for local variables\n",
                   script.error_message)    
     assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
                                                     'method_1',
                                                     'z', 'print' ) )
     
-    assert_equals("print is already used as a function\n",
+    assert_equals("print: already used as a function\n",
                   script.error_message)
     assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
                                                     'method_1',
                                                     'z', 'super' ) )
-    assert_equals("super is not a valid name for local variables\n",
+    assert_equals("super: not a valid name for local variables\n",
                   script.error_message)
 
     

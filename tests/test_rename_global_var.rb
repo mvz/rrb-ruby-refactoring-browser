@@ -18,19 +18,19 @@ class TestScript_RenameGlobalVar < RUNIT::TestCase
     script = RRB::Script.new_from_filenames("samples/rename_global_var_sample.rb")   
     assert_equals( true, script.rename_global_var?('$x', '$y'))
     assert_equals( false, script.rename_global_var?('$x', '$z'))
-    assert_equals("$z is already used\n", 
+    assert_equals("$z: already used\n", 
                   script.error_message)
     assert_equals( false, script.rename_global_var?('$x', 'x'))
-    assert_equals("x is not a valid name for global variables\n", 
+    assert_equals("x: not a valid name for global variables\n", 
                   script.error_message)
     assert_equals( false, script.rename_global_var?('$x', '@x'))
-    assert_equals("@x is not a valid name for global variables\n", 
+    assert_equals("@x: not a valid name for global variables\n", 
                   script.error_message)
     assert_equals( false, script.rename_global_var?('$x', '@@x'))
-    assert_equals("@@x is not a valid name for global variables\n", 
+    assert_equals("@@x: not a valid name for global variables\n", 
                   script.error_message)
     assert_equals( false, script.rename_global_var?('$x', 'print'))
-    assert_equals("print is not a valid name for global variables\n", 
+    assert_equals("print: not a valid name for global variables\n", 
                   script.error_message)
   end
 end

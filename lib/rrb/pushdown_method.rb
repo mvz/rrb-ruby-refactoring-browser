@@ -29,14 +29,14 @@ module RRB
         else
           if node.calls.any?{|call| call.name == @method_name}
             @result = false
-            @error_message = "Other function uses #{@old_namespace.name}##{@method_name}\n"
+            @error_message = "#{@old_namespace.name}##{@method_name}: called by other function\n"
           end
         end
       elsif not @dumped_info[namespace.normal].subclass_of?(@new_namespace)
         if @dumped_info[namespace.normal].subclass_of?(@old_namespace) && !@dumped_info[namespace.normal].has_method?(@method_name, false)
 	  if node.calls.any?{|call| call.name == @method_name}
 	    @result = false
-	    @error_message = "Other subclass uses #{@old_namespace.name}##{@method_name}\n"
+	    @error_message = "Other subclass calls #{@old_namespace.name}##{@method_name}\n"
 	  end
 	end
       end
@@ -82,7 +82,7 @@ module RRB
     def pushdown_method?(old_namespace, method_name, new_namespace,
                          path, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
+        @error_message = "#{method_name}: no definition in #{old_namespace.name}\n"
         return false
       end
 
@@ -92,7 +92,7 @@ module RRB
       end
 
       if get_dumped_info[new_namespace].has_method?(method_name, false)
-        @error_message = "#{new_namespace.name} already has #{method_name}\n"
+        @error_message = "#{method_name}: already defined at #{new_namespace.name}\n"
         return false
       end
 

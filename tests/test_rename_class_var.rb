@@ -24,15 +24,15 @@ class TestScript_RenameClassVar < RUNIT::TestCase
   def test_rename_class_var?
     script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
     assert_equals(false, script.rename_class_var?(RRB::NS['X::B'], '@@a', '@@b'))
-    assert_equals("X::A already has @@b\n", script.error_message)
+    assert_equals("@@b: already used by X::A\n", script.error_message)
     assert_equals(false, script.rename_class_var?(RRB::NS['X::B'], '@@a', '@@c'))
-    assert_equals("X::B already has @@c\n", script.error_message)
+    assert_equals("@@c: already used by X::B\n", script.error_message)
     assert_equals(false, script.rename_class_var?(RRB::NS['X::B'], '@@a', '@@d'))
-    assert_equals("X::C already has @@d\n", script.error_message)
+    assert_equals("@@d: already used by X::C\n", script.error_message)
     assert_equals(false, script.rename_class_var?(RRB::NS['X::B'], '@@a', '@@e'))
-    assert_equals("X::D already has @@e\n", script.error_message)
+    assert_equals("@@e: already used by X::D\n", script.error_message)
     assert_equals(false, script.rename_class_var?(RRB::NS['X::A'], '@@a', 'fff'))
-    assert_equals("fff is not a valid name for class variables\n", script.error_message)    
+    assert_equals("fff: not a valid name for class variables\n", script.error_message)    
   end
 
   

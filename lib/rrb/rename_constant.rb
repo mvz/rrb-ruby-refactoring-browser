@@ -116,7 +116,7 @@ module RRB
       if result_namespace.nil? then
         return true
       else
-          @error_message = "#{new_const} is already defined at "
+          @error_message = "#{new_const}: already defined at "
         if result_namespace != RRB::NS::Toplevel
           @error_message << "#{result_namespace.name}\n"
         else
