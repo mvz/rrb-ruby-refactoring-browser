@@ -113,9 +113,6 @@ module RRB
       visitor.visit_toplevel( Namespace::Toplevel, self )
       super visitor, Namespace::Toplevel
       accept_children( visitor, Namespace::Toplevel )
-#       visitor.visit_toplevel( NodeNamespace.new_toplevel, self )
-#       super visitor, NodeNamespace.new_toplevel
-#       accept_children( visitor, NodeNamespace.new_toplevel )
     end
     
   end
@@ -127,7 +124,6 @@ module RRB
       visitor.visit_class( namespace, self )
       super
       accept_children( visitor, namespace.nested( self.name ) )
-#      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
 
   end
@@ -197,7 +193,6 @@ module RRB
       visitor.visit_singleton_class( namespace, self )
       super
       accept_children( visitor, namespace.nested( "[sclass]" ) )
-#      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
     
   end
