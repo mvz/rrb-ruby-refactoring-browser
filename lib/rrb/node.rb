@@ -344,6 +344,7 @@ module RRB
     end
 
     def ==(other)
+      return false unless other.kind_of?( Namespace )
       ary == other.ary
     end
 
