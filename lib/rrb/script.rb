@@ -117,7 +117,7 @@ module RRB
       return Marshal.load(File.open(filename))
     end
 
-    attr_reader :error_message
+    attr_reader :files, :error_message
     
   end
   module_function
