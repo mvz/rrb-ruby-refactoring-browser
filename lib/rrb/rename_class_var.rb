@@ -109,11 +109,15 @@ module RRB
   end
 
   class ScriptFile
-    
-    def rename_class_var( namespace, dumped_info, old_var, new_var )
-      get_owner = GetClassVarOwnerVisitor.new(namespace, dumped_info, old_var)
+
+    def get_ancestral_cvar_owner( namespace, dumped_info, var )
+      get_owner = GetClassVarOwnerVisitor.new(namespace, dumped_info, var)
       @tree.accept(get_owner)
-      visitor = RenameClassVarVisitor.new(get_owner.owner, dumped_info,
+      get_owner.owner
+    end
+    
+    def rename_class_var( real_owner, dumped_info, old_var, new_var )
+      visitor = RenameClassVarVisitor.new(real_owner, dumped_info,
 					  old_var, new_var )
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
@@ -121,9 +125,7 @@ module RRB
 
     def rename_class_var?( namespace, dumped_info, old_var, new_var )
       return false unless RRB.valid_class_var?( new_var )
-      get_owner = GetClassVarOwnerVisitor.new(namespace, dumped_info, old_var)
-      @tree.accept(get_owner)
-      visitor = RenameClassVarCheckVisitor.new(get_owner.owner, dumped_info,
+      visitor = RenameClassVarCheckVisitor.new(namespace, dumped_info,
 					       old_var, new_var )
       @tree.accept( visitor )
       return visitor.result
@@ -132,17 +134,25 @@ module RRB
   end
 
   class Script
+
+    def get_real_cvar_owner( namespace, var )
+      @files.inject( namespace ) do |owner,scriptfile|
+	scriptfile.get_ancestral_cvar_owner( owner, get_dumped_info, var )
+      end
+    end
     
     def rename_class_var( namespace, old_var, new_var )
+      owner = get_real_cvar_owner( namespace, old_var )
       @files.each do |scriptfile|
-	scriptfile.rename_class_var( namespace, get_dumped_info,
+	scriptfile.rename_class_var( owner, get_dumped_info,
 				    old_var, new_var )
       end
     end
 
     def rename_class_var?( namespace, old_var, new_var )
+      owner = get_real_cvar_owner( namespace, old_var )
       @files.each do |scriptfile|
-	if not scriptfile.rename_class_var?( namespace,get_dumped_info,
+	if not scriptfile.rename_class_var?( owner,get_dumped_info,
 					    old_var, new_var ) then
 	  return false
 	end
