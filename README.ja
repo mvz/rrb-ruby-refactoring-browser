@@ -11,7 +11,7 @@ Linux上、ruby 1.6.7, 1.8.1での動作が確認されています。
 * ruby 1.6.x + ruby_shim もしくは ruby 1.8.x
 
 = インストール
-青木さんのsetup.rbを利用しています。
+青木峰郎さんのsetup.rbを利用しています。
 まず、
   $ ruby setup.rb config
   $ ruby setup.rb setup
@@ -22,9 +22,10 @@ Linux上、ruby 1.6.7, 1.8.1での動作が確認されています。
 してください。
 
 = 動作方法
-Emacsでは、M-x rrb-rename-local-variableなどとし、必要な情報(変数名など)
-を入力してください。
-M-x rrb-undoでundoができます。
+M-x rrb-rename-local-variableなどとし、必要な情報(変数名など)を入力してください。
+TABキーを押すことによって、対象を自動的に補完することができます。(複数の候補が
+存在するときは、一覧が表示されます。)
+M-x rrb-undoで、直前のリファクタリングによる全ての変化をundoすることができます。
 
 = FreeRIDEプラグインのインストール
 まず、上記のインストールを終えてください。
@@ -45,7 +46,7 @@ Ruby Refactoring Browser is distributed under the same term as Ruby.
 
 = 開発者
 大林一平 <ohai@kmc.gr.jp>
-原悠 <yhara@kmc.gr.jp>
+原  悠 <yhara@kmc.gr.jp>
 吉田悠一 <oxy@kmc.gr.jp>
 
 = バグ報告等
