@@ -136,7 +136,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-complist-method-fullname ()
   (save-current-buffer
     (set-buffer rrb-output-buffer)
-    (rrb-buffer-map-line (lambda (line) (cons (car (split-string line ";")) nil)))))
+    (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
 
 (defun rrb-complist-local-var (method)
   (save-current-buffer
@@ -211,4 +211,32 @@ matches with rrb-ruby-file-name-regexp'"
 			new_method
 			(number-to-string (rrb-begin-line-num begin))
 			(number-to-string (rrb-end-line-num end)))))
-					  
+
+;;;; Refactoring: Rename instance variable
+(defun rrb-complist-class ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
+
+(defun rrb-complist-instance-var (ns)
+  (rrb-complist-local-var ns))
+
+(defun rrb-comp-read-rename-instance-variable ()
+  "completion read for rename instance variable"
+  (when (/= 0 (rrb-run-process "rrb_compinfo" "--classes-instance-vars"))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((ns (completing-read "refactored class: "
+			     (rrb-complist-class))))
+    (list ns
+	  (completing-read "Old instance variable: "
+			   (rrb-complist-instance-var ns))
+	  (read-from-minibuffer "New instance variable: "))))
+
+(defun rrb-rename-instance-variable (ns old-var new-var)
+  "Refactor code: Rename instance variable"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-instance-variable)))
+  (save-excursion
+    (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
+  
