@@ -55,7 +55,20 @@ class TestClassMethod < RUNIT::TestCase
     assert_equals( '#<RRB::ClassMethod A::B.me>',
                    RRB::CMN.new(RRB::NS.new("A::B"), 'me').inspect )
   end
-  
+
+  def test_match_node?
+    parser = RRB::Parser.new
+    tree = parser.run File.open( "samples/visitor_sample.rb", "r" )
+
+    test_class_a = RRB::Namespace.new("TestClassA")
+    method_2 = tree.class_info("TestClassA").method_info("method_2")
+    method_7 = tree.class_info("TestClassA").classmethod_info("method_7")
+
+    assert(RRB::Method["TestClassA#method_2"].match_node?(test_class_a,method_2))
+    assert(RRB::Method["TestClassA.method_7"].match_node?(test_class_a,method_7))
+    assert(!RRB::Method["TestClassA.method_2"].match_node?(test_class_a,method_2))
+    assert(!RRB::Method["TestClassA#method_7"].match_node?(test_class_a,method_7))
+  end
 end
 
 if $0 == __FILE__
