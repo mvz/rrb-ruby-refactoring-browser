@@ -33,20 +33,7 @@ end
 "
 
   RENAME_LOCAL_VAR_OUTPUT = "\
-/home/ohai/ruby/test/file1.rb\C-a
-
-# comment
-
-class Rename
-  def method_1( x, y )
-    z = 3
-    z.upto(6) do |i|
-      print i*3, \"\\n\"
-    end
-    print z**4, z**5
-  end
-end
-\C-a/home/ohai/ruby/test/file2.rb\C-a
+/home/ohai/ruby/test/file2.rb\C-a
 class Rename
   def method_2( yy, y)
     yy**2 + y**2
