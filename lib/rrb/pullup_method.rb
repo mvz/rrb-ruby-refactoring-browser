@@ -20,9 +20,14 @@ module RRB
       return unless @method_name.match_node?( namespace, node )
       
       node.fcalls.each do |fcall|
-        called_method =
-          @dumped_info.real_method( Method.new( @method_name.namespace,
-                                                fcall.name ) ) 
+        if @method_name.instance_method?
+          called_method =
+                @dumped_info.real_method( Method.new( @method_name.namespace,
+                                                      fcall.name ) ) 
+        elsif @method_name.class_method?
+          called_method =
+                @dumped_info.real_class_method( ClassMethod.new( @method_name.namespace,fcall.name))
+        end
         unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
           @error_message = "#{@method_name.name} uses #{called_method.name}\n"
