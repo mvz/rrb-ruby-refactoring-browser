@@ -43,7 +43,7 @@ File.foreach( INTERF_INPUT ) do |line|
       list.each do |name|
         f.print <<METHOD
   def on__#{name}( *args )
-    args[0]
+    nil
   end
 METHOD
       end
