@@ -52,6 +52,19 @@ class TestClassA
     @y = $x + 4
     return "str #{$xx*@y*@@z}"
   end
-  
+
+  def method_9
+    p Const1
+    print Const2::Const1, "\n"
+    for i in ::Const2::Const1
+      puts self::Const3
+      puts ConstCall1()
+      puts Const4::Const5::ConstCall2()
+      puts self.ConstCall3
+    end
+    p Const6::Const7::Const8::Const9
+  end
+
+  Const6 = 4
 end
 
