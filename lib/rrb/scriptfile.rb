@@ -104,7 +104,7 @@ module RRB
     /^\$[a-zA-Z0-9_]+$/ =~ id && !keyword?( id )
   end
 
-  def valid_const_var?( id )
+  def valid_const?( id )
     /^[A-Z][a-zA-Z0-9_]*$/ =~ id && !keyword?( id )
   end
  
