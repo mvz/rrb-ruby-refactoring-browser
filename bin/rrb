@@ -135,6 +135,8 @@ if $0 == __FILE__ then
     
   rescue
     STDERR << "ERROR: exeption raised: #{$!.message}\n"
+    STDERR << "stacktrace: \n"
+    STDERR.puts $!.backtrace
     exit 2
   end
     
