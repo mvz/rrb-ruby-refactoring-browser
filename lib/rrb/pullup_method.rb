@@ -32,9 +32,11 @@ module RRB
 
   class ScriptFile
 
-    def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
+    def pullup_method(old_namespace, method_name, new_namespace, 
+                      pullupped_method, ignore_new_namespace, specified_lineno)
       visitor = MoveMethodVisitor.new(old_namespace, method_name,
-                                      new_namespace)
+                                      new_namespace,
+                                      ignore_new_namespace, specified_lineno)
       @tree.accept( visitor )
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
                                    visitor.delete_range, pullupped_method,
@@ -51,15 +53,19 @@ module RRB
   end
 
   class Script
-    def pullup_method(old_namespace, method_name, new_namespace)
+    def pullup_method(old_namespace, method_name, new_namespace,
+                      filename, lineno)
       pullupped_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
 	scriptfile.pullup_method(old_namespace, method_name,
-                                 new_namespace, pullupped_method)
+                                 new_namespace, pullupped_method,
+                                 scriptfile.path != filename,
+                                 lineno)
       end      
     end
 
-    def pullup_method?(old_namespace, method_name, new_namespace)
+    def pullup_method?(old_namespace, method_name, new_namespace,
+                       filename, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
         @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
         return false
