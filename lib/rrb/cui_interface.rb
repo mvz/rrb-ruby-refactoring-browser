@@ -259,11 +259,6 @@ USG
         CUI.select_one(prompt, words)
       end
 
-      def input_str_completion(prompt, words)
-        result = CUI.select_one(prompt, words)
-        return "" if result == nil
-        return result
-      end
       
       def select_any(prompt, words)
         CUI.select_any(prompt, words)
@@ -350,10 +345,16 @@ USG
     end
 
     class ExtractSuperclass < UI
+      def input_new_namespace
+        result = CUI.select_one("What namespace is your new class in: ", classes)
+        return Namespace::Toplevel if result == nil
+        return Namespace[result]
+      end
+      
       def run
         path = select_one("What file new class is created?: ", files)
         lineno = select_line(@script.files.find{|sf| sf.path == path})
-        namespace = Namespace[input_str_completion("What namespace is your new class in: ", classes)]
+        namespace = input_new_namespace
         new_class = input_str("New class: ")
         targets = select_any("Targets: ", classes).map{|cls| Namespace[cls]}
         
