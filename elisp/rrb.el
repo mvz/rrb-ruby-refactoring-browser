@@ -109,18 +109,6 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     (set-buffer rrb-error-buffer)
     (erase-buffer)))
 
-(defun rrb-output-to-buffer-and-reset-point (alist)
-  "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
-  (save-current-buffer
-    (set-buffer rrb-output-buffer)
-    (let ((list-top (split-string (buffer-string) rrb-io-splitter)))
-      (while (not (string= (car list-top) rrb-io-terminator))
-	(set-buffer (get-file-buffer (car list-top)))
-	(erase-buffer)
-	(insert (cadr list-top))
-	(goto-char (cdr (assq (current-buffer) alist)))
-	(setq list-top (cddr list-top))))))
-
 (defun rrb-output-to-error-buffer (filename)
   "load FILENAME to \" *rrb-error\""
   (save-current-buffer
@@ -139,6 +127,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (let ((buffer-point-alist (rrb-buffer-point-alist)))
     (if (/= (apply 'rrb-run-process "rrb" args) 0)
 	(error "fail to refactor: %s" (rrb-error-message)))
+    (rrb-setup-buffer rrb-input-buffer
+		      (mapcar 'get-file-buffer
+			      (rrb-get-file-name-list rrb-output-buffer)))
+    (save-current-buffer
+      (set-buffer rrb-input-buffer)
+      (write-region (point-min) (point-max) (rrb-make-undo-file-name rrb-undo-count) nil 0 nil))
     (setq rrb-undo-count (+ rrb-undo-count 1))
     (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
@@ -172,9 +166,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 (defun rrb-prepare-refactoring ()
   (save-current-buffer
-    (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))
-    (set-buffer rrb-input-buffer)
-    (write-region (point-min) (point-max) (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
+    (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))))
 
 (defun rrb-make-undo-file-name(undo-count)
   (format "%s_%d"
@@ -189,6 +181,39 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	(delete-file sub-file))
       (setq sub-files (cdr sub-files)))))
 
+
+;;;; operation for script-buffer
+
+(defun rrb-map-script-buffer (buffer proc)
+  (save-current-buffer
+    (set-buffer buffer)
+    (let ((script-list (split-string (buffer-string) rrb-io-splitter)))
+      (while (not (string= (car script-list) rrb-io-terminator))
+	(funcall proc (car script-list) (cadr script-list))
+	(setq script-list (cddr script-list))))))
+  
+
+(defun rrb-get-file-name-list (buffer)
+  (let (file-name-list '())
+    (rrb-map-script-buffer 
+     buffer
+     (lambda (file-name file-content)
+       (setq file-name-list (cons file-name file-name-list))))
+    file-name-list
+    ))
+
+
+(defun rrb-output-to-buffer-and-reset-point (alist)
+  "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
+  (save-current-buffer
+   (rrb-map-script-buffer rrb-output-buffer
+			  (lambda (file-name file-content)
+			    (set-buffer (get-file-buffer file-name))
+			    (erase-buffer)
+			    (insert file-content)
+			    (goto-char (cdr (assq (current-buffer) alist)))))))
+			    
+  
 
 ;;;; Completion
 
