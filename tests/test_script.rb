@@ -182,7 +182,7 @@ end
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
     info = script.get_dumped_info
     assert_equals( "class", info["B"].type )
-    assert_equals( ["foo","bar"], info["B"].public_method_names )
+    assert_equals( ["foo","bar"].sort, info["B"].public_method_names.sort )
   end
   
 end
