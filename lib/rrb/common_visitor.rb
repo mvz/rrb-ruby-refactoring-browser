@@ -28,8 +28,10 @@ module RRB
           end
         end
       elsif cur_namespace.match?(@old_namespace)
-        target_method = node.method_defs.find(){|method| method.name == @method_name}
-        @delete_range = target_method && target_method.range
+        if @method_name.instance_method?
+          target_method = node.method_defs.find(){|method| method.name == @method_name.name}
+          @delete_range = target_method && target_method.range
+        end
       end      
     end
   end
@@ -43,12 +45,22 @@ module RRB
 
     attr_reader :result_range
 
-    def visit_method(namespace, node)
+    def get_string_of_method(namespace, node)
       if namespace.match?(@namespace)
-        if node.name == @method_name
+        if node.name == @method_name.name
           @result_range = node.range
         end
       end
+    end
+
+    def visit_method(namespace, node)
+      return unless @method_name.instance_method?
+      get_string_of_method(namespace, node)
+    end
+
+    def visit_class_method(namespace, node)
+      return unless @method_name.class_method?
+      get_string_of_method(namespace, node)
     end
   end
 
