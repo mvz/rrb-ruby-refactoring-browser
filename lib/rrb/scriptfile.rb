@@ -41,9 +41,9 @@ module RRB
   end
 
 
-  Replacer = Struct.new( :lineno, :pointer, :before, :after )
+  Replacer = Struct.new( :lineno, :column, :before, :after )
   def Replacer.new_from_id( id, after )
-    new( id.lineno, id.pointer, id.name, after )
+    new( id.lineno, id.column, id.name, after )
   end
   
   # guard object 
@@ -58,7 +58,7 @@ module RRB
     return nil if replace_info.empty?
     
     src = StringIO.new( input )
-    sorted_info = replace_info.sort_by{|i| [ i.lineno, -i.pointer ] }
+    sorted_info = replace_info.sort_by{|i| [ i.lineno, -i.column ] }
     sorted_info << Guard
     
     info_index = 0
@@ -70,7 +70,7 @@ module RRB
       if src.lineno == sorted_info[info_index].lineno then
 	info = sorted_info[info_index]
 
-	line[ info.pointer-info.before.size, info.before.size ] = info.after
+	line[ info.column, info.before.size ] = info.after
 	info_index += 1
       else
 	dst << line
