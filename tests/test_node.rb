@@ -61,6 +61,28 @@ class TestNode < RUNIT::TestCase
 
     
   end
+
+  class Visitor5 < RRB::Visitor
+    def initialize
+      @singleton_methods = []
+    end
+
+    def visit_singleton_method( namespace, node )
+      @singleton_methods << [ namespace.map{|i| i.name}, node.name ]
+    end
+    attr_reader :singleton_methods
+  end
+
+  class Visitor6 < RRB::Visitor
+    def initialize
+      @class_methods = []
+    end
+
+    def visit_class_method( namespace, node )
+      @class_methods << [ namespace.map{|i| i.name}, node.name ]
+    end
+    attr_reader :class_methods
+  end
   
   def test_accept
 
@@ -108,8 +130,20 @@ class TestNode < RUNIT::TestCase
 		    ['TestClassA','TestClassB','TestClassC'],
 		    ['TestClassA','TestModuleA'],
 		    ['TestClassA','TestModuleA','TestModuleB'],
-		    ['TestClassA','TestModuleA','TestModuleB','method_5']
+		    ['TestClassA','TestModuleA','TestModuleB','method_5'],
+		    ['TestClassA','method_6'],
+		    ['TestClassA','method_7'],
 		  ].sort, visitor4.nodes.sort )
+
+    visitor5 = Visitor5.new
+    tree.accept( visitor5 )
+    assert_equals( [ [['TestClassA'],'method_6'] ].sort,
+		  visitor5.singleton_methods.sort )
+
+    visitor6 = Visitor6.new
+    tree.accept( visitor6 )
+    assert_equals( [ [['TestClassA'],'method_7'] ].sort,
+		  visitor6.class_methods.sort )
   end
 
 end
