@@ -21,8 +21,7 @@ module RRB
 	
       method_node.local_vars.each do |id|
 	if id.name == @old_var then
-	  @result <<
-	    Replacer.new( id.lineno, id.pointer, @old_var, @new_var )
+	  @result << Replacer.new_from_id( id, @new_var )
 	end
       end
       
