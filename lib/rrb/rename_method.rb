@@ -35,7 +35,7 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
 
     def rename_fcalls( fcalls )
       fcalls.find_all(){|fcall| fcall.name == @old_method}.each do |fcall|
-        @result << Replacer.new_from_id( fcall, @new_method )        
+        @result << Replacer.new_from_id( fcall.body, @new_method )        
       end
     end
     
