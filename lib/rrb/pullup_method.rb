@@ -60,6 +60,11 @@ module RRB
         return false
       end
 
+      unless get_dumped_info[old_namespace].subclass_of?(new_namespace)
+        @error_message = "#{new_namespace.name} is not the superclass of #{old_namespace.name}\n"
+        return false
+      end
+
       if get_dumped_info[new_namespace].has_method?(method_name)
         @error_message = "#{new_namespace.name} already has #{method_name}\n"
         return false
