@@ -65,6 +65,8 @@ end
 class Derived < Base
   def hoge
   end
+  def Derived.hoge
+  end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
 class Base
@@ -88,6 +90,8 @@ class Base
 end
 
 class Derived < Base
+  def Derived.hoge
+  end
 end
 \C-a-- END --\C-a
 "
@@ -104,6 +108,8 @@ class Base
 end
 
 class Derived < Base
+  def Derived.hoge
+  end
 end
 \C-a-- END --\C-a
 "
@@ -118,6 +124,8 @@ class Base
 end
 
 class Derived < Base
+  def Derived.hoge
+  end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
 class Base
@@ -127,12 +135,35 @@ class Base
 end
 \C-a-- END --\C-a
 "
+OUTPUT_STR4 = "\
+/home/yuichi/work/rrb/private/test.rb\C-a
+class Base
+  def Base.hoge
+  end
+
+end
+
+class Base
+
+end
+
+class Derived < Base
+  def hoge
+  end
+end
+\C-a-- END --\C-a
+"
   def test_pullup_method_plural_files?
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     assert_equals(true,
                   script.pullup_method?(RRB::NS['Derived'], 
                                         RRB::MN.new('hoge', true),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 3))
+    assert_equals(true,
+                  script.pullup_method?(RRB::NS['Derived'], 
+                                        RRB::MN.new('hoge', false),
+                                        RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 3))
+
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
                                         RRB::MN.new('hoge', true),
@@ -140,7 +171,18 @@ end
     assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
     assert_equals(false,
                   script.pullup_method?(RRB::NS['Derived'], 
+                                        RRB::MN.new('hoge', false),
+                                        RRB::NS['Base'], '/home/yuichi/work/rrb/private/test3.rb', 3))
+    assert_equals("No definition of Base in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+
+    assert_equals(false,
+                  script.pullup_method?(RRB::NS['Derived'], 
                                         RRB::MN.new('hoge', true),
+                                        RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
+    assert_equals("Specify which definition to pull up method to\n", script.error_message)
+    assert_equals(false,
+                  script.pullup_method?(RRB::NS['Derived'], 
+                                        RRB::MN.new('hoge', false),
                                         RRB::NS['Base'], '/home/yuichi/work/rrb/private/test.rb', 9))
     assert_equals("Specify which definition to pull up method to\n", script.error_message)
 
@@ -173,6 +215,14 @@ end
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR3, dst)
     
+    script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
+    script.pullup_method(RRB::NS['Derived'], 
+                         RRB::MN.new('hoge', false),
+                         RRB::NS['Base'], 
+                           '/home/yuichi/work/rrb/private/test.rb', 3)
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(OUTPUT_STR4, dst)
   end
 
 end
