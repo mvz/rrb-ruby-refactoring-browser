@@ -15,7 +15,7 @@ module RRB
 
     def visit_node( namespace, node )
       node.calls.find_all(){|call| call.name == @old_method}.each do |call|
-        @result << Replacer.new_from_id( call, @new_method )
+        @result << Replacer.new_from_id( call.body, @new_method )
       end
     end
     
