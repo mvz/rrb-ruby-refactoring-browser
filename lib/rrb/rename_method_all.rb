@@ -16,8 +16,7 @@ module RRB
     def visit_node( namespace, node )      
       node.calls.each do |call|
 	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	  @result << Replacer.new_from_id( call, @new_method )
 	end
       end
     end
@@ -25,10 +24,7 @@ module RRB
     def visit_method( namespace, method_node )
       
       if method_node.name == @old_method then
-	@result << Replacer.new( method_node.name_id.lineno,
-				method_node.name_id.pointer,
-				@old_method,
-				@new_method )
+	@result << Replacer.new_from_id( method_node.name_id, @new_method )
       end
     end
 
