@@ -30,6 +30,12 @@ class TestScript_PushdownMethod < RUNIT::TestCase
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
                    dst )    
+    script = RRB::Script.new_from_filenames("samples/pushdown_method_sample.rb")
+    script.pushdown_method(RRB::NS['B'], 'x', RRB::NS['C::D'])
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals( File.open( 'samples/pushdown_method_sample_after2.rb' ).read,
+                   dst )    
   end
 end
 
