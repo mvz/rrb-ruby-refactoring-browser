@@ -68,11 +68,11 @@ class TestParser < RUNIT::TestCase
     method_9_info = class_info.method_info("method_9")
     assert_equals( [ "Const1",
 		    "Const2", "Const2::Const1",
-		    "::Const2", "::Const2::Const1",
+		    "Const2", "Const2::Const1",
 		    "Const4", "Const4::Const5",
 		    "Const6", "Const6::Const7",
 		    "Const6::Const7::Const8", "Const6::Const7::Const8::Const9",
-		    "::Const10", "::Const10::Const11",
+		    "Const10", "Const10::Const11",
 		    "Const12"
 		  ],
 		  method_9_info.consts.map{|info| info.name} )

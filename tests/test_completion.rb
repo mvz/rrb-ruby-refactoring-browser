@@ -71,7 +71,7 @@ end
   def test_refactable_consts
     scriptfile = RRB::ScriptFile.new( INPUT, "/tmp/test.rb" )
     dumped_info = RRB::Script.new( [scriptfile] ).get_dumped_info
-    assert_equals( Set['::A','::B','::C','::C::D','::A::CONST'],
+    assert_equals( Set['C::D','A','B', 'A::CONST', 'C'],
                    scriptfile.refactable_consts(dumped_info) )
   end
   
@@ -135,7 +135,7 @@ end
   
   def test_refactable_consts
     script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
-    assert_equals( Set['::A', '::B', '::Hoge'],
+    assert_equals( Set['A', 'B', 'Hoge'],
 		  script.refactable_consts )
   end
   
