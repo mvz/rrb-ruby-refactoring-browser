@@ -33,6 +33,10 @@
   
   #{}による式の文字列展開の文字列中に改行が含まれてはいけない
 
+  $__rrb_load_path, $__rrb_loadedというグローバル変数と
+  __rrb_load, __rrb_searchという関数を定義したり呼んだりしては
+  いけない
+  
 * RRB::DumpedClassInfo#subclass_of?(classname)
   self と classname が一致していても真を返す点に注意
 
