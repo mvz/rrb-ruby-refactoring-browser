@@ -26,6 +26,6 @@ rrb/sublibに rrb_ripper.so を置き、rrb/sublib/rrb に ripper.rb を置いている。
 == 実行ファイルを動かしてみる
 実行ファイルは bin/rrb で、以下のようにして実行できます。
   
-  [~/src/rrb]% ruby -Ilib -Isublib bin/rrb rename-local-variable 'Rename#method_1' i j < samples/rename_local_variable_stream > output
+  [~/src/rrb]% ruby -Ilib -Isublib bin/rrb --rename-local-variable 'Rename#method_1' i j < samples/rename_var_sample_stream > output
 
   
