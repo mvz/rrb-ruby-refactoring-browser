@@ -153,6 +153,18 @@ module RRB
 
       return @singleton_method_names.include?( methodname )
     end
+
+    def real_class_method( methodname )
+      if has_class_method?( methodname, false )
+        return ClassMethod.new( self.class_name, methodname )
+      end
+      @ancestors.each do |ancestor|
+        if ancestor.has_method?( methodname, false )
+          return ClassMethod.new( ancestor.class_name, methodname )
+        end
+      end
+      nil
+    end
     
     def subclass_of?(classname)
       classname = Namespace.new( classname ) if classname.kind_of?( String )
