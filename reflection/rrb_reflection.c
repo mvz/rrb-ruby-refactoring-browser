@@ -1,4 +1,5 @@
 #include "ruby.h"
+#include "version.h"
 
 #if RUBY_VERSION_CODE < 170
 static VALUE mod_constants_not_inherited_too(VALUE mod)
