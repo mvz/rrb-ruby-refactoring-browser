@@ -18,11 +18,8 @@
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name to use error log file")
 
-(defvar rrb-undo-file-base "rrbundo"
-  "*Base file name for undo file")
-(defvar rrb-undo-file
-  (expand-file-name "rrbundo" temporary-file-directory))
-
+(defvar rrb-undo-file-base (format "%s_%d" "rrbundo" (emacs-pid)
+  "*Base file name for undo file"))
 
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
@@ -177,7 +174,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (save-current-buffer
     (rrb-setup-buffer rrb-input-buffer (rrb-all-ruby-script-buffer))
     (set-buffer rrb-input-buffer)
-    (write-region (point-min) (point-max) (format "%s%d" rrb-undo-file rrb-undo-count) nil 0 nil)))
+    (write-region (point-min) (point-max) (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
+
+(defun rrb-make-undo-file-name(undo-count)
+  (format "%s_%d"
+	  (expand-file-name rrb-undo-file-base temporary-file-directory)
+	  undo-count))
 
 (defun rrb-delete-undo-files ()
   (let ((sub-files 
@@ -290,7 +292,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-undo-base (count-func)
   "Base of Undo and Redo of the last refactoring"
   (let ((undo-file-name 
-	 (format "%s%d" rrb-undo-file (funcall count-func rrb-undo-count))))
+	 (rrb-make-undo-file-name (funcall count-func rrb-undo-count))))
     (if (file-readable-p undo-file-name)
 	(progn 
 	  (rrb-prepare-refactoring)
