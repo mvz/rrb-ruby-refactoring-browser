@@ -12,7 +12,21 @@ class TestNamespace < RUNIT::TestCase
     assert_equals( "A::B::C", RRB::Namespace.new(['A','B','C']).str )
     assert_equals( "A::B::C", RRB::Namespace['A::B::C'].str )
   end
-  
+
+  def test_EQ
+    assert( RRB::Namespace.new("X::B::C") == RRB::Namespace.new(['X','B','C']) )
+    assert( RRB::Namespace.new("X::B::C") != RRB::Namespace.new(['X','D','C']) )
+  end
+
+  def test_hash
+    assert( RRB::Namespace.new("X::B::C").hash ==
+	   RRB::Namespace.new(['X','B','C']).hash )
+  end
+
+  def  test_eql?
+    assert( RRB::Namespace.new("X::B::C").eql?( RRB::Namespace.new(['X','B','C'])))
+    assert( !RRB::Namespace.new("X::B::C").eql?(RRB::Namespace.new(['X','D','C'])))
+  end 
 end
 
 if $0 == __FILE__
