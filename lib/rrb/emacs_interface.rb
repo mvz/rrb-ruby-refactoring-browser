@@ -55,7 +55,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       elsif str['.']
         a, b = str.split( '.' )
         namespace = Namespace.new(a)
-        method_name = Method.new(namespace, b)
+        method_name = ClassMethod.new(namespace, b)
         return method_name
       end
     end
