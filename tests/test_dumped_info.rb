@@ -104,6 +104,10 @@ class TestDumpedInfo < RUNIT::TestCase
                    info.resolve_const( RRB::NS["TestClassD::TestClassE"], "C1" ) )
     assert_equals( nil,
                    info.resolve_const( RRB::NS["TestClassD::TestClassE"], "C3" ) )
+    assert_equals( RRB::NS[""],
+                   info.resolve_const( RRB::NS[""], "TestClassA" ) )
+    assert_equals( nil,
+                   info.resolve_const( RRB::NS[""], "C1" ) )
   end
   
   def make_info
