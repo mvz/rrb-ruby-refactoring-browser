@@ -17,8 +17,7 @@ module RRB
 
     attr_reader :result
 
-    def visit_method(namespace, node)
-      return unless @method_name.instance_method?
+    def check_pullup_method(namespace, node)
       return unless node.name == @method_name.name
       return unless namespace.match?(@old_namespace)
       
@@ -30,6 +29,16 @@ module RRB
         end
       end
     end
+
+    def visit_method(namespace, node)
+      return unless @method_name.instance_method?
+      check_pullup_method(namespace, node)
+    end
+
+    def visit_class_method(namespace, node)
+      return unless @method_name.class_method?
+      check_pullup_method(namespace, node)
+    end
   end
 
   class ScriptFile
@@ -40,6 +49,9 @@ module RRB
                                       new_namespace,
                                       ignore_new_namespace, specified_lineno)
       @tree.accept( visitor )
+      if method_name.class_method?
+        pullupped_method.gsub!(/^((\s)*def\s+)(.*)\./) {|s| $1 + new_namespace.name + '.'}
+      end
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
                                    visitor.delete_range, pullupped_method,
                                    true)
