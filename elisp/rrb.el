@@ -41,6 +41,11 @@
   "Return chopped string"
   (substring str 0 -1))
 
+(defun rrb-current-line ()
+  "Return the vertical position of point..."
+  (+ (count-lines (point-min) (point))
+     (if (= (current-column) 0) 1 0)))
+     
 ;;;; Main functions
 
 (defun rrb-all-ruby-script-buffer ()
@@ -58,22 +63,23 @@ matches with rrb-ruby-file-name-regexp'"
   (insert-buffer-substring src-buffer)
   (insert rrb-io-splitter))
 
-(defun rrb-setup-input-buffer ()
+(defun rrb-setup-input-buffer (buffer-list)
   "Generate input string on \" *rrb-input*\""
   (save-current-buffer
     (set-buffer rrb-input-buffer)
     (erase-buffer)
     (mapcar 'rrb-insert-input-string
-	    (rrb-all-ruby-script-buffer))
+	    buffer-list)
     (insert rrb-io-terminator)
     (insert rrb-io-splitter)))
 
 (defun rrb-clean-output-buffer ()
   "Clean temporary buffers"
-  (set-buffer rrb-output-buffer)
-  (erase-buffer)
-  (set-buffer rrb-error-buffer)
-  (erase-buffer))
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (erase-buffer)
+    (set-buffer rrb-error-buffer)
+    (erase-buffer)))
 
 (defun rrb-output-to-buffer-and-reset-point (alist)
   "Rewrite all ruby script buffer from \" *rrb-output\" and reset cursor point"
@@ -182,11 +188,11 @@ matches with rrb-ruby-file-name-regexp'"
     (mapcar 'list
             (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
 
-(defun rrb-comp-read-type-2 (compinfo-arg prompt1 prompt2)
+(defun rrb-comp-read-type-2 (compinfo-arg default-arg prompt1 prompt2)
   "Completion read for Rename method all, Rename Constant, etc.."
   (when (/= 0 (rrb-run-process "rrb_compinfo" compinfo-arg))
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (list (completing-read prompt1 (rrb-complist-type-2))
+  (list (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg)
 	(read-from-minibuffer prompt2)))
 
 ;;;
@@ -202,7 +208,27 @@ matches with rrb-ruby-file-name-regexp'"
       (error "rrb_info: fail to get information %s" (rrb-error-message)))
     (append old-class-method
 	    (list (completing-read prompt2 (rrb-complist-type-2))))))
-    
+
+;;;
+;;; default value
+;;    
+(defun rrb-get-value-on-cursor (args)
+  (if (/= (rrb-run-process "rrb_default_value" (buffer-file-name) (number-to-string (rrb-current-line)) args) 0)
+      ""
+    (save-current-buffer
+      (set-buffer rrb-output-buffer)
+      (buffer-substring (point-min) (point-max)))))
+  
+(defun rrb-get-class-on-cursor ()
+  (save-current-buffer
+    (rrb-setup-input-buffer (list (current-buffer)))
+    (rrb-get-value-on-cursor "--class")))
+
+(defun rrb-get-method-on-cursor ()
+  (interactive)
+  (save-current-buffer
+    (rrb-setup-input-buffer (list (current-buffer)))
+    (message (rrb-get-value-on-cursor "--method"))))
 
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
@@ -213,7 +239,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-local-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
@@ -221,12 +247,12 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename method all
 (defun rrb-comp-read-rename-method-all ()
   "Completion read for Rename method all"
-  (rrb-comp-read-type-2 "--methods" "Old method: " "New method: "))
+  (rrb-comp-read-type-2 "--methods" "" "Old method: " "New method: "))
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-method-all)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
@@ -249,7 +275,7 @@ matches with rrb-ruby-file-name-regexp'"
   "Refactor code: Extract method"
   (interactive "r\nsNew method: ")
   (save-current-buffer
-    (rrb-setup-input-buffer)
+    (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
     (rrb-do-refactoring "--extract-method"
 			(buffer-file-name)
 			new_method
@@ -265,7 +291,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-instance-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-instance-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
@@ -279,7 +305,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-rename-class-variable (ns old-var new-var)
   "Refactor code: Rename instance variable"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-class-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-class-variable" ns old-var new-var)))
@@ -288,13 +314,13 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename global variable
 (defun rrb-comp-read-rename-global-variable ()
   "compleion read for rename global variable"
-  (rrb-comp-read-type-2 "--global-vars"
+  (rrb-comp-read-type-2 "--global-vars" ""
 			"Old global variable: " "New global variable: "))
 
 (defun rrb-rename-global-variable (old-var new-var)
   "Refactor code: Rename global variable"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-global-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-global-variable" old-var new-var)))
@@ -302,12 +328,12 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
   "compleion read for rename constant"
-  (rrb-comp-read-type-2 "--constants" "Old constant: " "New constant: "))
+  (rrb-comp-read-type-2 "--constants" "" "Old constant: " "New constant: "))
 
 (defun rrb-rename-constant (old-const new-const)
   "Refactor code: Rename constant"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-constant)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-constant" old-const new-const)))
@@ -316,12 +342,12 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-comp-read-rename-class ()
   "compleion read for rename class"
-  (rrb-comp-read-type-2 "--classes" "Old class/module: " "New class/module: "))
+  (rrb-comp-read-type-2 "--classes" (rrb-get-class-on-cursor) "Old class/module: " "New class/module: "))
 
 (defun rrb-rename-class (old-class new-class)
   "Refactor code: Rename class or module"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-rename-class)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-constant" old-class new-class)))
@@ -337,7 +363,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-pullup-method (old-class method new-class)
   "Refactor code: Pull up method"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-pullup-method)))
   (save-current-buffer
     (rrb-do-refactoring "--pullup-method" old-class method new-class)))
@@ -351,7 +377,7 @@ matches with rrb-ruby-file-name-regexp'"
 (defun rrb-pushdown-method (old-class method new-class)
   "Refactor code: Push down method"
   (interactive (progn
-		 (rrb-setup-input-buffer)
+		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-pushdown-method)))
   (save-current-buffer
     (rrb-do-refactoring "--pushdown-method" old-class method new-class)))
