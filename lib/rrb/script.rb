@@ -43,6 +43,14 @@ module RRB
       dst << STREAM_SPLITTER
       dst << "\n"
     end
+
+    def result_overwrite_file
+      @files.each do |scriptfile|
+	File.open( scriptfile.name, "w+" ) do |f|
+	  f << scriptfile.new_script
+	end
+      end
+    end
     
     def Script.new_from_io( input )
 
