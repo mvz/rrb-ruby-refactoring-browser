@@ -1,17 +1,4 @@
-require 'rrb/script'
-require 'rrb/rename_local_var'
-require 'rrb/rename_instance_var'
-require 'rrb/rename_class_var'
-require 'rrb/rename_global_var'
-require 'rrb/rename_method'
-require 'rrb/rename_method_all'
-require 'rrb/rename_constant'
-require 'rrb/extract_method'
-require 'rrb/move_method'
-require 'rrb/pullup_method'
-require 'rrb/pushdown_method'
-require 'rrb/remove_parameter'
-require 'rrb/extract_superclass'
+require 'rrb/rrb'
 
 module RRB
 
