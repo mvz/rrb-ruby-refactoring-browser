@@ -1187,10 +1187,11 @@ opt_block_arg	: ',' block_arg
 		    }
 		| none
 
-args 		: arg
+args 		: arg 
 		    {
 			value_expr($1);
-                        $$ = dispatch1(argstart, $1);
+                        $$ = dispatch0(argstart);
+			$$ = dispatch2(argadd_value, $$, $1);
 		    }
 		| args ',' arg
 		    {
@@ -1688,7 +1689,8 @@ when_args	: args
 		| tSTAR arg
 		    {
 			value_expr($2);
-                        $$ = dispatch1(argstart, $2);
+                        $$ = dispatch0(argstart);
+			$$ = dispatch2(argadd_star, $$, $2)
 		    }
 
 cases		: opt_else
@@ -1917,7 +1919,8 @@ f_norm_arg	: tCONSTANT
 
 f_arg		: f_norm_arg
                     {
-                        $$ = dispatch1(argstart, $1);
+                        $$ = dispatch0(argstart);
+			$$ = dispatch2(argadd, $$, $1)
                     }
 		| f_arg ',' f_norm_arg
 		    {
@@ -1937,7 +1940,8 @@ f_opt		: tIDENTIFIER '=' arg
 
 f_optarg	: f_opt
 		    {
-                        $$ = dispatch1(argstart, $1);
+                        $$ = dispatch0(argstart);
+			$$ = dispatch2(argadd, $$, $1);
 		    }
 		| f_optarg ',' f_opt
 		    {
