@@ -45,6 +45,9 @@ module RRB
       @class_method_defs = scope.class_method_defs
       @singleton_class_defs = scope.singleton_class_defs
       @assigned = scope.assigned
+      @attr_readers = scope.attr_readers
+      @attr_writers = scope.attr_writers
+      @attr_accessors = scope.attr_accessors
       @head_keyword = head_kw
       @tail_keyword = tail_kw
     end
@@ -55,6 +58,7 @@ module RRB
     attr_reader :singleton_class_defs
     attr_reader :head_keyword, :tail_keyword
     attr_reader :assigned
+    attr_reader :attr_readers, :attr_writers, :attr_accessors
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
