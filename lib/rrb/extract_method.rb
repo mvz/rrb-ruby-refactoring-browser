@@ -45,17 +45,52 @@ module RRB
 
     attr_reader :result
 
-    def visit_node( namespace, node )
-      return if @end_lineno <= node.start_lineno
-      return if node.end_lineno <= @start_lineno
-      return if node.start_lineno < @start_lineno && @end_lineno < node.end_lineno
-      @result = false
-      
+    def visit_toplevel(namespace, node)
+      @str_namespace = get_namespace(node)
     end
+
+    def visit_node(namespace, node)
+      return if node.name_id.type == :toplevel
+      start_lineno = node.head_keyword.lineno
+      end_lineno = node.tail_keyword.lineno
+      return if start_lineno < @start_lineno && @end_lineno < end_lineno
+      return if @end_lineno < start_lineno
+      return if end_lineno < @start_lineno
+      @result = false
+    end
+
     def visit_class(namespace, node)
-#      return unless node.start_lineno < @start_lineno && @end_lineno < node.end_lineno
-      node.method_defs.each do |defs|
-        @result = false if defs.name == @new_method
+      str_namespace = namespace.map{|i| i.name}.join('::')
+      if str_namespace.empty?
+        str_namespace = node.name
+      else
+        str_namespace = str_namespace + '::' + node.name
+      end
+      if @str_namespace == str_namespace
+        node.method_defs.each do |defs|
+          @result = false if defs.name == @new_method
+        end
+      end
+    end
+
+    def get_namespace(node)
+      unless node.class_defs.empty?
+        node.class_defs.each do |class_def|
+          str_namespace = get_namespace(class_def)
+          unless str_namespace.nil?
+            if node.name_id.type == :toplevel
+              return str_namespace
+            else
+              return node.name +  '::' + str_namespace
+            end
+          end
+        end
+      else
+        start_lineno = node.head_keyword.lineno
+        end_lineno = node.tail_keyword.lineno
+        if start_lineno < @start_lineno && @end_lineno < end_lineno
+          return node.name
+        end
       end
     end
   end
@@ -125,7 +160,6 @@ module RRB
     end
 
     def extract_method?(new_method, start_lineno, end_lineno)
-      return true
       @files.each do |scriptfile|
 	if not scriptfile.extract_method?(new_method, start_lineno, end_lineno)
           return false
