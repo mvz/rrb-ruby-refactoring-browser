@@ -148,6 +148,7 @@ static int in_defined = 0;
 #define dispatch3(name,a,b,c)     rb_funcall(parser->value, rip_id_ ## name, 3,a,b,c)
 #define dispatch4(name,a,b,c,d)   rb_funcall(parser->value, rip_id_ ## name, 4,a,b,c,d)
 #define dispatch5(name,a,b,c,d,e) rb_funcall(parser->value, rip_id_ ## name, 5,a,b,c,d,e)
+#define dispatch6(name,a,b,c,d,e,f) rb_funcall(parser->value, rip_id_ ## name, 6,a,b,c,d,e,f) 
 
 #define s_dispatch1(name,a)      (dispatch1(scan,a), dispatch1(name,a))
 #define s_dispatch2(name,a,b)    (dispatch1(scan,b), dispatch2(name,a,b))
@@ -1395,7 +1396,7 @@ primary		: literal
 		  compstmt
 		  kEND
 		    {
-		        $$ = dispatch3(class, $2, $5, $3);
+		        $$ = dispatch5(class, $1, $2, $5, $3, $6 );
 		        /* nd_set_line($$, $<num>4); */
                         dispatch2(set_line, $$, INT2NUM($<num>4));
 		        local_pop();
@@ -1416,7 +1417,7 @@ primary		: literal
 		  compstmt
 		  kEND
 		    {
-		        $$ = dispatch2(sclass, $3, $7);
+		        $$ = dispatch4(sclass, $1, $3, $7, $8 );
 		        fixpos($$, $3);
 		        local_pop();
 			class_nest--;
@@ -1434,7 +1435,7 @@ primary		: literal
 		  compstmt
 		  kEND
 		    {
-		        $$ = dispatch2(module, $2, $4);
+		        $$ = dispatch4(module, $1, $2, $4, $5 );
 		        /* nd_set_line($$, $<num>3); */
                         dispatch1(set_line, INT2NUM($<num>3));
 		        local_pop();
@@ -1468,7 +1469,7 @@ primary		: literal
 			if ($8) $5 = NEW_ENSURE($5, $8);
                     */
 
-                        $$ = dispatch5(def, $1, $2, $4, $$, $6);
+                        $$ = dispatch6(def, $1, $2, $4, $$, $6, $9 );
                     /*
 		        / * NOEX_PRIVATE for toplevel * /
 			$$ = NEW_DEFN($2, $4, $5, class_nest?NOEX_PUBLIC:NOEX_PRIVATE);
@@ -1505,7 +1506,7 @@ primary		: literal
 			if ($11) $8 = NEW_ENSURE($8, $11);
                     */
 
-			$$ = dispatch4(sdef, $2, $5, $7, $8);
+			$$ = dispatch6(sdef, $1, $2, $5, $7, $8, $12 );
 		        fixpos($$, $2);
 		        local_pop();
 			in_single--;
