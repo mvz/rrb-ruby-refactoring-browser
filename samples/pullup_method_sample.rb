@@ -1,4 +1,5 @@
 class Base
+
   def hoge
     p 1
   end
