@@ -132,6 +132,12 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals( false,
                    info.exist?( RRB::MN['TestClassB#pubA'], false ) )
   end
+
+  def test_real_method
+    info = make_info
+    assert_equals(RRB::MN['TestClassB#pub'], info.real_method( RRB::MN['TestClassB#pub']))
+    assert_equals(RRB::MN['TestClassA#pubA'], info.real_method( RRB::MN['TestClassB#pubA']))
+  end
   
   def make_info
     File.open(DUMPED_FILE_NAME) do |file|
