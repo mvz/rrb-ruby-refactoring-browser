@@ -67,8 +67,10 @@ class TestClassA
   end
 
   Const6 = 4
-  attr_writer :y, :z
-  attr_accessor :a, :b, :c, :d
+  attr_writer( :y, :z )
+  attr_accessor :a, :b
+  attr_accessor :c,
+    :d
 end
 
 class TestClassD < TestClassA::TestClassB
