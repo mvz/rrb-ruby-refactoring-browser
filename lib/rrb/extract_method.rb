@@ -1,5 +1,6 @@
 require 'rrb/script'
 require 'rrb/common_visitor'
+
 require 'stringio'
 
 module RRB
@@ -17,7 +18,7 @@ module RRB
     attr_reader :method_lineno, :args, :assigned 
 
     def visit_method( namespace, node )
-      return unless node.range.head.lineno < @start_lineno && @end_lineno < node.range.tail.lineno
+      return unless node.range.contain?(@start_lineno .. @end_lineno)
       vars = node.local_vars.map{|i| i.name}
       out_vars = []
       in_vars = []
@@ -105,12 +106,6 @@ module RRB
   module_function :extract_method
 
   class ScriptFile
-    def get_emethod_namespace(start_lineno, end_lineno)
-      get_namespace = GetClassOnRegionVisitor.new(start_lineno, end_lineno)
-      @tree.accept(get_namespace)
-      get_namespace.namespace
-    end
-    
     def extract_method(new_method, start_lineno, end_lineno)
       visitor = ExtractMethodVisitor.new(start_lineno, end_lineno) 
       @tree.accept( visitor )
@@ -135,12 +130,11 @@ module RRB
     end
 
     def extract_method?(path, new_method, start_lineno, end_lineno)
-      namespace = ""
-      @files.each do |scriptfile|
-	next unless scriptfile.path == path
-        namespace = scriptfile.get_emethod_namespace(start_lineno, end_lineno)
-      end
+      method = get_method_on_region(path, start_lineno..end_lineno)
+      namespace = get_class_on_region(path, start_lineno..end_lineno)
+
       return false unless namespace
+      return false unless method
       return false if get_dumped_info[namespace.name].has_method?(new_method)
       
       return true
