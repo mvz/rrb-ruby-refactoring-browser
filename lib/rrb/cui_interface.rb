@@ -236,6 +236,15 @@ USG
       def files
         @script.files.map{|sf| sf.path}
       end
+      
+      def check_and_execute(refactoring, *args)
+        unless @script.__send__("#{refactoring}?", *args)
+          STDERR.print(@script.error_message, "\n")
+          exit
+        end
+        @script.__send__(refactoring, *args)
+        output_diff
+      end
     end
 
     class RenameLocalVariable < UI
@@ -303,14 +312,6 @@ USG
     end
 
     class RenameGlobalVariable < UI
-      def execute(refactoring, *args)
-        unless @script.__send__("#{refactoring}?", *args)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.__send__(refactoring, *args)
-        output_diff
-      end
       
       def gvars
         @script.refactable_global_vars
@@ -319,7 +320,7 @@ USG
       def run
         old_var = select_one("Old variable: ", gvars)
         new_var = input_str("New variable: ")
-        execute("rename_global_var", old_var, new_var)
+        check_and_execute("rename_global_var", old_var, new_var)
       end
     end
     
