@@ -95,7 +95,7 @@ module RRB
 
     def on__sclass( s_obj, stmts )
       @scope_stack[-2].singleton_class_defs <<
-	SingletonClassNode.new( IdInfo.new( :nil, 0, 0, "" ),
+	SingletonClassNode.new( IdInfo.new( :nil, 0, 0, "[sclass]" ),
 			       @scope_stack.last )
     end
     
