@@ -15,8 +15,8 @@ module RRB
     def visit_method(namespace, node)
       return unless node.instance_vars.find{|i| i.name == @old_var}
       ancestor_names = @dumped_info[@owner].ancestor_names
-      new_owner = ancestor_names.find{|anc| anc == namespace.str}
-      @owner = Namespace.new( new_owner ) if new_owner
+      new_owner = ancestor_names.find{|anc| anc == namespace.normal}
+      @owner = new_owner if new_owner
     end
   end
 

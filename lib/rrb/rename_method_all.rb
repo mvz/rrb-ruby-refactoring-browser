@@ -65,7 +65,7 @@ module RRB
 
     def visit_class( namespace, node )
       if node.method_defs.inject( false ){|r,i| (r || i.name == @method) } then
-	classname = NodeNamespace.new( node, namespace ).str
+	classname = NodeNamespace.new( node, namespace ).normal
 	@classes.delete_if{|class_info| class_info.class_name ==  classname }
       end
     end

@@ -37,7 +37,7 @@ module RRB
     end
 
     def new_superclass_def( namespace, new_class, old_superclass, dumped_info )
-      result = [ "class #{new_class} < ::#{old_superclass.class_name}", "end" ]
+      result = [ "class #{new_class} < ::#{old_superclass.class_name.str}", "end" ]
 
       ns = namespace
       until ns == Namespace::Toplevel

@@ -10,7 +10,7 @@ module RRB
     end
 
     def [](index)
-      index = index.str if index.kind_of?( Namespace )
+      index = Namespace.new( index ) if index.kind_of?( String )
       @classes[index]
     end
 
@@ -50,8 +50,8 @@ module RRB
       end
       
       return nil if classinfo == nil
-      return Namespace::Toplevel if classinfo.class_name == "Object"
-      return Namespace.new( classinfo.class_name )
+      return Namespace::Toplevel if classinfo.class_name == Namespace.new("Object")
+      return classinfo.class_name
     end
     
     def DumpedInfo.get_dumped_info( io )
@@ -82,8 +82,8 @@ module RRB
 		   protected_method_names, private_method_names,
 		   singleton_method_names, consts )
       @type = type
-      @class_name = ancestor_names[0]
-      @ancestor_names = ancestor_names[1..-1]
+      @class_name = Namespace.new( ancestor_names[0] )
+      @ancestor_names = ancestor_names[1..-1].map{|name| Namespace.new( name )}
       @public_method_names = public_method_names
       @protected_method_names = protected_method_names
       @private_method_names = private_method_names
@@ -113,7 +113,7 @@ module RRB
     end
 
     def subclass_of?(classname)
-      classname = classname.str if classname.kind_of?( Namespace )
+      classname = Namespace.new( classname ) if classname.kind_of?( String )
       @ancestor_names.include?(classname) ||  @class_name == classname
     end
 

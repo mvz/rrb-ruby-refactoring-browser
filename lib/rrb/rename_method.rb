@@ -91,7 +91,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
 	classes << namespace
 	get_dumped_info[namespace].ancestors.each do |ancestor|
 	  if ancestor.has_method?( methodname )
-	    classes << Namespace.new( ancestor.class_name )
+	    classes << ancestor.class_name
 	  end
 	end
       end
@@ -104,7 +104,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
 
       get_dumped_info.each do |classinfo|
 	if classes.find{|classname| classinfo.subclass_of?(classname)} then
-	  result << Namespace.new( classinfo.class_name )
+	  result << classinfo.class_name
 	end
       end
 

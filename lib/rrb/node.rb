@@ -318,6 +318,7 @@ module RRB
 
   class Namespace
     extend Forwardable
+    include Enumerable
     
     def initialize( ns )
       case ns
@@ -366,6 +367,10 @@ module RRB
       Namespace.new( @namespace[0..-2] )
     end
 
+    def <=>(other)
+      self.ary <=> other.ary
+    end
+    
     Toplevel = Namespace.new( [] )
   end
 

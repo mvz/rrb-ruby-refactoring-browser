@@ -15,9 +15,9 @@ module RRB
     def visit_class(namespace, node)
       return false unless node.class_vars.find{|i| i.name == @old_var}
       ancestor_names = @dumped_info[@owner].ancestor_names
-      class_name = NodeNamespace.new( node, namespace ).str
+      class_name = NodeNamespace.new( node, namespace ).normal
       new_owner = ancestor_names.find{|anc| anc == class_name}
-      @owner = Namespace.new( new_owner ) if new_owner
+      @owner = new_owner if new_owner
     end
   end
 
