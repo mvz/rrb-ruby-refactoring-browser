@@ -430,7 +430,7 @@ module RRB
     end
 
     def hash
-      @namespace.hash ^ @bare_name.hash
+      @namespace.hash ^ @bare_name.hash 
     end
     
     def Method.[](str)
@@ -470,13 +470,23 @@ module RRB
     end
 
     def match_node?( namespace, method_node )
-      method_node.kind_of?( ClassMethodNode ) && namespace == @namespace && method_node.name == @bare_name
+      method_node.kind_of?( ClassMethodNode ) &&
+        namespace == @namespace &&
+        method_node.name == @bare_name
     end
     
     def name
       @namespace.name + '.' + @bare_name
     end
 
+    def eql?( other )
+      self == other
+    end
+
+    def hash
+      @namespace.hash ^ @bare_name.hash ^ 0xc9
+    end
+    
     def inspect
       "#<#{self.class.to_s} #{self.name}>"
     end
