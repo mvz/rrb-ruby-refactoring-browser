@@ -9,7 +9,7 @@ list = nil
 File.open( SOURCE_FILE ) {|f|
     list = f.collect {|line|
         m = /dispatch\d\((\w+)/.match(line) and m[1]
-    }.compact.push('scan').sort.uniq
+    }.compact.push('scan').push('OP').sort.uniq
 }
 
 
