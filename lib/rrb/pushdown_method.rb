@@ -88,10 +88,16 @@ module RRB
         return false
       end
 
-      target_class = get_class_on_cursor(path, lineno)
-      unless target_class && new_namespace.contain?(target_class.normal )
-        @error_message = "Specify where to push down method\n"
+      definition_count = count_namespace_definition(path, new_namespace)
+      if definition_count == 0
+        @error_message = "No definition of #{new_namespace.name} in #{path}\n"
         return false
+      elsif definition_count > 1
+        target_class = get_class_on_cursor(path, lineno)
+        unless target_class && new_namespace.contain?(target_class.normal )
+          @error_message = "Specify which definition to push down method to\n"
+          return false
+        end
       end
 
 
