@@ -94,29 +94,32 @@ module RRB
       end
       
       @scope_stack[-2].class_defs << ClassNode.new( class_name,
-						   @scope_stack.last )
+						   @scope_stack.last,
+						   kw_class, kw_end )
     end
 
     def on__module( kw_module, module_name, stmts, kw_end )
       @scope_stack[-2].class_defs << ModuleNode.new( module_name,
-						    @scope_stack.last )
+						    @scope_stack.last,
+						    kw_module, kw_end )
     end
 
     def on__sclass( kw_class, s_obj, stmts, kw_end )
       @scope_stack[-2].singleton_class_defs <<
 	SingletonClassNode.new( IdInfo.new( :nil, 0, 0, "[sclass]" ),
-			       @scope_stack.last )
+			       @scope_stack.last, kw_class, kw_end )
     end
     
     def on__def( kw_def, name, arglist, stmts, rescue_clause, kw_end )
       @scope_stack[-2].method_defs <<
-	MethodNode.new( name, @scope_stack.last )	
+	MethodNode.new( name, @scope_stack.last, kw_def, kw_end )	
     end
 
     def on__sdef( kw_def, s_obj, method_name, arglist, stmts, kw_end )
       s_obj = IdInfo.new( :nil, 0, 0, "" ) if s_obj == nil
       @scope_stack[-2].singleton_method_defs <<
-	SingletonMethodNode.new( s_obj, method_name, @scope_stack.last )
+	SingletonMethodNode.new( s_obj, method_name, @scope_stack.last,
+				kw_def, kw_end )
     end
     
     def on__call( receiver, method, args )
