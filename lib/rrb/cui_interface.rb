@@ -29,15 +29,15 @@ end
 module RRB
   module CUI
     USAGE = <<USG
-usage: rrbcui [options] refactoring-type FILES..
-       rrbcui [options] refactoring-type refactoring-argument -- FILES..
+usage: rrbcui [options] FILES..
 
 Refactoring FILES automatically.
 
 options:
-  -w       rewrite FILES [no implementation]
-  -d DIFF  output diff [default, DIFF=output.diff]
-  -h       print this message and exit
+  -w              rewrite FILES [no implementation]
+  -d DIFF         output diff [default, DIFF=output.diff]
+  -h              print this message and exit
+  -r REFACTORING  do REFACTORING
 
 refactoring:
   rename-local-variable [method old-var new-var]
@@ -58,26 +58,66 @@ USG
       ['-d', GetoptLong::REQUIRED_ARGUMENT],
       ['-w', GetoptLong::NO_ARGUMENT],
       ['--help', '-h', GetoptLong::NO_ARGUMENT],
+      ['-r', GetoptLong::REQUIRED_ARGUMENT],
     ]
+
+    REFACTORING = [
+      'rename-local-variable',
+      'rename-instance-variable',
+      'rename-class-variable',
+      'rename-global-variable',
+      'rename-constant',
+      'rename-class',
+      'rename-method-all',
+      'rename-method',
+      'extract-method',
+      'extract-superclass',
+      'pullup-method',
+      'pushdown-method',
+    ]
+
     module_function
     def print_usage
       print USAGE
       exit
     end
 
+    def select_one(prompt, words)
+      Readline.completion_proc = Proc.new do |word|
+        words.grep(/^#{Regexp.quote(word)}/)
+      end
+      Readline.readline(prompt).trim
+    end
+
+    # parse ARGV and do refactoring
     def execute
+      print_usage if ARGV.empty?
+
       diff_file = 'output.diff'
-      
+      refactoring = nil
+
       parser = GetoptLong.new
       parser.set_options( *OPTIONS )
       parser.each_option do |name, arg|
         print_usage if name == '--help'
         diff_file = arg if name == '-d'
+        refactoring = arg if name == '-r'
+      end
+
+      if File.exist?(diff_file)
+        STDERR.print "ERROR: #{diff_file} exists\n"
+        exit 1
       end
       
-      case ARGV.shift
+      Readline.basic_word_break_characters = "\t\n\"\\'"
+
+      refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
+
+      case refactoring
       when "rename-local-variable"
         ui = RenameLocalVariable.new(ARGV, diff_file)
+      when "rename-instance-variable"
+        ui = RenameInstanceVariable.new(ARGV, diff_file)
       when "extract-method"
         ui = ExtractMethod.new(ARGV, diff_file)
       end
@@ -162,7 +202,9 @@ USG
         Curses.lines.times do |i|
           break if @str[@top+i] == nil
           Curses.setpos(i, 0)
+          Curses.standout if i == @start
           Curses.addstr(@str[@top+i])
+          Curses.standend
         end
         Curses.setpos(@cursor - @top, 0)
         Curses.refresh
@@ -216,17 +258,14 @@ USG
       end
 
       def select_one(prompt, words)
-        Readline.completion_proc = Proc.new do |word|
-          words.grep(/^#{Regexp.quote(word)}/)
-        end
-        Readline.readline(prompt).trim
+        CUI.select_one(prompt, words)
       end
-
+      
       def input_str(prompt)
         Readline.completion_proc = proc{ [] }
         Readline.readline(prompt).trim
       end
-
+  
       def select_region(scriptfile)
         Screen.new(scriptfile.input).select_region
       end
@@ -250,6 +289,31 @@ USG
           exit
         end
         @script.rename_local_var(Method[method], old_var, new_var)
+        output_diff
+      end
+    end
+    
+    class RenameInstanceVariable < UI
+      def classes
+        @script.refactable_classes
+      end
+
+      def ivars(target)
+        @script.refactable_classes_instance_vars.each do |classname, cvars|
+          return cvars if classname == target
+        end
+        return []
+      end
+      
+      def run
+        namespace = select_one("Refactared class: ", classes)
+        old_var = select_one("Old variable: ", ivars(namespace))
+        new_var = input_str("New variable: ")
+        unless @script.rename_instance_var?(namespace, old_var, new_var)
+          STDERR.print(script.error_message, "\n")
+          exit
+        end
+        @script.rename_instance_var(namespace, old_var, new_var)
         output_diff
       end
     end
