@@ -185,7 +185,7 @@ module RRB
 
     def adjust_id!( lineno, pointer )
       if @lineno > 1 then
-	raise RRBError, "eval string mustn't have \"\\n\":#{id.inspect}"
+	raise RRBError, "eval string mustn't have \"\\n\":#{self.inspect}"
       end
       @lineno = lineno
       @pointer += pointer
@@ -234,7 +234,7 @@ module RRB
     end
 
     def adjust_id!( lineno, pointer )
-      @elements_id.each{|id| id.adjust_id!( lineno, pointer )}
+      @elements_id.last.adjust_id!( lineno, pointer )
     end
     
     attr_reader :elements_id
