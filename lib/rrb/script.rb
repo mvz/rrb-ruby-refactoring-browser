@@ -4,6 +4,7 @@ require 'fileutils'
 require 'find'
 require 'rrb/dumped_info.rb'
 require 'rrb/default'
+require 'pp'
 
 module RRB
 
@@ -35,7 +36,14 @@ module RRB
       
     end
 
-    def rename_method_all?( old_method, new_method )      
+    def rename_method_all?( old_method, new_method )
+      info = get_dumped_info
+      info.each do |class_info|
+	has_old_method = class_info.has_method?( old_method ) 
+	has_new_method = class_info.has_method?( new_method ) 
+	return false if has_old_method && has_new_method
+      end
+	  
       @files.each do |scriptfile|
 	unless scriptfile.rename_method_all?( old_method, new_method ) then
 	  return false
@@ -43,6 +51,7 @@ module RRB
       end
       return true
     end
+
     
     def result_to_io( dst )
 
