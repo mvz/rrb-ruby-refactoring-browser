@@ -42,6 +42,10 @@ if $0 == __FILE__ then
       namespace = ARGV.shift.split(/::/)
       old_var = ARGV.shift
       new_var = ARGV.shift
+    when '--rename-class-variable'
+      namespace = ARGV.shift.split(/::/)
+      old_var = ARGV.shift
+      new_var = ARGV.shift
     when '--rename-global-variable'
       old_var = ARGV.shift
       new_var = ARGV.shift
@@ -77,6 +81,13 @@ if $0 == __FILE__ then
         exit 1
       end
       script.rename_instance_var(namespace, old_var, new_var)
+      output.call
+    when '--rename-class-variable'
+      unless script.rename_class_var?(namespace, old_var, new_var)
+        STDERR << "REJECTED\n"
+        exit 1
+      end
+      script.rename_class_var(namespace, old_var, new_var)
       output.call
     when '--rename-global-variable'
       unless script.rename_global_var?(old_var, new_var )
