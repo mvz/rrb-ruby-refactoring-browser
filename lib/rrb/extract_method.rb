@@ -114,12 +114,12 @@ module RRB
     lines = src.readlines
 
     imp_space_num =  /^(\s*)/.match(lines[start_lineno])[0].length
-    if imp_space_num < 2
+    if imp_space_num < INDENT_LEVEL
       def_space_num = 0
-      offset_space_num = 2
+      offset_space_num = INDENT_LEVEL
       call_space_num = 0
     else
-      def_space_num = imp_space_num - 2
+      def_space_num = imp_space_num - INDENT_LEVEL
       call_space_num = imp_space_num
       offset_space_num = 0
     end
