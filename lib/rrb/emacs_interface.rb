@@ -38,6 +38,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --stdin-stdout
     * --filein-overwrite FILES..
     * --filein-stdout FILES..
+    * --marshalin-overwrite FILE
+    * --marshalin-stdout FILE
 "
     
     def initialize( argv )
@@ -211,6 +213,12 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 	@output = proc{ @script.result_rewrite_file }
       when '--filein-stdout'
 	@script = Script.new_from_filenames( *argv )
+	@output = proc{ @script.result_to_io( STDOUT ) }
+      when '--marshalin-overwrite'
+	@script = Script.new_from_marshal( argv.shift )
+	@output = proc{ @script.result_rewrite_file }
+      when '--marshalin-stdout'
+	@script = Script.new_from_marshal( argv.shift )
 	@output = proc{ @script.result_to_io( STDOUT ) }
       else
 	raise RRBError, "Unknown input/output option"
