@@ -10,7 +10,7 @@ module RRB
     def get_method_on_cursor(lineno)
       visitor = GetMethodOnRegionVisitor.new(lineno, lineno)
       @tree.accept( visitor )
-      visitor.namespace
+      visitor.method
     end
 
     def get_class_on_cursor(lineno)
