@@ -366,6 +366,14 @@ module RRB
       @namespace.join('::')
     end
 
+    def abs_name
+      if self == Toplevel then
+        ''
+      else
+        '::' + name
+      end
+    end
+    
     def ary
       @namespace
     end
