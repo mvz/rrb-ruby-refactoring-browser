@@ -68,6 +68,10 @@
   (+ (count-lines (point-min) (point))
      (if (= (current-column) 0) 1 0)))
 
+(defun rrb-make-temp-name (base)
+  "Make temporary file/directory name and return it."
+  (make-temp-name (expand-file-name base temporary-file-directory)))
+
 ;;;; Compatibility (for old emacs)
 
 ;;;point-at-bol => line-beginning-position
@@ -156,7 +160,7 @@
 ;;;  A,A::B,A::C,A::C::C1,A::C::C2,
 ;;;
 (defun rrb-run-comp-info (&rest args)
-  "Run rrb_compinfo."
+  "Run rrb_compinfo and return completion list."
   (save-current-buffer
     (if (/= (apply 'rrb-run-process "rrb_compinfo" 
 		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
@@ -168,7 +172,7 @@
 
 
 (defun rrb-run-default-value (&rest args)
-  "Run rrb_default_value."
+  "Run rrb_default_value and return default value."
   (save-current-buffer
     (if (/= (apply 'rrb-run-process "rrb_default_value" 
 		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
@@ -177,8 +181,6 @@
       (buffer-substring (point-min) (point-max)))))
 
 
-(defun rrb-make-temp-name (base)
-  (make-temp-name (expand-file-name base temporary-file-directory)))
 
 
 (defun rrb-run-process (command &rest args)
