@@ -466,7 +466,11 @@ module RRB
 
     def name
       if @namespace
-        @namespace.name + '#' + bare_name
+        if @node.kind_of?(MethodNode)
+          @namespace.name + '#' + bare_name
+        elsif @node.kind_of?(ClassMethodNode)
+          @namespace.name + '.' + bare_name
+        end
       else
         bare_name
       end
