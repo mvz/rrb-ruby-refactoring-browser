@@ -53,6 +53,13 @@ class TestNamespace < RUNIT::TestCase
     assert_equals( "::A::B::C", RRB::Namespace.new('A::B::C').abs_name )
     assert_equals( "", RRB::Namespace[''].abs_name )
   end
+
+  def test_nested
+    assert_equals( RRB::Namespace.new("A::B"),
+                   RRB::Namespace.new("A").nested("B") )
+    assert_equals( RRB::Namespace.new("C"),
+                   RRB::Namespace::Toplevel.nested("C") )
+  end
   
 end
 
