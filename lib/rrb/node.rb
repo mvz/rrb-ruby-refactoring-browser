@@ -380,7 +380,11 @@ module RRB
     end
     
     def bare_name
-      @node.name
+      if @node
+        @node.name
+      else
+        ""
+      end
     end
     
     def local_vars
@@ -388,7 +392,15 @@ module RRB
     end
 
     def name
-      @namespace.name + '#' + @node.name
+      if @namespace
+        @namespace.name + '#' + bare_name
+      else
+        bare_name
+      end
+    end
+
+    def self.new_toplevel
+      new( nil, nil )
     end
     
   end
