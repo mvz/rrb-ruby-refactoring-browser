@@ -254,6 +254,7 @@ module RRB
     def body
       @elements_id.last
     end
+    
     attr_reader :elements_id
   end
 
@@ -357,9 +358,14 @@ module RRB
     def inspect
       "#<RRB::NS: #{str}>"
     end
-    
+
+    def chop
+      return nil if @namespace.empty?
+      Namespace.new( @namespace[0..-2] )
+    end
   end
 
   # shortcut name
   NS = Namespace
+  
 end
