@@ -81,7 +81,7 @@ module RRB
     return dst
   end
 
-  def insert_str(src, insert_lineno, delete_range, insert_str)
+  def insert_str(src, insert_lineno, delete_range, insert_str, adjust_space)
     return nil if insert_lineno == nil && delete_range == nil
     
     dst = ''
@@ -89,7 +89,17 @@ module RRB
 
     0.upto(lines.length - 1) do |lineno|
       if lineno == insert_lineno
-        dst << insert_str
+        if adjust_space
+          def_space_num =  RRB.space_width(/^(\s*)/.match(lines[lineno])[0])
+          def_space_num += 2 if lines[lineno].strip == "end"
+
+          base_space_num = insert_str.split("\n").map{|str| RRB.space_width(/^(\s*)/.match(str)[0])}.sort[0]
+          insert_str.split("\n").each do |str|
+            dst << "\s" * def_space_num + str[base_space_num..-1] + "\n"
+          end
+        else
+          dst << insert_str
+        end
       end
       if delete_range
         unless (delete_range.head.lineno-1..delete_range.tail.lineno-1) === lineno
