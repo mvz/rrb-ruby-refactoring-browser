@@ -286,6 +286,10 @@ NullObjectパターンを参照
       
 --- elements_id
       その定数を構成する個々の識別子((<RRB::IdInfo>))の配列を返す
+
+--- body
+      その定数の「本体」(A::B::CならC)に対応する識別子((<RRB::IdInfo>))
+      を返す
       
 = RRB::NodeNamespace
 Visitorで構文木をtraverseしているときに、visit_*に与えられる現在のノードの
