@@ -8,7 +8,7 @@ class TestScriptFile_ExtractSuperclass < RUNIT::TestCase
 end
 
 class TestScript_ExtractSuperclass < RUNIT::TestCase
-  INPUT_STR = <<EOS
+  INPUT_STR1 = <<EOS
 /home/heke/temp/file1.rb#{RRB::IO_SPLITTER}
 class A
 
@@ -111,7 +111,7 @@ CONST = 3
 EOS
 
   def test_extract_superclass?
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR1 ))
     assert_equals( true,
                    script.extract_superclass?( RRB::NS[''], 'NEW',
                                                [RRB::NS['B'],
@@ -189,7 +189,7 @@ EOS
   end
 
   def test_extract_superclass
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR1 ))
 
     script.extract_superclass( RRB::NS['B'], 'NEW',
                                [RRB::NS['A::D::E'],RRB::NS['B'],RRB::NS['C']],
@@ -197,14 +197,14 @@ EOS
     result = ''; script.result_to_io(result)
     assert_equals( OUTPUT_STR1, result )
 
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR1 ))
     script.extract_superclass( RRB::NS['A'], 'NEW',
                                [RRB::NS['A::D::E'],RRB::NS['B'],RRB::NS['C']],
                                '/home/heke/temp/file1.rb', 3 )
     result = ''; script.result_to_io(result)
     assert_equals( OUTPUT_STR2, result )
 
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR1 ))
     script.extract_superclass( RRB::NS[''], 'P',
                                [RRB::NS['B'],RRB::NS['C']],
                                '/home/heke/temp/file1.rb', 12 )
@@ -219,7 +219,7 @@ EOS
     "end\n",
   ]
   def test_new_superclass_def
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR1 ))
     assert_equals( NEW_SUPERCLASS_DEF,
                    script.superclass_def( RRB::NS["A::D"],
                                           "NEW",
