@@ -64,6 +64,14 @@ class TestParser < RUNIT::TestCase
     assert_equals( %w(@@z),
 		  method_8_info.class_vars.map{|info| info.name} )
 
+    # test constant
+    method_9_info = class_info.method_info("method_9")
+    assert_equals( [ "Const1", "Const2::Const1", "::Const2::Const1",
+		    "Const4::Const5", "Const6::Const7::Const8::Const9"
+		  ],
+		  method_9_info.consts.map{|info| info.name} )
+    assert_equals( %w(TestClassB TestClassB Const6),
+		  class_info.consts.map{|info| info.name} )
   end
   
 end
