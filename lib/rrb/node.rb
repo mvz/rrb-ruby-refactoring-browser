@@ -235,15 +235,7 @@ module RRB
       @name = name
     end
 
-    def adjust_id!( lineno, pointer )
-      if @lineno > 1 then
-	raise RRBError, "eval string mustn't have \"\\n\":#{self.inspect}"
-      end
-      @lineno = lineno
-      @pointer += pointer
-    end
-
-    def head_pointer
+    def column
       @column
     end
 
@@ -290,10 +282,6 @@ module RRB
 
     def toplevel?
       @toplevel
-    end
-
-    def adjust_id!( lineno, pointer )
-      @elements_id.last.adjust_id!( lineno, pointer )
     end
 
     def body
@@ -602,7 +590,6 @@ module RRB
     end
 
     attr_reader :body, :args
-    def_delegators :@body, :adjust_id!
     def name
       body.name
     end

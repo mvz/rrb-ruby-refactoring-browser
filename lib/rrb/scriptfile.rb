@@ -177,7 +177,7 @@ module RRB
 
   def reindent_lines_node( lines, node )
     return lines if node == nil
-    reindent_lines( lines, node.range.head.head_pointer + INDENT_LEVEL )
+    reindent_lines( lines, node.range.head.column + INDENT_LEVEL )
   end
 
   def reindent_str_node( str, node )

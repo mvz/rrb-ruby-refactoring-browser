@@ -26,10 +26,10 @@ raise '#{namespace.name}##{old_method} is renamed #{@new_method}' end\n" +
 
     def rename_method_def( namespace, id, head_keyword, renamed )
       @result << Replacer.new_from_id( id, @new_method )
-      @result << Replacer.new( id.lineno, head_keyword.head_pointer,
+      @result << Replacer.new( id.lineno, head_keyword.column,
 			      "",
 			      warning_piece( namespace,
-                                             head_keyword.head_pointer,
+                                             head_keyword.column,
                                              renamed ) )
     end
 
