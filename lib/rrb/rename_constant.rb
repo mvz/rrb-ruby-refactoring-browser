@@ -80,7 +80,7 @@ module RRB
       end
       
       node.consts.each do |constinfo|
-        next if constinfo.elements_id[-1].name != @old_const_body
+        next if constinfo.body.name != @old_const_body
         
         if constinfo.toplevel?
           used_const = constinfo.name
@@ -89,7 +89,7 @@ module RRB
         end
         
         if used_const == @old_const then
-          id = constinfo.elements_id[-1]
+          id = constinfo.body
           @result << Replacer.new(id.lineno, id.pointer,
                                     @old_const_body, @new_const_body)
         end
@@ -141,7 +141,7 @@ module RRB
       end
 
       node.consts.each do |constinfo|
-        next if constinfo.elements_id[-1].name != @old_const_body
+        next if constinfo.body.name != @old_const_body
 
         if constinfo.toplevel?
           used_const = constinfo.name
