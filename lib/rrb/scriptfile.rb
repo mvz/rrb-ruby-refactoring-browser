@@ -59,6 +59,59 @@ module RRB
     end
     
   end
+
+  class RenameMethodAllVisitor < Visitor
+
+    def initialize( old_method, new_method )
+      @old_method = old_method
+      @new_method = new_method
+      @result = []
+    end
+
+    attr_reader :result
+    
+    def visit_method( namespace, method_node )
+      
+      if method_node.name == @old_method then
+	@result << Replacer.new( method_node.name_id.lineno,
+				method_node.name_id.pointer,
+				@old_method,
+				@new_method )
+      end
+
+      method_node.method_calls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end
+
+      method_node.fcalls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end
+      
+    end
+
+    def visit_toplevel( namespace, top_node )
+      top_node.method_calls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end
+
+      top_node.fcalls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end
+    end
+    
+  end
   
   class ScriptFile
 
@@ -83,6 +136,12 @@ module RRB
 					       old_var, new_var )
       @tree.accept( visitor )
       return visitor.result
+    end
+
+    def rename_method_all( old_method, new_method )
+      visitor = RenameMethodAllVisitor.new( old_method, new_method )
+      @tree.accept( visitor )
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
     
     attr_reader :new_script, :name
