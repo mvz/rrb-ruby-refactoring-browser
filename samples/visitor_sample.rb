@@ -36,6 +36,12 @@ class TestClassA
       end
     end
   end
+
+  def TestModuleA.method_6
+  end
+
+  def TestClassA.method_7
+  end
   
 end
 
