@@ -275,8 +275,9 @@ module RRB
     def match?( namespace )
       @nodes.map{|c| c.name} == namespace
     end
-    
-    def_delegators :@nodes, :map, :empty?, :+, :last
+
+    # this methods exist for test_node
+    def_delegators :@nodes, :map, :last
     
     protected
     def nodes
