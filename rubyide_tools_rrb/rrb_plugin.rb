@@ -1,6 +1,5 @@
 require 'fox'
 require 'fox/responder'
-require 'open3'
 
 require 'rrb/script'
 require 'rrb/completion'
@@ -23,8 +22,6 @@ module FreeRIDE
   module RRB
     include Fox
 
-    IO_SPLITTER = "\C-a"
-    IO_TERMINATOR = '-- END --'
     ID_OK = enum(FXDialogBox::ID_LAST, 1)[0]
     
     class RRB
@@ -33,14 +30,13 @@ module FreeRIDE
       def RRB.start(plugin)
         @@plugin = plugin
 
-        register_to_command
-        register_to_menu
+        register_command
+        register_menu
 
-        # Insert the command into the Tools menu
         plugin.transition(FreeBASE::RUNNING)
       end
 
-      def RRB.register_to_command
+      def self.register_command
         cmd_manager = @@plugin['/system/ui/commands'].manager
         cmd = cmd_manager.add('Refactor/RenameLocalVariable','&Rename Local Variable') do |slot|
           RenameLocalVariableDialog.new(@@plugin)
@@ -71,7 +67,7 @@ module FreeRIDE
         end
       end
 
-      def RRB.register_to_menu
+      def self.register_menu
         refactor_menu = @@plugin["/system/ui/components/MenuPane"].manager.add("Refactor_menu")
         refactor_menu.data = "Refactor"
         refactor_menu.attr_visible = true
@@ -109,7 +105,7 @@ module FreeRIDE
       return ::RRB::Script.new(script_files)
     end
 
-    def self.rewrite_scripts(plugin, script)
+    def self.rewrite_script(plugin, script)
       editpanes = plugin['/system/ui/components/EditPane']
       script.files.each do |script_file|
         editpanes.each_slot do |editpane|
@@ -161,13 +157,14 @@ module FreeRIDE
 
       end
       
-      def do_refactoring
+      def refactor
       end
 
       def onCmdOK(sender, sel, ptr)
         begin
-          script = do_refactoring
-#        rescue
+          script = refactor
+          FreeRIDE::RRB.rewrite_script(@plugin, script)
+        rescue
         ensure
           onCmdCancel(sender, sel, ptr)
         end
@@ -188,7 +185,7 @@ module FreeRIDE
         @txt_new_variable = FXTextField.new(txt_field, 12, nil, 0, (FRAME_SUNKEN|LAYOUT_FILL_X|LAYOUT_CENTER_Y))
         @txt_new_variable.setFocus
         
-        @old_value =  get_word_from_position
+        @old_value =  get_word_on_cursor
         @txt_new_variable.text = @old_value
 
         self.create
@@ -196,7 +193,7 @@ module FreeRIDE
         @app.runModalFor(self)
       end
 
-      def get_word_from_position
+      def get_word_on_cursor
         ext_obj = @current_pane['actions/get_ext_object'].invoke
         current_pos = ext_obj.current_pos
         text_length = ext_obj.get_text_length
@@ -215,8 +212,6 @@ module FreeRIDE
         end
         buffer[left..right]
       end
-     
-
     end
 
     class RenameLocalVariableDialog < RenameDialog
@@ -224,14 +219,14 @@ module FreeRIDE
         super(plugin, "Rename Local Variable")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         method = script.get_method_on_cursor(@filename, @cursor_line).name
         method_name = FreeRIDE::RRB.split_method_name(method)
         if script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
           script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -240,14 +235,14 @@ module FreeRIDE
         super(plugin, "Rename Instance Variable")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         namespace = script.get_class_on_cursor(@filename, @cursor_line)
 
         if script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
           script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -256,14 +251,14 @@ module FreeRIDE
         super(plugin, "Rename Class Variable")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         namespace = script.get_class_on_cursor(@filename, @cursor_line)
 
         if script.rename_class_var?(namespace, @old_value, @txt_new_variable.text)
           script.rename_class_var(namespace, @old_value, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -272,12 +267,12 @@ module FreeRIDE
         super(plugin, "Rename Global Variable")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         if script.rename_global_var?(@old_value, @txt_new_variable.text)
           script.rename_global_var(@old_value, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -286,15 +281,15 @@ module FreeRIDE
         super(plugin, "Rename Constant")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         namespace = script.get_class_on_cursor(@filename, @cursor_line)
         old_methods = [::RRB::Method.new(namespace, @old_value)]
 
         if script.rename_method?(old_methods, @txt_new_variable.text)
           script.rename_method(old_methods, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -303,15 +298,15 @@ module FreeRIDE
         super(plugin, "Rename Constant")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         namespace = script.get_class_on_cursor(@filename, @cursor_line)
         old_const = namespace.name + '::' + @old_value
 
         if script.rename_constant?(old_const, @txt_new_variable.text)
           script.rename_constant(old_const, @txt_new_variable.text)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -329,7 +324,7 @@ module FreeRIDE
         @app.runModalFor(self)
       end
 
-      def do_refactoring()
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
 
         ext_obj = @current_pane['actions/get_ext_object'].invoke
@@ -339,8 +334,8 @@ module FreeRIDE
         
         if script.extract_method?(@filename, new_method, start_line, end_line)
           script.extract_method(@filename, new_method, start_line, end_line)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
-        end        
+        end    
+        return script    
       end
     end
 
@@ -353,11 +348,9 @@ module FreeRIDE
         begin
           script = FreeRIDE::RRB.new_script(@plugin)
           candidates = script.refactable_classes
-#          result = FreeRIDE::RRB::run_compinfo(@buffer, "--classes")
         rescue
           return
         end
-#        candidates = result.split(',')
 
         FXLabel.new(hfr_destination, "Select Destination class: ", nil, JUSTIFY_LEFT|LAYOUT_CENTER_Y)
         @cmb_destination = FXComboBox.new(hfr_destination,candidates.size,candidates.size,nil,0,COMBOBOX_INSERT_FIRST|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
@@ -368,7 +361,6 @@ module FreeRIDE
         self.create
         self.show(PLACEMENT_OWNER)
         @app.runModalFor(self)
-
       end
     end
     
@@ -377,7 +369,7 @@ module FreeRIDE
         super(plugin, "Push Down Method")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         method = script.get_method_on_cursor(@filename, @cursor_line).name
         method_name = FreeRIDE::RRB::split_method_name(method)
@@ -385,8 +377,8 @@ module FreeRIDE
 
         if script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
           script.pushdown_method(method_name, new_namespace, @filename, @cursor_line)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
 
@@ -395,7 +387,7 @@ module FreeRIDE
         super(plugin, "Pull Up Method")
       end
 
-      def do_refactoring
+      def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         method = script.get_method_on_cursor(@filename, @cursor_line).name
         method_name = FreeRIDE::RRB::split_method_name(method)
@@ -403,12 +395,10 @@ module FreeRIDE
 
         if script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
           script.pullup_method(method_name, new_namespace, @filename, @cursor_line)
-          FreeRIDE::RRB.rewrite_scripts(@plugin, script)
         end
+        return script
       end
     end
-
-    
   end
 end
 
