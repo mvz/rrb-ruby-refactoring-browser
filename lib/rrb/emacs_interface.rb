@@ -25,7 +25,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --rename-instance-variable  Class old_var new_var
     * --rename-global-variable  old_var new_var
     * --extract-method path new_method start_lineno end_lineno
-    * --rename-method old_method new_method classes...
+    * --rename-method \"old-class1 old-class2...\" old_method new_method
     * --rename-constant old_const new_const
     * --pullup-method old_class method new_class
     * --pushdown-method old_class method new_class
@@ -197,6 +197,10 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 
     def output
       @output.call
+    end
+
+    def get_last_error
+      @script.error_message
     end
     
   end
