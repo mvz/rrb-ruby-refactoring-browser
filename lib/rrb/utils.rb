@@ -13,6 +13,17 @@ module Enumerable
   
 end
 
+class IO
+
+  if defined?(:read) then
+    def IO.read( path )
+      open( path ) do |f|
+	f.read
+      end
+    end
+  end
+end
+
 module RRB
   
   class RRBError < StandardError
