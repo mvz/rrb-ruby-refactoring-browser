@@ -179,7 +179,6 @@ static void top_local_setup();
 #endif /* !RIPPER */
 
 #define RE_OPTION_ONCE 0x80
-
 #define NODE_STRTERM NODE_ZARRAY	/* nothing to gc */
 #define NODE_HEREDOC NODE_ARRAY 	/* 1, 3 to gc */
 #define SIGN_EXTEND(x,n) (((1<<(n)-1)^((x)&~(~0<<(n))))-(1<<(n)-1))
@@ -301,6 +300,7 @@ static VALUE ripper_dispatch2 _((struct ripper_params*,ID,VALUE,VALUE));
 static VALUE ripper_dispatch3 _((struct ripper_params*,ID,VALUE,VALUE,VALUE));
 static VALUE ripper_dispatch4 _((struct ripper_params*,ID,VALUE,VALUE,VALUE,VALUE));
 static VALUE ripper_dispatch5 _((struct ripper_params*,ID,VALUE,VALUE,VALUE,VALUE,VALUE));
+static VALUE ripper_dispatch7 _((struct ripper_params*,ID,VALUE,VALUE,VALUE,VALUE,VALUE,VALUE,VALUE)); 
 
 #define dispatch0(n)            ripper_dispatch0(parser, TOKEN_PASTE(ripper_id_, n))
 #define dispatch1(n,a)          ripper_dispatch1(parser, TOKEN_PASTE(ripper_id_, n), a)
@@ -308,6 +308,7 @@ static VALUE ripper_dispatch5 _((struct ripper_params*,ID,VALUE,VALUE,VALUE,VALU
 #define dispatch3(n,a,b,c)      ripper_dispatch3(parser, TOKEN_PASTE(ripper_id_, n), a, b, c)
 #define dispatch4(n,a,b,c,d)    ripper_dispatch4(parser, TOKEN_PASTE(ripper_id_, n), a, b, c, d)
 #define dispatch5(n,a,b,c,d,e)  ripper_dispatch5(parser, TOKEN_PASTE(ripper_id_, n), a, b, c, d, e)
+#define dispatch7(n,a,b,c,d,e,f,g)  ripper_dispatch7(parser, TOKEN_PASTE(ripper_id_, n), a, b, c, d, e, f, g) 
 
 #define yyparse ripper_yyparse
 #define yydebug ripper_yydebug
@@ -456,7 +457,7 @@ static void ripper_rb_compile_error _((struct ripper_params*, const char *fmt, .
 	k__LINE__
 	k__FILE__
 
-%token <id>   tIDENTIFIER tFID tGVAR tIVAR tCONSTANT tCVAR tLABEL
+%token <val>   tIDENTIFIER tFID tGVAR tIVAR tCONSTANT tCVAR tLABEL
 %token <node> tINTEGER tFLOAT tSTRING_CONTENT
 %token <node> tNTH_REF tBACK_REF
 %token <num>  tREGEXP_END
@@ -2675,7 +2676,7 @@ primary		: literal
 		        local_pop();
 			class_nest--;
 		    /*%
-			$$ = dispatch3(class, $2, $3, $5);
+			$$ = dispatch5(class, $1, $2, $3, $5, $6);
 			class_nest--;
 		    %*/
 		    }
@@ -2712,7 +2713,7 @@ primary		: literal
 		        in_def = $<num>4;
 		        in_single = $<num>6;
 		    /*%
-			$$ = dispatch2(sclass, $3, $7);
+			$$ = dispatch4(sclass, $1, $3, $7, $8);
 			class_nest--;
 		        in_def = $<val>4;
 		        in_single = $<val>6;
@@ -2741,7 +2742,7 @@ primary		: literal
 		        local_pop();
 			class_nest--;
 		    /*%
-			$$ = dispatch2(module, $2, $4);
+			$$ = dispatch4(module, $1, $2, $4, $5);
 			class_nest--;
 		    %*/
 		    }
@@ -2771,7 +2772,7 @@ primary		: literal
 			in_def--;
 			cur_mid = $<id>3;
 		    /*%
-			$$ = dispatch3(def, $2, $4, $5);
+			$$ = dispatch5(def, $1, $2, $4, $5, $6);
 			class_nest--;
 			cur_mid = $<id>3;
 		    %*/
@@ -2799,7 +2800,7 @@ primary		: literal
 		        local_pop();
 			in_single--;
 		    /*%
-			$$ = dispatch5(defs, $2, $3, $5, $7, $8);
+			$$ = dispatch7(defs, $1, $2, $3, $5, $7, $8, $9);
 			in_single--;
 		    %*/
 		    }
@@ -3688,7 +3689,7 @@ variable	: tIDENTIFIER
 		| tCONSTANT
 		| tCVAR
 		| kNIL {$$ = symbol(kNIL);}
-		| kSELF {$$ = symbol(kSELF);}
+                | kSELF {$$ = symbol(kSELF);}
 		| kTRUE {$$ = symbol(kTRUE);}
 		| kFALSE {$$ = symbol(kFALSE);}
 		| k__FILE__ {$$ = symbol(k__FILE__);}
@@ -4234,22 +4235,24 @@ ripper_dispatch_space(parser)
     parser->old_lex_p = lex_p;
 }
 
-static void
+static VALUE
 ripper_dispatch_nonspace(parser, t)
     struct ripper_params *parser;
     int t;
 {
+    VALUE result = Qnil;
     if (lex_p > parser->token_head) {
         long len = lex_p - parser->token_head;
         VALUE str = rb_str_new(parser->token_head, len);
         ID event = ripper_token2eventid(t);
 
         ripper_dispatch2(parser, ripper_id_scan, ID2SYM(event), rb_str_dup(str));
-        ripper_dispatch1(parser, event, str);
+        result = ripper_dispatch1(parser, event, str);
         parser->current_position += len;
         parser->current_column += len;
     }
     parser->token_head = lex_p;
+    return result;
 }
 
 static void
@@ -5337,13 +5340,15 @@ ripper_yylex(lval, p)
 {
     struct ripper_params *parser = (struct ripper_params*)p;
     int t;
-
+    
     parser->ripper_yylval = (union tmpyystype*)lval;
     parser->ripper_yylval->val = Qundef;
     t = ripper_yylex0(parser);
     if (t != 0) ripper_flush_buffer(parser, t);
     ripper_dispatch_space(parser);
-    if (t != 0) ripper_dispatch_nonspace(parser, t);
+    if (t != 0){
+      yylval.val = ripper_dispatch_nonspace(parser, t);
+    }
     return t;
 }
 #endif /* RIPPER */
@@ -8334,6 +8339,22 @@ ripper_dispatch5(parser, mid, a, b, c, d, e)
     validate(d);
     validate(e);
     return rb_funcall(parser->value, mid, 5, a, b, c, d, e);
+}
+
+static VALUE
+ripper_dispatch7(parser, mid, a, b, c, d, e, f, g)
+    struct ripper_params *parser;
+    ID mid;
+    VALUE a, b, c, d, e, f, g;
+{
+    validate(a);
+    validate(b);
+    validate(c);
+    validate(d);
+    validate(e);
+    validate(f);
+    validate(g);
+    return rb_funcall(parser->value, mid, 7, a, b, c, d, e, f, g);
 }
 
 static struct kw_assoc {
