@@ -33,7 +33,7 @@ module RRB
     end
 
     def add_new_superclass( namespace, new_class, old_superclass, dumped_info )
-      @new_script << new_superclass_def(namespace, new_class, old_superclass, dumped_info ).join("\n")
+      @new_script << new_superclass_def(namespace, new_class, old_superclass, dumped_info )
     end
 
     def new_superclass_def( namespace, new_class, old_superclass, dumped_info )
@@ -48,7 +48,7 @@ module RRB
       end
 
       result.push("")
-      result
+      result.join("\n")
     end
     
     def indent_lines( lines, lv = 1 )
