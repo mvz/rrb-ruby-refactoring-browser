@@ -30,7 +30,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     * --rename-method \"old-class1 old-class2...\" old_method new_method
     * --rename-constant old_const new_const
     * --pullup-method old_class#method new_class path lineno
-    * --pushdown-method old_cla<ss#method new_class path lineno
+    * --pushdown-method old_class#method new_class path lineno
     * --remove-parameter class#method parameter
     * --extract-superclass namespace new_class \"target-class1 target-class2...\" path lineno
 
