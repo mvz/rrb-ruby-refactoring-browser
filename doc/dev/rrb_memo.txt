@@ -56,3 +56,28 @@
   
 * Emacs lispについて
   「`」について http://www.mew.org/~kazu/doc/elisp/backquote.html
+
+* Extract Methodについて
+  内部イテレータはAssignedでないローカル変数と扱われるため、yieldが使われていると、
+  引数、戻り値に内部イテレータが含まれてしまい、うまく関数抽出ができない
+  具体的には、
+  class A
+    def foo
+      xs = [1, 2, 3]
+      xs.each {|x| p x}
+      xs.each {|x| p x}
+    end
+  end
+  で、3,4行目をextract_methodすると、
+  class A
+    def bar(x)
+      xs = [1, 2, 3]
+      xs.each {|x| p x}
+      return xs, x
+    end 
+    def foo
+      xs, x = bar(x)
+      xs.each {|x| p x}
+    end
+  end
+  となってしまう
