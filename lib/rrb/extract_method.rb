@@ -113,15 +113,7 @@ module RRB
     end
   end
 
-  class Script
-
-    
-    def get_real_emethod_owner(namespace, new_method)
-      @files.inject(namespace ) do |owner,scriptfile|
-	scriptfile.get_ancestral_emethod_owner(owner, get_dumped_info, new_method)
-      end
-    end    
-    
+  class Script    
     def extract_method(path, new_method, start_lineno, end_lineno)
       @files.each do |scriptfile|
 	next unless scriptfile.path == path
