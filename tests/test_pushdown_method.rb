@@ -66,15 +66,16 @@ class Derived < Base
 end
 
 class Derived < Base
-
+  def Derived.fuga
+  end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
 class Derived < Base
-
 end
 \C-a/home/yuichi/work/rrb/private/test3.rb\C-a
 class Base
-
+  def Base.fuga
+  end
 end
 \C-a-- END --\C-a
 "
@@ -91,7 +92,8 @@ class Derived < Base
 end
 
 class Derived < Base
-
+  def Derived.fuga
+  end
 end
 \C-a-- END --\C-a
 "
@@ -109,6 +111,8 @@ end
 class Derived < Base
   def hoge
   end
+  def Derived.fuga
+  end
 end
 \C-a-- END --\C-a
 "
@@ -124,7 +128,8 @@ class Derived < Base
 end
 
 class Derived < Base
-
+  def Derived.fuga
+  end
 end
 \C-a/home/yuichi/work/rrb/private/test2.rb\C-a
 class Derived < Base
@@ -146,7 +151,8 @@ class Derived < Base
 end
 
 class Derived < Base
-
+  def Derived.fuga
+  end
 end
 \C-a-- END --\C-a
 "
@@ -179,6 +185,11 @@ end
                   script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'hoge'),
                                           RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
+
+    assert_equals(false,
+                  script.pushdown_method?(RRB::CMN.new(RRB::NS['Base'], 'fuga'),
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
+    assert_equals("Derived.fuga: already defined at Derived\n", script.error_message)
 
   end
 
