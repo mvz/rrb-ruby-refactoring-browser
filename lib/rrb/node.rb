@@ -1,3 +1,4 @@
+require 'forwardable'
 
 module RRB
 
@@ -89,9 +90,9 @@ module RRB
     end
     
     def accept( visitor )
-      visitor.visit_toplevel( [], self )
-      super visitor, []
-      accept_children( visitor, [] )
+      visitor.visit_toplevel( NodeNamespace.new_toplevel, self )
+      super visitor, NodeNamespace.new_toplevel
+      accept_children( visitor, NodeNamespace.new_toplevel )
     end
     
   end
@@ -102,9 +103,7 @@ module RRB
     def accept( visitor, namespace )
       visitor.visit_class( namespace, self )
       super
-      namespace.push self
-      accept_children( visitor, namespace )
-      namespace.pop 
+      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
 
   end
@@ -181,9 +180,7 @@ module RRB
     def accept( visitor, namespace )
       visitor.visit_singleton_class( namespace, self )
       super
-      namespace.push self
-      accept_children( visitor, namespace )
-      namespace.pop
+      accept_children( visitor, NodeNamespace.new( self, namespace ) )
     end
     
   end
@@ -252,6 +249,33 @@ module RRB
     end
     
     attr_reader :elements_id
+  end
+
+  class NodeNamespace
+    extend Forwardable
+
+    def initialize( cur_node, cur_namespace )
+      if cur_node.nil? then
+	@nodes = []
+      elsif cur_namespace.nil? then
+	@nodes = [ cur_node ]
+      else
+	@nodes = cur_namespace.nodes + [ cur_node ]
+      end
+    end
+
+    def NodeNamespace.new_toplevel
+      new( nil, nil )
+    end
+
+    
+    def_delegators :@nodes, :map, :empty?, :+, :last
+    
+    protected
+    def nodes
+      @nodes
+    end
+    
   end
   
 end
