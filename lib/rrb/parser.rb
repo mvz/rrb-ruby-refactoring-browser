@@ -107,8 +107,55 @@ module RRB
 	@scope_stack.last.fcalls << var
       end
     end
+
+    def on__add_eval_string( context, str )
+      @eval_str = str
+    end
+
+    def on__eval_string_end( context, str )
+      if str == "}"
+	mcalls, fcalls, lvars =
+	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
+				   pointer - @eval_str.size - 1  )
+      else
+	mcalls, fcalls, lvars =
+	  EvalStringParser.new.run( @eval_str, @scope_stack.last, lineno,
+				   pointer - @eval_str.size )
+      end
+      @scope_stack.last.method_calls.concat mcalls
+      @scope_stack.last.fcalls.concat fcalls
+      @scope_stack.last.local_vars.concat lvars
+    end
     
   end
   
+  class EvalStringParser < Parser
+
+    def adjust_id( ids, lineno, pointer )
+      ids.map do |id|
+	if id.lineno > 1 then
+	  p id
+	  raise RRBError, "eval string mustn't have \"\\n\""
+	end
+	IdInfo.new( id.type, lineno, id.pointer + pointer, id.name )
+      end
+    end
+    
+    def run( input, scope, lineno, pointer )
+      @scope_stack = Array.new
+      @scope_stack.push Marshal.load( Marshal.dump(scope) )
+      self.parse( input )
+
+      method_calls = @scope_stack[0].method_calls[scope.method_calls.size..-1]
+      fcalls = @scope_stack[0].fcalls[scope.fcalls.size..-1]
+      local_vars = @scope_stack[0].local_vars[scope.local_vars.size..-1]
+
+      method_calls = adjust_id( method_calls, lineno, pointer )
+      fcalls = adjust_id( fcalls, lineno, pointer )
+      local_vars = adjust_id( local_vars, lineno, pointer ) 
+      return method_calls, fcalls, local_vars
+    end
+    
+  end
   
 end
