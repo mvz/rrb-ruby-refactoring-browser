@@ -8,7 +8,7 @@ class TestNamespace < RUNIT::TestCase
     assert_exception( TypeError ){ RRB::Namespace.new( 3 ) }
   end
   
-  def test_str
+  def test_name
     assert_equals( "A::B::C", RRB::Namespace.new(['A','B','C']).name )
     assert_equals( "A::B::C", RRB::Namespace['A::B::C'].name )
   end
@@ -47,6 +47,13 @@ class TestNamespace < RUNIT::TestCase
     assert( RRB::Namespace.new("A").contain?(RRB::Namespace.new("A")) )
     assert( !RRB::Namespace.new("A::B").contain?(RRB::Namespace.new("A")) )
   end
+
+  def test_abs_name
+    assert_equals( "::A", RRB::Namespace.new('A').abs_name )
+    assert_equals( "::A::B::C", RRB::Namespace.new('A::B::C').abs_name )
+    assert_equals( "", RRB::Namespace[''].abs_name )
+  end
+  
 end
 
 if $0 == __FILE__
