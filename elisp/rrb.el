@@ -137,7 +137,7 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Completion
 
 ;;;
-;;; completion type-1
+;;; completion type-1 ( str ; str,str,...,str)
 ;;
 ;; rrb_compinfo output example
 ;;
@@ -169,7 +169,7 @@ matches with rrb-ruby-file-name-regexp'"
  	  (read-from-minibuffer prompt3))))
 
 ;;;
-;;; completion type-2
+;;; completion type-2  ( str,str,...,str, )
 ;;
 ;; rrb_compinfo output example
 ;;
@@ -254,6 +254,20 @@ matches with rrb-ruby-file-name-regexp'"
 		 (rrb-comp-read-rename-instance-variable)))
   (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
+
+;;;; Refactoring: Rename global variable
+(defun rrb-comp-read-rename-global-variable ()
+  "compleion read for rename global variable"
+  (rrb-comp-read-type-2 "--global-vars"
+			"Old global variable: " "New global variable: "))
+
+(defun rrb-rename-global-variable (old-var new-var)
+  "Refactor code: Rename global variable"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-global-variable)))
+  (save-current-buffer
+    (rrb-do-refactoring "--rename-global-variable" old-var new-var)))
 
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
