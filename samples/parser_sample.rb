@@ -63,6 +63,7 @@ class TestClassA
       puts self.ConstCall3
     end
     p Const6::Const7::Const8::Const9
+    heke = "str #{::Const10::Const11 ** Const12}"
   end
 
   Const6 = 4
