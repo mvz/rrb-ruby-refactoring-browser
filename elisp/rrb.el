@@ -38,6 +38,8 @@
 (defvar rrb-error-buffer (get-buffer-create " *rrb-error*"))
 (defvar rrb-default-value-buffer (get-buffer-create " *rrb-default-value*"))
 (defvar rrb-undo-buffer (get-buffer-create " *rrb-undo*"))
+(defvar rrb-not-modified-file-buffer 
+  (get-buffer-create " *rrb-not-modified-file"))
 
 (defvar rrb-undo-count 0)
 (defvar rrb-now-refactoring nil)
@@ -354,7 +356,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun rrb-undo-base (undo-file-name undo-not-modified-file-name)
+(defun rrb-undo-base (undo-file-name not-modified-file-name)
   "Base of Undo and Redo of the last refactoring"
   (if (file-readable-p undo-file-name)
       (progn 
@@ -365,7 +367,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer))
 	  (rrb-output-to-buffer-and-reset-point (rrb-buffer-point-alist))
 	  (rrb-clean-buffer rrb-output-buffer)
-	  (insert-file-contents undo-not-modified-file-name)
+	  (insert-file-contents not-modified-file-name)
 	  (rrb-each-script-buffer 
 	   (lambda (file-name file-contents)
 	     (set-buffer (get-file-buffer file-name))
@@ -377,30 +379,31 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       nil)))
 
 (defun rrb-create-undo-file (buffer-list)
-  (save-current-buffer
-    (set-buffer rrb-undo-buffer)
-    (rrb-clean-buffer rrb-undo-buffer)
-    (rrb-setup-buffer rrb-undo-buffer buffer-list)
-    (if (not (file-exists-p rrb-undo-directory))
-	(make-directory rrb-undo-directory))
-    (if (file-accessible-directory-p rrb-undo-directory)
-	(write-region (point-min) (point-max)
-		      (rrb-make-undo-file-name rrb-undo-count) nil 0 nil))
-    (rrb-clean-buffer rrb-undo-buffer)
-    (rrb-setup-buffer rrb-undo-buffer
-		      (rrb-find-all
-		       (lambda (buffer) (not (buffer-modified-p buffer)))
-		       buffer-list))
-    (if (file-accessible-directory-p rrb-undo-directory)
-	(write-region (point-min) (point-max)
-		      (rrb-make-undo-not-modified-file-name rrb-undo-count)
-		      nil 0 nil))))
+  (if (not (file-exists-p rrb-undo-directory))
+      (make-directory rrb-undo-directory))
+  (if (file-accessible-directory-p rrb-undo-directory)
+      (progn
+	(save-current-buffer
+	  (set-buffer rrb-undo-buffer)
+	  (rrb-clean-buffer rrb-undo-buffer)
+	  (rrb-setup-buffer rrb-undo-buffer buffer-list)
+	  (write-region (point-min) (point-max)
+			(rrb-make-undo-file-name rrb-undo-count) nil 0 nil)
+	  (set-buffer rrb-not-modified-file-buffer)
+	  (rrb-clean-buffer rrb-not-modified-file-buffer)
+	  (rrb-setup-buffer rrb-not-modified-file-buffer
+			    (rrb-find-all
+			     (lambda (buffer) (not (buffer-modified-p buffer)))
+			     buffer-list))
+	  (write-region (point-min) (point-max)
+			(rrb-make-not-modified-file-name rrb-undo-count)
+			nil 0 nil)))))
 
 (defun rrb-make-undo-file-name (undo-count)
   (expand-file-name (number-to-string undo-count)
 		    rrb-undo-directory))
 
-(defun rrb-make-undo-not-modified-file-name (undo-count)
+(defun rrb-make-not-modified-file-name (undo-count)
   (expand-file-name (format "%s.%s" 
 			    (number-to-string undo-count)
 			    "nmod")
@@ -410,13 +413,11 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (if (and (file-exists-p rrb-undo-directory)
 	   (file-accessible-directory-p rrb-undo-directory))
       (progn
-	(let ((sub-files 
-	       (directory-files rrb-undo-directory t)))
-	  (while sub-files
-	    (let ((sub-file (car sub-files)))
-	      (if (not (file-directory-p sub-file))
-		  (delete-file sub-file)))
-	    (setq sub-files (cdr sub-files))))
+	(rrb-each 
+	 (lambda (sub-file)
+	   (if (not (file-directory-p sub-file))
+	       (delete-file sub-file)))
+	 (directory-files rrb-undo-directory t))
 	(delete-directory rrb-undo-directory)))
   (setq rrb-undo-count 0))
 
@@ -432,7 +433,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-prepare-refactoring)
   (let ((prev-undo-count (- rrb-undo-count 1)))
     (if (rrb-undo-base (rrb-make-undo-file-name prev-undo-count)
-		       (rrb-make-undo-not-modified-file-name prev-undo-count))
+		       (rrb-make-not-modified-file-name prev-undo-count))
 	(setq rrb-undo-count prev-undo-count)))
   (rrb-terminate-refactoring))
 					  
@@ -445,7 +446,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-prepare-refactoring)
   (let ((next-undo-count (+ rrb-undo-count 1)))
     (if (rrb-undo-base (rrb-make-undo-file-name next-undo-count)
-		       (rrb-make-undo-not-modified-file-name next-undo-count))
+		       (rrb-make-not-modified-file-name next-undo-count))
 	(setq rrb-undo-count next-undo-count)))
   (rrb-terminate-refactoring))
 	
