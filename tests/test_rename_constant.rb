@@ -121,6 +121,7 @@ EOD
 
   def test_rename_constant?
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ) )
+    assert_equals(true, script.rename_constant?('A::Hoge', 'HogeHoge'))
     assert_equals(false, script.rename_constant?('A::Hoge', 'Hoge2'))
     assert_equals(false, script.rename_constant?('::E', 'D'))
   end
