@@ -47,6 +47,72 @@ EOS
     assert_equals( AFTER_REPLACE,
 		  RRB.replace_str( BEFORE_REPLACE, REPLACE_INFO) )
   end
+
+  def test_expand_tabs
+    assert_equals( " "*8 + "heke" , RRB.expand_tabs("\theke") )
+    assert_equals( " "*12 + "heke\n", RRB.expand_tabs("\t    heke\n") )
+    assert_equals( " "*16, RRB.expand_tabs( "\t\t"))
+    assert_equals( " "*16, RRB.expand_tabs( "\t \t"))
+    assert_equals( "heke\t\n", RRB.expand_tabs( "heke\t\n" ) )
+  end
+
+BEFORE_REINDENT1 = <<EOS.split(/^/)
+\t      def hek
+\t\treturn true
+\t      end
+EOS
+  
+BEFORE_REINDENT2 = <<EOS.split(/^/)
+def hek
+  return true
+end
+EOS
+
+AFTER_REINDENT16 = <<EOS.split(/^/)
+                def hek
+                  return true
+                end
+EOS
+
+AFTER_REINDENT12 = <<EOS.split(/^/)
+            def hek
+              return true
+            end
+EOS
+
+AFTER_REINDENT2 = <<EOS.split(/^/)
+  def hek
+    return true
+  end
+EOS
+
+  def test_reindent_lines
+    assert_equals( AFTER_REINDENT16,
+                   RRB.reindent_lines( BEFORE_REINDENT1, 16 ) )
+    assert_equals( AFTER_REINDENT12,
+                   RRB.reindent_lines( BEFORE_REINDENT1, 12 ) )
+    assert_equals( AFTER_REINDENT2,
+                   RRB.reindent_lines( BEFORE_REINDENT2, 2 ) )
+  end
+
+  def test_count_indent_str
+    assert_equals( 0, RRB.count_indent_str( "def heke\n" ) )
+    assert_equals( 14, RRB.count_indent_str( "\t      def hek\n" ) )
+  end
+
+  def test_count_indent
+    assert_equals( 0, RRB.count_indent( BEFORE_REINDENT2 ) )
+    assert_equals( 14, RRB.count_indent( BEFORE_REINDENT1 ) )
+    assert_equals( 0, RRB.count_indent( ["\t\n", "  \t \t\n", "  \t\t\t"] ) )
+    assert_equals( 3, RRB.count_indent( ["\n", "\t \t\n", "   heke\n"] ) )
+  end
+
+  def test_delete_indent
+    assert_equals( BEFORE_REINDENT2,
+                   RRB.delete_indent( BEFORE_REINDENT1 ) )
+    assert_equals( BEFORE_REINDENT2,
+                   RRB.delete_indent( BEFORE_REINDENT2 ) )
+  end
   
 end
 
