@@ -1,3 +1,10 @@
+* version 0.0.3
+クラスメソッドの取り扱いを改良した
+Emacs interfaceのundoを改良した
+インストーラを附属した
+FreeRIDE用インターフェースの附属
+リファクタリングとバグ修正
+
 * version 0.0.2
 リファクタリング"Extract superclass"が利用できるようになった
 様々なバグを修正

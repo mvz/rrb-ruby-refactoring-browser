@@ -3,8 +3,7 @@ Ruby Refactoring Browser
 = What's this?
 This software is a development tool working on Emacs that allow you to refactor
 Ruby code.
-This is alpha version and no detailed installation and documents are
-available.
+This is alpha version and no documents are available.
 
 = Requirements
 Ruby 1.6.x + ruby_shim or Ruby 1.8.x.
@@ -14,8 +13,12 @@ Emacs 20.7 or later.
 Emacs 20.7.2/21.3, Ruby 1.6.7/1.8.0 on Debian GNU/Linux.
 
 = Installation
-Please see doc/dev/init.en.rd .
+Type these lines on command line to install core libraries:
+  $ ruby setup.rb config
+  $ ruby setup.rb setup
+  # ruby setup.rb install
 
+So, you should copy elisp/rrb.el in load-path.
 = Documentation
 Sorry.
 No English document is prepared yet.
