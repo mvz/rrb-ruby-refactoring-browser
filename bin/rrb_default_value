@@ -44,5 +44,10 @@ Usage: rrb_default_value PATH LINENO INFOTYPE IOTYPE
     if method
       print method.name
     end
+  when '--bare-name'
+    method = script.get_method_on_cursor(path, lineno)
+    if method
+      print method.name.split('#')[-1]
+    end
   end  
 end
