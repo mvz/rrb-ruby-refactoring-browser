@@ -315,19 +315,18 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;
 (defun rrb-comp-read-rename-method ()
   "completion read for rename method, etc.."
-  (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
-    (error "rrb_info: fail to get information %s" (rrb-error-message)))
   (let ((retval-1 "")
 	(result)
-	(looped nil))
+	(default-arg (rrb-get-value-on-cursor "--class")))
+    (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
     (while (progn 
 	     (setq result (completing-read 
 			   "Refactored classes(type just RET to finish): "
 			   (rrb-complist-type-2)
-			   nil nil 
-			   (if looped "" (rrb-get-value-on-cursor "--class"))))
+			   nil nil default-arg))
 	     (not (string= result "")))
-      (setq looped t)
+      (setq default-arg "")
       (setq retval-1 (format "%s %s" retval-1 result))
       (message (format "%s %s" "inputed data: " retval-1))
       (sit-for 1))
@@ -519,9 +518,10 @@ matches with rrb-ruby-file-name-regexp'"
 	(new-class (read-from-minibuffer "New Class: ")))
     (let ((targets "")
 	  (result))
+      (when (/= (rrb-run-process "rrb_compinfo" "--classes") 0)
+	(error "rrb_info: fail to get information %s" (rrb-error-message)))
       (while (progn 
-	       (setq result (read-from-minibuffer 
-			     "Targets(type just RET to finish): "))
+	       (setq result (completing-read "Targets(type just RET to finish): " (rrb-complist-type-2)))
 	       (not (string= result "")))
 	(setq targets (format "%s %s" targets result))
 	(message (format "%s %s" "inputed data: " targets))
