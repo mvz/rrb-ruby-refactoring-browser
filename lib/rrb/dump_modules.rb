@@ -46,54 +46,54 @@ ObjectSpace.each_object( Module ) do |mod|
     print "unknown"
   end
   
-  print "#"
+  print ";"
 
   # 1 class hierarchy( first of this is name of this class )
   mod.ancestors.each do |ancestor|
-    print ancestor.name, ";"
+    print ancestor.name, ","
   end
 
-  print "#"
+  print ";"
 
   # 2 public instance methods
   mod.public_instance_methods(false).each do |method_name|
-    print method_name, ";"
+    print method_name, ","
   end
 
-  print "#"
+  print ";"
 
   # 3 protected instance methods
   mod.protected_instance_methods(false).each do |method_name|
-    print method_name, ";"
+    print method_name, ","
   end
 
-  print "#"
+  print ";"
 
   # 4 private instance methods
   mod.private_instance_methods(false).each do |method_name|
-    print method_name, ";"
+    print method_name, ","
   end
 
-  print "#"
+  print ";"
 
   # 5 singleton_methods
   if RUBY_VERSION >= '1.8.0' then
     mod.singleton_methods(false).each do |method_name|
-      print method_name, ";"
+      print method_name, ","
     end
   else
     class << mod
       public_instance_methods(false).each do |method_name|
-        print method_name, ";"
+        print method_name, ","
       end
     end
   end
 
-  print '#'
+  print ";"
   
   # 6 constants
   mod.constants_not_inherited_too.each do |const_name|
-    print const_name, ";"
+    print const_name, ","
   end
   
   print "\n"
