@@ -22,31 +22,32 @@ module RRB
       return false unless @dumped_info[namespace].subclass_of?(@old_namespace)
       return false if @dumped_info[namespace].subclass_of?(@new_namespace)
       return false unless node.fcalls.any?{|fcall| fcall.name == @method_name.bare_name}
-      return true
-
+      
       return true
     end
 
+    def called_method(namespace, node)
+      node.method_factory.new(namespace, @method_name.bare_name)
+    end
+    
+    def check_node(namespace, node)
+      if @dumped_info.real_method(called_method(namespace, node)) == @method_name
+        @result = false
+        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
+      end
+    end
+    
     def visit_method(namespace, node)
       return unless @method_name.instance_method?
       return unless check_condition(namespace, node)
 
-      called_method = Method.new( namespace, @method_name.bare_name )
-      if @dumped_info.real_method( called_method ) == @method_name
-        @result = false
-        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
-      end
+      check_node(namespace, node)
     end
 
     def visit_class_method(namespace, node)
       return unless @method_name.class_method?
       return unless check_condition(namespace, node)
-@result = false
-      called_method = ClassMethod.new( namespace, @method_name.bare_name )
-      if @dumped_info.real_class_method( called_method ) == @method_name
-        @result = false
-        @error_message = "#{namespace.name} calls #{@method_name.name}\n"
-      end
+      check_node(namespace, node)
     end
   end
 
@@ -55,17 +56,16 @@ module RRB
 
     def pushdown_method( method_name, new_namespace, 
                         pushdowned_method,
-                        ignore_new_namespace, specified_lineno)
+                        lineno)
       if method_name.class_method?
         pushdowned_method.gsub!(/^((\s)*def\s+)(.*)\./) {|s| $1 + new_namespace.name + '.'}
       end
       
-      specified_lineno = nil if ignore_new_namespace
-      visitor = MoveMethodVisitor.new( method_name, specified_lineno )
+      visitor = MoveMethodVisitor.new( method_name, lineno )
       @tree.accept( visitor )
       pushdowned_method =
         RRB.reindent_str_node( pushdowned_method, visitor.inserted )
-      @new_script = RRB.insert_str(@input, specified_lineno,
+      @new_script = RRB.insert_str(@input, lineno,
                                    visitor.delete_range, pushdowned_method )
     end
 
@@ -85,8 +85,7 @@ module RRB
       @files.each do |scriptfile|
 	scriptfile.pushdown_method(method_name,
                                    new_namespace, pushdowned_method, 
-                                   scriptfile.path != path,
-                                   lineno)
+                                   (scriptfile.path == path) ? lineno : nil )
       end      
     end
 
@@ -94,7 +93,7 @@ module RRB
                          path, lineno)
       old_namespace = method_name.namespace
       unless get_dumped_info.exist?(method_name)
-        @error_message = "#{method_name.name}: no definition in #{old_namespace.name}\n"
+        @error_message = "#{method_name.name}: no definition"
         return false
       end
 
@@ -103,18 +102,11 @@ module RRB
         return false
       end
 
-      if method_name.instance_method?
-        if get_dumped_info[new_namespace].has_method?(method_name.bare_name, false)
-          @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
-          return false
-        end
-      elsif method_name.class_method?
-        if get_dumped_info[new_namespace].has_class_method?(method_name.bare_name, false)
-          @error_message = "#{new_namespace.name}.#{method_name.bare_name}: already defined at #{new_namespace.name}\n"
-          return false
-        end
+      new_method = method_name.ns_replaced(new_namespace)
+      if get_dumped_info.exist?(new_method, false)
+        @error_message = "#{new_method.name}: already defined"
+        return false
       end
-
 
       target_class = class_on(path, lineno)
       unless target_class && new_namespace == target_class
