@@ -29,6 +29,31 @@ CONST = 3
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
 EOS
 
+  OUTPUT_STR = <<EOS
+/home/heke/temp/file1.rb#{RRB::IO_SPLITTER}
+class A
+  class D
+    class E < ::B::NEW
+      def heke
+        p CONST
+      end
+    end
+  end
+end
+
+class B < ::B::NEW
+end
+
+class C < ::B::NEW
+end
+CONST = 3
+class B
+  class NEW < ::A
+  end
+end
+#{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
+EOS
+
   def test_extract_superclass?
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
     assert_equals( true,
@@ -59,6 +84,17 @@ EOS
                    script.extract_superclass?( RRB::NS['A::D'], 'D',
                                                [RRB::NS['B']] )) 
   end
+
+  def test_extract_superclass
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
+
+    script.extract_superclass( RRB::NS['B'], 'NEW',
+                               [RRB::NS['A::D::E'],RRB::NS['B'],RRB::NS['C']],
+                               '/home/heke/temp/file1.rb' )
+    result = ''; script.result_to_io(result)
+    assert_equals( OUTPUT_STR, result )
+  end
+  
 end
 
 if $0 == __FILE__
