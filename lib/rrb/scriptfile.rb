@@ -1,4 +1,5 @@
 require 'rrb/parser'
+require 'rrb/default'
 
 module RRB
 
@@ -142,5 +143,42 @@ module RRB
   def valid_method?( id )
     /^[a-z_][a-zA-Z0-9_]*[!?]?$/ =~ id && !keyword?( id )
   end
+
+  def space_width( str )
+    result = 0
+    str.each_byte do |c|
+      if c == ?\t then
+        result = (result/TAB_WIDTH + 1)*TAB_WIDTH
+      else
+        result += 1
+      end
+    end
+    result
+  end
+
+  def count_indent_str( str )
+    space_width(/\A(\s*)/.match(str)[0])
+  end
+  
+  def expand_tabs( str )
+    /\A([\t ]*)((|[^\t ].*)\n?)\z/ =~ str
+    " " * space_width($1) + $2
+  end
+
+  def count_indent( lines )
+    return 0 if lines.empty?
+    return count_indent( lines[1..-1] ) if /\A(\s*)\Z/ =~ lines[0]
+    count_indent_str( lines[0] )
+  end
+
+  def delete_indent( lines )
+    level = count_indent( lines )
+    lines.map{|line| expand_tabs(line)[level..-1] || ""}
+  end
+  
+  def reindent_lines( lines, level )
+    delete_indent( lines ).map{|line| " "*level + line}
+  end
+
   
 end
