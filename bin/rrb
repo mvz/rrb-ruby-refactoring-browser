@@ -85,7 +85,7 @@ if $0 == __FILE__ then
       output = proc{ script.result_to_io( STDOUT ) }
     when '--filein-overwrite'      
       script = RRB::Script.new_from_filenames( ARGV )
-      output = proc{ script.result_overwrite_file }
+      output = proc{ script.result_rewrite_file }
     when '--filein-stdout'
       script = RRB::Script.new_from_filenames( ARGV )
       output = proc{ script.result_to_io( STDOUT ) }
