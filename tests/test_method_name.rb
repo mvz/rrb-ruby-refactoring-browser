@@ -27,6 +27,16 @@ class TestMethod < RUNIT::TestCase
     assert_equals( '#<RRB::Method A::B#me>',
                    RRB::MN.new(RRB::NS.new("A::B"), 'me').inspect )
   end
+
+  def test_ns_replaced
+    assert_equals(RRB::Method['A::B#me'],
+                  RRB::Method['C::D::E#me'].ns_replaced( RRB::NS["A::B"] ) )
+  end
+
+  def test_bare_name_replaced
+    assert_equals(RRB::Method['A::B#mo'],
+                  RRB::Method['A::B#me'].bare_name_replaced("mo" ))
+  end
   
   def test_s_AREF
     assert_equals( RRB::MN.new(RRB::NS.new("A::B"), 'me'),
@@ -36,6 +46,7 @@ class TestMethod < RUNIT::TestCase
     assert_equals( RRB::CMN.new(RRB::NS.new("A::B"), 'me'),
                    RRB::Method['A::B.me'] )
   end
+
 end
 
 class TestClassMethod < RUNIT::TestCase
@@ -68,6 +79,16 @@ class TestClassMethod < RUNIT::TestCase
     assert(RRB::Method["TestClassA.method_7"].match_node?(test_class_a,method_7))
     assert(!RRB::Method["TestClassA.method_2"].match_node?(test_class_a,method_2))
     assert(!RRB::Method["TestClassA#method_7"].match_node?(test_class_a,method_7))
+  end
+
+  def test_ns_replaced
+    assert_equals(RRB::Method['A::B.me'],
+                  RRB::Method['C::D::E.me'].ns_replaced( RRB::NS["A::B"] ) )
+  end
+
+  def test_bare_name_replaced
+    assert_equals(RRB::Method['A::B.mo'],
+                  RRB::Method['A::B.me'].bare_name_replaced("mo" ))
   end
 end
 
