@@ -144,8 +144,7 @@ matches with rrb-ruby-file-name-regexp'"
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (goto-char (point-min))
-    (when (search-forward method nil t)
-      (forward-char)
+    (when (search-forward (concat method ";") nil t)
       (mapcar 'list
 	      (split-string (buffer-substring (point) (point-at-eol)) ",")))))
 
