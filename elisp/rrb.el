@@ -224,7 +224,7 @@
     (setq rrb-undo-list
           (cons (mapcar (lambda (buffer)
                           (set-buffer buffer)
-                          (undo-boundary)
+                          (rrb-undo-boundary)
                           (list buffer buffer-undo-list))
                         (rrb-all-ruby-script-buffer))
                 rrb-undo-list))))
@@ -351,12 +351,22 @@
         count
       0)))
 
+(defun rrb-do-undo (count)
+  (unless (= count 0)
+    (undo count)))
+
+(defun rrb-undo-boundary ()
+  (cond ((null buffer-undo-list) (setq buffer-undo-list (list nil)))
+        ((null (car buffer-undo-list)) nil) ; do nothing
+        (t (setq buffer-undo-list (cons nil buffer-undo-list)))))
+
+
 (defun rrb-undo-buffer (undo-markar)
   (set-buffer (car undo-markar))
   (undo-boundary)
   (let ((redo-markar buffer-undo-list))
-    (undo (rrb-undo-count buffer-undo-list (cadr undo-markar)))
-    (undo-boundary)
+    (rrb-do-undo (rrb-undo-count buffer-undo-list (cadr undo-markar)))
+    (rrb-undo-boundary)
     (list (current-buffer) redo-markar)))
     
 (defun rrb-undo ()
