@@ -1,0 +1,8 @@
+* version 0.0.2
+Extract superclass is now available
+Fix many bugs
+Modify ripper to run on ruby 1.8
+Modify emacs interface to refactor files that has `#!ruby'.
+
+* version 0.0.1
+Initial release
