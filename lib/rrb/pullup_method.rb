@@ -2,7 +2,7 @@ require 'rrb/scriptfile'
 require 'rrb/script'
 require 'rrb/node.rb'
 require 'rrb/parser.rb'
-
+require 'rrb/common_visitor'
 
 module RRB
   
@@ -49,26 +49,6 @@ module RRB
         node.calls.each do |call| 
           if subclass_info.has_method?(call.name, false)
             @result = false
-          end
-        end
-      end
-    end
-  end
-
-  class GetTargetMethodVisitor < Visitor
-    def initialize(method_name, namespace)
-      @method_name = method_name
-      @namespace = namespace
-      @result_range = nil
-    end
-
-    attr_reader :result_range
-
-    def visit_class(namespace, node)
-      if NodeNamespace.new(node, namespace).match?(@namespace)
-        node.method_defs.each do |method|
-          if method.name == @method_name
-            @result_range = method.range
           end
         end
       end
