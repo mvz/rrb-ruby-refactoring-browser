@@ -29,9 +29,12 @@ module RRB
         end
       elsif cur_namespace.match?(@old_namespace)
         if @method_name.instance_method?
-          target_method = node.method_defs.find(){|method| method.name == @method_name.name}
-          @delete_range = target_method && target_method.range
-        end
+          target_defs = node.method_defs
+        elsif @method_name.class_method?
+          target_defs = node.class_method_defs
+        end 
+        target_method = target_defs.find(){|method| method.name == @method_name.name}
+        @delete_range = target_method && target_method.range
       end      
     end
   end
