@@ -66,26 +66,6 @@ module RRB
   end
 
     
-  def pushdown_method(src, superclass_range, subclass_lineno, pushdowned_method)
-    dst = ''
-    lines = src.split(/^/)
-
-    0.upto(lines.length - 1) do |lineno|
-      if lineno == subclass_lineno
-        dst << pushdowned_method.join
-      end
-      if superclass_range
-        unless (superclass_range.head.lineno-1..superclass_range.tail.lineno-1) === lineno
-          dst << lines[lineno]
-        end
-      else
-        dst << lines[lineno]
-      end
-    end
-    dst
-  end
-  module_function :pushdown_method
-
   class ScriptFile
 
     def get_targetmethod(namespace, method_name)
@@ -93,7 +73,7 @@ module RRB
       @tree.accept(visitor)
       range = visitor.result_range
       if range
-        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1]
+        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
       else
         return nil
       end
@@ -102,7 +82,7 @@ module RRB
     def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
       visitor = PushdownMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.pushdown_method(@input, visitor.superclass_range, visitor.subclass_lineno, pushdowned_method)
+      @new_script = RRB.insert_str(@input, visitor.subclass_lineno, visitor.superclass_range, pushdowned_method)
     end
 
     def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)

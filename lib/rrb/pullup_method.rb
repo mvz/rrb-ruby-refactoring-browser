@@ -5,7 +5,7 @@ require 'rrb/parser.rb'
 require 'rrb/common_visitor'
 
 module RRB
-  
+
   class PullupMethodVisitor < Visitor
 
     def initialize(old_namespace, method_name, new_namespace)
@@ -54,26 +54,6 @@ module RRB
       end
     end
   end
-    
-  def pullup_method(src, superclass_lineno, subclass_range, pullupped_method)
-    dst = ''
-    lines = src.split(/^/)
-
-    0.upto(lines.length - 1) do |lineno|
-      if lineno == superclass_lineno
-        dst << pullupped_method.join
-      end
-      if subclass_range
-        unless (subclass_range.head.lineno-1..subclass_range.tail.lineno-1) === lineno
-          dst << lines[lineno]
-        end
-      else
-        dst << lines[lineno]
-      end
-    end
-    dst
-  end
-  module_function :pullup_method
 
   class ScriptFile
 
@@ -82,7 +62,7 @@ module RRB
       @tree.accept(visitor)
       range = visitor.result_range
       if range
-        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1]
+        return @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
       else
         return nil
       end
@@ -91,7 +71,7 @@ module RRB
     def pullup_method(old_namespace, method_name, new_namespace, pullupped_method)
       visitor = PullupMethodVisitor.new(old_namespace, method_name,  new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.pullup_method(@input, visitor.superclass_lineno, visitor.subclass_range, pullupped_method)
+      @new_script = RRB.insert_str(@input, visitor.superclass_lineno, visitor.subclass_range, pullupped_method)
     end
 
     def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
