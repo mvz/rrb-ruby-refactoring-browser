@@ -414,6 +414,37 @@ module RRB
 
   # shortcut name
   NS = Namespace
+
+  class MethodName
+    def initialize(str_method_name, is_instance_method)
+      @str_method_name = str_method_name
+      @is_instance_method = is_instance_method
+    end
+
+    attr_reader :str_method_name, :is_instance_method
+
+    def instance_method?
+      @is_instance_method
+    end
+
+    def class_method?
+      not @is_instance_method
+    end
+
+    def ==(other)
+      return false unless other.kind_of?( MethodName )
+      return @str_method_name == other.str_method_name &&
+             @is_instance_method == other.is_instance_method
+    end
+
+    def name
+      @str_method_name
+    end
+  end
+
+  # shortcut name
+  MN = MethodName
+
   class Method
 
     def initialize( namespace, method_node )
