@@ -225,29 +225,31 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
      (rrb-all-ruby-script-buffer))))
 
 
+(defmacro rrb-declare-refactoring (&rest body)
+  `(progn
+     (setq rrb-now-refactoring t)
+     (rrb-each #'(lambda (exp) (eval exp)) ',body)
+     (setq rrb-now-refactoring nil)))
 
 (defmacro rrb-setup-refactoring (&rest body)
-  `(progn
-     (rrb-prepare-refactoring)
-     (let ((exp-list ',body))
-       (while exp-list
-	 (eval (car exp-list))
-	 (setq exp-list (cdr exp-list))))
-     (rrb-terminate-refactoring)))
+  (defun rrb-prepare-refactoring ()
+    "Call this function before Refactoring"
+    (setq rrb-now-refactoring t)
+    (rrb-add-change-hook-to-all-ruby-script)
+    (rrb-setup-buffer 'rrb-insert-input-string
+		      (rrb-all-ruby-script-buffer)
+		      rrb-input-buffer)
+    (rrb-make-marshal-file))
+  (defun rrb-terminate-refactoring ()
+    "Call this function after Refactoring"
+    (setq rrb-now-refactoring nil)
+    (rrb-delete-marshal-file))
+  `(rrb-declare-refactoring
+    (rrb-prepare-refactoring)
+    (rrb-each #'(lambda (exp) (eval exp)) ',body)
+    (rrb-terminate-refactoring)))
     
-(defun rrb-prepare-refactoring ()
-  "Call this function before Refactoring"
-  (setq rrb-now-refactoring t)
-  (rrb-add-change-hook-to-all-ruby-script)
-  (rrb-setup-buffer 'rrb-insert-input-string
-		    (rrb-all-ruby-script-buffer)
-		    rrb-input-buffer)
-  (rrb-make-marshal-file))
 
-(defun rrb-terminate-refactoring ()
-  "Call this function after Refactoring"
-  (setq rrb-now-refactoring nil)
-  (rrb-delete-marshal-file))
 
 ;;;; operation for script-buffer
 
@@ -520,12 +522,11 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-undo ()
   "Undo of the last refactoring"
   (interactive)
-  (setq rrb-now-refactoring t)
-  (let ((prev-undo-count (- rrb-undo-count 1)))
-    (if (rrb-undo-base (rrb-make-undo-file-name prev-undo-count)
-		       (rrb-make-not-modified-file-name prev-undo-count))
-	(setq rrb-undo-count prev-undo-count)))
-  (setq rrb-now-refactoring nil))
+  (rrb-declare-refactoring
+   (let ((prev-undo-count (- rrb-undo-count 1)))
+     (if (rrb-undo-base (rrb-make-undo-file-name prev-undo-count)
+			(rrb-make-not-modified-file-name prev-undo-count))
+	 (setq rrb-undo-count prev-undo-count)))))
 					  
 ;;;
 ;;; Redo
@@ -533,13 +534,11 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-redo ()
   "Redo of the last Undo"
   (interactive)
-  (setq rrb-now-refactoring t)
-  (let ((next-undo-count (+ rrb-undo-count 1)))
-    (if (rrb-undo-base (rrb-make-undo-file-name next-undo-count)
-		       (rrb-make-not-modified-file-name next-undo-count))
-	(setq rrb-undo-count next-undo-count)))
-  (setq rrb-now-refactoring nil))
-	
+  (rrb-declare-refactoring
+   (let ((next-undo-count (+ rrb-undo-count 1)))
+     (if (rrb-undo-base (rrb-make-undo-file-name next-undo-count)
+			(rrb-make-not-modified-file-name next-undo-count))
+	 (setq rrb-undo-count next-undo-count))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
