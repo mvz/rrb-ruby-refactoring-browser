@@ -46,23 +46,8 @@ Usage: rrb refactoring-type refactoring-parameter io-type
       parse_argv argv
     end
 
-    def split_method_name( str )
-      if str['#']
-        a, b = str.split( /#/ )
-        namespace = Namespace.new(a)
-        method_name = Method.new(namespace, b)
-        return method_name
-      elsif str['.']
-        a, b = str.split( '.' )
-        namespace = Namespace.new(a)
-        method_name = ClassMethod.new(namespace, b)
-        return method_name
-      end
-    end
-
-
     def parse_argv_rename_local_variable(argv)
-      method_name = split_method_name argv.shift
+      method_name = Method[argv.shift]
       old_var = argv.shift
       new_var = argv.shift
       @args = [ method_name, old_var, new_var ]
@@ -142,7 +127,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def parse_argv_pullup_method(argv)
-      method_name = split_method_name argv.shift
+      method_name = Method[argv.shift]
       new_namespace = Namespace.new(argv.shift)
       path = argv.shift
       lineno = argv.shift.to_i
@@ -152,7 +137,7 @@ Usage: rrb refactoring-type refactoring-parameter io-type
     end
 
     def parse_argv_pushdown_method(argv)
-      method_name = split_method_name argv.shift
+      method_name = Method[argv.shift]
       new_namespace = Namespace.new(argv.shift)
       path = argv.shift
       lineno = argv.shift.to_i

@@ -532,7 +532,7 @@ module RRB
   # shortcut name
   MN = Method
   CMN = ClassMethod
-  
+
   class NodeMethod
 
     def initialize( namespace, method_node )

@@ -146,7 +146,7 @@ module FreeRIDE
         @current_pane = plugin['/system/ui/current/EditPane']
         @filename = @current_pane.data
         @cursor_line = @current_pane['actions/get_cursor_line'].invoke
-
+        @script = FreeRIDE::RRB.new_script(@plugin)
         FXMAPFUNC(SEL_COMMAND, ID_OK, :onCmdOK)
         FXMAPFUNC(SEL_COMMAND, ID_CANCEL, :onCmdCancel)
 
@@ -162,8 +162,8 @@ module FreeRIDE
 
       def onCmdOK(sender, sel, ptr)
         begin
-          script = refactor
-          FreeRIDE::RRB.rewrite_script(@plugin, script)
+          refactor
+          FreeRIDE::RRB.rewrite_script(@plugin, @script)
         rescue
         ensure
           onCmdCancel(sender, sel, ptr)
@@ -220,14 +220,12 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        method = script.get_method_on_cursor(@filename, @cursor_line).name
+        method = @script.get_method_on_cursor(@filename, @cursor_line).name
 
         method_name = FreeRIDE::RRB.split_method_name(method)
-        if script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
-          script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
+        if @script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
+          @script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -237,13 +235,11 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        namespace = script.get_class_on_cursor(@filename, @cursor_line)
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
 
-        if script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
-          script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
+        if @script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
+          @script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -253,13 +249,11 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        namespace = script.get_class_on_cursor(@filename, @cursor_line)
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
 
-        if script.rename_class_var?(namespace, @old_value, @txt_new_variable.text)
-          script.rename_class_var(namespace, @old_value, @txt_new_variable.text)
+        if @script.rename_class_var?(namespace, @old_value, @txt_new_variable.text)
+          @script.rename_class_var(namespace, @old_value, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -269,11 +263,9 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        if script.rename_global_var?(@old_value, @txt_new_variable.text)
-          script.rename_global_var(@old_value, @txt_new_variable.text)
+        if @script.rename_global_var?(@old_value, @txt_new_variable.text)
+          @script.rename_global_var(@old_value, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -283,14 +275,12 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        namespace = script.get_class_on_cursor(@filename, @cursor_line)
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
         old_methods = [::RRB::Method.new(namespace, @old_value)]
 
-        if script.rename_method?(old_methods, @txt_new_variable.text)
-          script.rename_method(old_methods, @txt_new_variable.text)
+        if @script.rename_method?(old_methods, @txt_new_variable.text)
+          @script.rename_method(old_methods, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -300,14 +290,12 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-        namespace = script.get_class_on_cursor(@filename, @cursor_line)
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
         old_const = namespace.name + '::' + @old_value
 
-        if script.rename_constant?(old_const, @txt_new_variable.text)
-          script.rename_constant(old_const, @txt_new_variable.text)
+        if @script.rename_constant?(old_const, @txt_new_variable.text)
+          @script.rename_constant(old_const, @txt_new_variable.text)
         end
-        return script
       end
     end
 
@@ -326,17 +314,14 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
-
         ext_obj = @current_pane['actions/get_ext_object'].invoke
         start_line =  ext_obj.line_from_position(ext_obj.selection_start) + 1
         end_line =  ext_obj.line_from_position(ext_obj.selection_end) + 1
         new_method = @txt_new_method.text
         
-        if script.extract_method?(@filename, new_method, start_line, end_line)
-          script.extract_method(@filename, new_method, start_line, end_line)
+        if @script.extract_method?(@filename, new_method, start_line, end_line)
+          @script.extract_method(@filename, new_method, start_line, end_line)
         end    
-        return script    
       end
     end
 
@@ -346,9 +331,8 @@ module FreeRIDE
 
         matrix = FXMatrix.new(self, 2, MATRIX_BY_COLUMNS|LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_FILL_Y)
         begin
-          script = FreeRIDE::RRB.new_script(@plugin)
-          method_candidates = script.refactable_methods
-          destination_candidates = script.refactable_classes
+          method_candidates = @script.refactable_methods
+          destination_candidates = @script.refactable_classes
         rescue
           return
         end
@@ -377,14 +361,12 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
         method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
-        if script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
-          script.pushdown_method(method_name, new_namespace, @filename, @cursor_line)
+        if @script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
+          @script.pushdown_method(method_name, new_namespace, @filename, @cursor_line)
         end
-        return script
       end
     end
 
@@ -394,14 +376,12 @@ module FreeRIDE
       end
 
       def refactor
-        script = FreeRIDE::RRB.new_script(@plugin)
         method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
-        if script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
-          script.pullup_method(method_name, new_namespace, @filename, @cursor_line)
+        if @script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
+          @script.pullup_method(method_name, new_namespace, @filename, @cursor_line)
         end
-        return script
       end
     end
   end
