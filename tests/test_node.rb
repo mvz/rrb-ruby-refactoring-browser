@@ -36,9 +36,6 @@ class TestNode < RUNIT::TestCase
     def visit_class( namespace, class_node )
       @classes << [ namespace.map{|i| i.name}, class_node.name ]
     end
-
-    def visit_method( namespace, method_node )
-    end
     
   end
 
@@ -50,8 +47,25 @@ class TestNode < RUNIT::TestCase
     attr_reader :top_classes
     
   end
+
+  class Visitor4 < RRB::Visitor
+
+    def initialize
+      @nodes = []
+    end
+
+    attr_reader :nodes
+    def visit_node( namespace, node )
+      if node.name_id == 'toplevel' then
+	@nodes << [ 'toplevel']
+      else
+	@nodes << namespace.map{|i| i.name}.push( node.name )
+      end
+    end
+
     
-      
+  end
+  
   def test_accept
 
     parser = RRB::Parser.new
@@ -85,7 +99,21 @@ class TestNode < RUNIT::TestCase
     visitor3 = Visitor3.new
     tree.accept( visitor3 )
     assert_equals( [ 'TestClassA' ], visitor3.top_classes )
-    
+
+    visitor4 = Visitor4.new
+    tree.accept( visitor4 )    
+    assert_equals( [['toplevel'],
+		    ['TestClassA'],
+		    ['TestClassA','method_1'],
+		    ['TestClassA','method_2'],
+		    ['TestClassA','method_3'],
+		    ['TestClassA','TestClassB'],
+		    ['TestClassA','TestClassB','method_4'],
+		    ['TestClassA','TestClassB','TestClassC'],
+		    ['TestClassA','TestModuleA'],
+		    ['TestClassA','TestModuleA','TestModuleB'],
+		    ['TestClassA','TestModuleA','TestModuleB','method_5']
+		  ].sort, visitor4.nodes.sort )
   end
 
 end
