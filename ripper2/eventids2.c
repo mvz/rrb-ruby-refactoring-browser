@@ -36,6 +36,7 @@ static ID ripper_id_rbrace;
 static ID ripper_id_rbracket;
 static ID ripper_id_rparen;
 static ID ripper_id_semicolon;
+static ID ripper_id_sp;
 static ID ripper_id_symbeg;
 static ID ripper_id_tstring_beg;
 static ID ripper_id_tstring_content;
@@ -87,6 +88,7 @@ ripper_init_eventids2()
     ripper_id_rbracket = rb_intern("on__rbracket");
     ripper_id_rparen = rb_intern("on__rparen");
     ripper_id_semicolon = rb_intern("on__semicolon");
+    ripper_id_sp = rb_intern("on__sp");
     ripper_id_symbeg = rb_intern("on__symbeg");
     ripper_id_tstring_beg = rb_intern("on__tstring_beg");
     ripper_id_tstring_content = rb_intern("on__tstring_content");
