@@ -21,8 +21,8 @@ module RRB
       
       node.fcalls.each do |fcall|
         called_method =
-              @dumped_info.real_method( Method.new( @method_name.namespace,
-                                                        fcall.name ) ) 
+          @dumped_info.real_method( Method.new( @method_name.namespace,
+                                                fcall.name ) ) 
         unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
           @error_message = "#{@method_name.name} uses #{called_method.name}\n"
@@ -43,18 +43,16 @@ module RRB
 
   class ScriptFile
 
-    def pullup_method(method_name, new_namespace, 
-                      pullupped_method, ignore_new_namespace, specified_lineno)
-      visitor = MoveMethodVisitor.new(method_name,
-                                      new_namespace,
-                                      ignore_new_namespace, specified_lineno)
-      @tree.accept( visitor )
+    def pullup_method(method_name, new_namespace, pullupped_method, lineno)
       if method_name.class_method?
         pullupped_method.gsub!(/^((\s)*def\s+)(.*)\./) {|s| $1 + new_namespace.name + '.'}
       end
-      @new_script = RRB.insert_str(@input, visitor.insert_lineno,
-                                   visitor.delete_range, pullupped_method,
-                                   true)
+
+      visitor = MoveMethodVisitor.new( method_name, lineno )
+      @tree.accept( visitor )
+      pullupped_method = RRB.reindent_str_node( pullupped_method, visitor.inserted )
+      @new_script = RRB.insert_str(@input, lineno,
+                                   visitor.delete_range, pullupped_method )
     end
 
     def pullup_method?(dumped_info, method_name, new_namespace)
@@ -73,8 +71,7 @@ module RRB
       @files.each do |scriptfile|
 	scriptfile.pullup_method(method_name,
                                  new_namespace, pullupped_method,
-                                 scriptfile.path != path,
-                                 lineno)
+                                 (scriptfile.path == path)? lineno : nil )
       end      
     end
 
@@ -97,18 +94,11 @@ module RRB
         return false
       end
 
-      definition_count = count_namespace_definition(path, new_namespace)
-      if definition_count == 0
-        @error_message = "No definition of #{new_namespace.name} in #{path}\n"
+      target_class = class_on( path, lineno )
+      unless target_class && new_namespace == target_class
+        @error_message = "Specify which definition to pull up method to\n"
         return false
-      elsif definition_count > 1
-        target_class = get_class_on_cursor(path, lineno)
-        unless target_class && new_namespace.contain?(target_class )
-          @error_message = "Specify which definition to pull up method to\n"
-          return false
-        end
       end
-
 
       @files.each do |scriptfile|
         unless scriptfile.pullup_method?(get_dumped_info, method_name, new_namespace)
