@@ -163,6 +163,9 @@ module RRB
       ancestors.find{|anc| anc.type == "class"}
     end
 
+    def invalid?
+      false
+    end
   end
 
   class NullDumpedClassInfo
@@ -187,6 +190,9 @@ module RRB
       other.class == self.class
     end
 
+    def invalid?
+      true
+    end
   end
   
 end
