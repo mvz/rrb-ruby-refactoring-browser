@@ -1,7 +1,9 @@
 
-require 'ripper.so'
+module RRB
+end
+require 'rrb_ripper.so'
 
-class R < Ripper
+class R < RRB::Ripper
   def method_missing( mid, *args )
     args.each {|i| i.inspect }
     args[0]
