@@ -74,12 +74,12 @@ end
 
   def test_rename_instance_var
     script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
-    script.rename_instance_var(['X', 'A'], '@a', '@d')
+    script.rename_instance_var(['X', 'A'], '@a', '@f')
     dst = ''
     script.result_to_io(dst)
     assert_equals(File.open('samples/rename_instance_var_sample_after.rb').read, dst)
     script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
-    script.rename_instance_var(['X', 'B'], '@a', '@d')
+    script.rename_instance_var(['X', 'B'], '@a', '@f')
     dst = ''
     script.result_to_io(dst)
     assert_equals(File.open('samples/rename_instance_var_sample_after.rb').read, dst)
@@ -89,21 +89,21 @@ end
 
   def test_rename_instance_var?
     script = RRB::Script.new_from_filenames('samples/rename_instance_var_sample.rb')
-    assert_equals(true, script.rename_instance_var?(['X', 'A'], '@a', '@d'))
-    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@b'))
-    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', '@c'))
-    assert_equals(false, script.rename_instance_var?(['X', 'A'], '@a', 'd'))
+    assert_equals(true, script.rename_instance_var?(['X', 'B'], '@a', '@f'))
     assert_equals(false, script.rename_instance_var?(['X', 'B'], '@a', '@b'))
+    assert_equals(false, script.rename_instance_var?(['X', 'B'], '@a', '@c'))
+    assert_equals(false, script.rename_instance_var?(['X', 'B'], '@a', '@d'))
+    assert_equals(false, script.rename_instance_var?(['X', 'B'], '@a', '@e'))
   end
 
   def test_rename_class_var
     script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
-    script.rename_class_var(['X', 'A'], '@@a', '@@c')
+    script.rename_class_var(['X', 'A'], '@@a', '@@f')
     dst = ''
     script.result_to_io(dst)
     assert_equals(File.open('samples/rename_class_var_sample_after.rb').read, dst)
     script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
-    script.rename_class_var(['X', 'B'], '@@a', '@@c')
+    script.rename_class_var(['X', 'B'], '@@a', '@@f')
     dst = ''
     script.result_to_io(dst)
     assert_equals(File.open('samples/rename_class_var_sample_after.rb').read, dst)
@@ -113,9 +113,11 @@ end
 
   def test_rename_class_var?
     script = RRB::Script.new_from_filenames('samples/rename_class_var_sample.rb')
-    assert_equals(true, script.rename_class_var?(['X', 'A'], '@@a', '@@c'))
-    assert_equals(false, script.rename_class_var?(['X', 'A'], '@@a', '@@b'))
     assert_equals(false, script.rename_class_var?(['X', 'B'], '@@a', '@@b'))
+    assert_equals(false, script.rename_class_var?(['X', 'B'], '@@a', '@@c'))
+    assert_equals(false, script.rename_class_var?(['X', 'B'], '@@a', '@@d'))
+    assert_equals(false, script.rename_class_var?(['X', 'B'], '@@a', '@@e'))
+    assert_equals(true, script.rename_class_var?(['X', 'A'], '@@a', '@@f'))
   end
 
   RENAME_METHOD_ALL_INPUT = "\
