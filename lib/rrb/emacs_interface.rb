@@ -4,5 +4,6 @@ require 'rrb/rename_instance_var'
 require 'rrb/rename_class_var'
 require 'rrb/rename_global_var'
 require 'rrb/rename_method_all'
+require 'rrb/extract_method'
 
 
