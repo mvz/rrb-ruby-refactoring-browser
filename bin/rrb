@@ -38,6 +38,10 @@ if $0 == __FILE__ then
       namespace, method_name = split_method_name ARGV.shift
       old_var = ARGV.shift
       new_var = ARGV.shift
+    when '--rename-instance-variable'
+      namespace = ARGV.shift.split(/::/)
+      old_var = ARGV.shift
+      new_var = ARGV.shift
     when '--rename-global-variable'
       old_var = ARGV.shift
       new_var = ARGV.shift
@@ -67,9 +71,16 @@ if $0 == __FILE__ then
       end
       script.rename_local_var( namespace, method_name, old_var, new_var )
       output.call
+    when '--rename-instance-variable'
+      unless script.rename_instance_var?(namespace, old_var, new_var)
+        STDERR << "REJECTED\n"
+        exit 1
+      end
+      script.rename_instance_var(namespace, old_var, new_var)
+      output.call
     when '--rename-global-variable'
       unless script.rename_global_var?(old_var, new_var )
-	STDERR << "YET ANOTHER #{new_var} EXISTS\n"
+	STDERR << "REJECTED\n"
 	exit 1
       end
       script.rename_global_var(old_var, new_var )
