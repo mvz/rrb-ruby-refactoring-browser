@@ -83,14 +83,14 @@ module RRB
     def DumpedInfo.get_dumped_info( io )
       info_hash = Hash.new(NullDumpedClassInfo.instance)
       while line = io.gets
-	split_list = line.chomp.split( /#/, -1 )
+	split_list = line.chomp.split( /;/, -1 )
 	info = DumpedClassInfo.new( split_list[0],
-				   split_list[1].split(/;/),
-				   split_list[2].split(/;/),
-				   split_list[3].split(/;/),
-				   split_list[4].split(/;/),
-				   split_list[5].split(/;/),
-				   split_list[6].split(/;/) )
+				   split_list[1].split(/,/),
+				   split_list[2].split(/,/),
+				   split_list[3].split(/,/),
+				   split_list[4].split(/,/),
+				   split_list[5].split(/,/),
+				   split_list[6].split(/,/) )
 	info_hash[info.class_name] = info
       end
       
