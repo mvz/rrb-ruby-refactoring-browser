@@ -74,9 +74,9 @@ class TestDumpedInfo < RUNIT::TestCase
 
   def test_EQUAL
     info = make_info["TestClassB"]
-    assert_equals( RRB::NullDumpedClassInfo.new, RRB::NullDumpedClassInfo.new )
-    assert_equals( false, RRB::NullDumpedClassInfo.new ==  info )
-    assert_equals( false, Object.new ==  RRB::NullDumpedClassInfo.new )
+    assert_equals( RRB::NullDumpedClassInfo.instance, RRB::NullDumpedClassInfo.instance )
+    assert_equals( false, RRB::NullDumpedClassInfo.instance ==  info )
+    assert_equals( false, Object.new ==  RRB::NullDumpedClassInfo.instance )
   end
 
   def test_superclass
