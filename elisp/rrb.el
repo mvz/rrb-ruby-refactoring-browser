@@ -13,6 +13,10 @@
 
 ;;; Code:
 
+;;;; Keybind for test new undo
+(global-unset-key "\C-cu")
+(global-set-key "\C-cu" 'rrb-undo)
+
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
   "*Regular expression matching ruby script file name")
@@ -22,38 +26,21 @@
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name of error log file")
 
-(defvar rrb-undo-file-base "rrbundo"
-  "*Base file name of undo files")
-
-(defvar rrb-undo-directory 
-  (file-name-as-directory
-   (make-temp-name
-    (expand-file-name rrb-undo-file-base
-		      temporary-file-directory)))
-  "Directory which stores undo files")
-
 (defvar rrb-marshal-file-base "rrbmarshal"
   "*Base file name of marshal file")
-
 
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
 (defconst rrb-io-terminator "-- END --")
-(defconst rrb-modifier "modified")
-(defconst rrb-not-modifier "not-modified")
 
 (defvar rrb-input-buffer (get-buffer-create " *rrb-input*"))
 (defvar rrb-output-buffer (get-buffer-create " *rrb-output*"))
 (defvar rrb-error-buffer (get-buffer-create " *rrb-error*"))
-(defvar rrb-undo-buffer (get-buffer-create " *rrb-undo*"))
-(defvar rrb-modified-p-buffer (get-buffer-create " *rrb-modified-p-file"))
 
-(defvar rrb-undo-count 0)
-(defvar rrb-now-refactoring-flag nil)
 (defvar rrb-marshal-file-name "")
 
-(add-hook 'kill-emacs-hook 'rrb-delete-undo-files)
-
+(defvar rrb-undo-list nil)
+(defvar rrb-pending-undo-list nil)
 
 ;;;; Utility functions
 (defun rrb-find-all (prec list)
@@ -150,8 +137,6 @@
   (if (/= (apply 'rrb-run-process "rrb" 
 		 (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
       (error "fail to refactor: %s" (rrb-error-message)))
-  (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
-  (setq rrb-undo-count (+ rrb-undo-count 1))
   (rrb-output-to-buffer rrb-output-buffer))
 
 ;;;
@@ -219,15 +204,6 @@
       (delete-file tmpfile)
       error-code)))
 
-
-
-(defmacro rrb-declare-refactoring (&rest body)
-  `(progn
-     (setq rrb-now-refactoring-flag t)
-     (unwind-protect
-         ,@body
-       (setq rrb-now-refactoring-flag nil))))
-
 (defun rrb-make-marshal-file ()
   "Run rrb_marchal and make cache file"
   (rrb-setup-buffer 'rrb-insert-input-string
@@ -243,31 +219,29 @@
   (if (file-readable-p rrb-marshal-file-name)
       (delete-file rrb-marshal-file-name)))
 
-(defun rrb-add-change-hook-to-all-ruby-script ()
-  "Add hook('before-change-function') to all ruby scripts. 
-This hook clears undo files when ary ruby script buffer is changed"
+(defun rrb-undo-set-undo-mark ()
   (save-current-buffer
-    (mapc 
-     (lambda (buffer)
-       (set-buffer buffer)
-       (make-local-hook 'before-change-functions)
-       (add-hook 'before-change-functions 
-		 'rrb-notify-file-changed nil t))
-     (rrb-all-ruby-script-buffer))))
-
+    (setq rrb-undo-list
+          (cons (mapcar (lambda (buffer)
+                          (set-buffer buffer)
+                          (undo-boundary)
+                          (list buffer buffer-undo-list))
+                        (rrb-all-ruby-script-buffer))
+                rrb-undo-list))))
+           
 (defun rrb-prepare-refactoring ()
-  (rrb-add-change-hook-to-all-ruby-script)
+  (rrb-undo-set-undo-mark)
   (rrb-make-marshal-file))
 
 (defun rrb-terminate-refactoring ()
   (rrb-delete-marshal-file))
 
 (defmacro rrb-setup-refactoring (&rest body)
-  `(rrb-declare-refactoring
-    (rrb-prepare-refactoring)
-    (unwind-protect
-        ,@body
-      (rrb-terminate-refactoring))))
+  `(progn
+     (rrb-prepare-refactoring)
+     (unwind-protect
+         ,@body
+       (rrb-terminate-refactoring))))
     
 
 
@@ -365,128 +339,39 @@ This hook clears undo files when ary ruby script buffer is changed"
 (defun rrb-get-value-on-cursor (args)
   (rrb-run-default-value (buffer-file-name) (number-to-string (rrb-current-line)) args))
 
+;;;; undo
+(defun rrb-undo-count (undo-list undo-mark)
+  (let ((count 0)
+        (l undo-list))
+    (while (not (or (eq l undo-mark) (eq l nil)))
+      (if (eq (car l) nil)
+          (setq count (1+ count)))
+      (setq l (cdr l)))
+    (if (eq l undo-mark)
+        count
+      0)))
 
-;;;;;  Undo, Redo
-(defun rrb-undo-base (undo-file-name modified-p-file-name)
-  "Base function of undo and redo."
-  (let ((undo-buffer-list))
-    (defun rrb-read-undo-file ()
-      (save-current-buffer
-	(set-buffer rrb-output-buffer)
-	(rrb-clean-buffer rrb-output-buffer)
-	(insert-file-contents undo-file-name)
-	(setq undo-buffer-list (rrb-get-buffer-list rrb-output-buffer))
-	(rrb-make-undo-files undo-buffer-list)
-	(rrb-output-to-buffer rrb-output-buffer)))
-    (defun rrb-read-modified-p-file ()
-      (save-current-buffer
-	(set-buffer rrb-output-buffer)
-	(rrb-clean-buffer rrb-output-buffer)
-	(insert-file-contents modified-p-file-name)
-	(let ((modified-list (mapcar 'buffer-modified-p undo-buffer-list)))
-	  (rrb-each-for-compound-buffer
-	   (lambda (file-name file-contents)
-	     (if (string= file-contents rrb-not-modifier)
-		 (progn
-		   (set-buffer (get-file-buffer file-name))
-		   (set-buffer-modified-p (not (car modified-list)))
-		   (setq modifed-list (cdr modified-list)))))
-	   rrb-output-buffer))))
-    (if (file-readable-p undo-file-name)
-	(progn
-	  (rrb-read-undo-file)
-	  (rrb-read-modified-p-file)
-	  t)
-      (message "Nothing to do!")
-      nil)))
-
-
-(defun rrb-make-undo-files (buffer-list)
-  "Make temporary files for undo and redo."
-  (defun rrb-make-undo-file ()
-    "Make temporary file which records previous states of each file."
-    (save-current-buffer
-      (set-buffer rrb-undo-buffer)
-      (rrb-clean-buffer rrb-undo-buffer)
-      (rrb-setup-buffer 'rrb-insert-input-string 
-			buffer-list
-			rrb-undo-buffer)
-      (write-region (point-min) (point-max)
-		    (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
-  (defun rrb-make-modified-p-file ()
-    "Make temporary file which records if each files are modified or not."
-    (save-current-buffer
-      (set-buffer rrb-modified-p-buffer)
-      (rrb-clean-buffer rrb-modified-p-buffer)
-      (rrb-setup-buffer 'rrb-insert-modified-p
-			buffer-list
-			rrb-modified-p-buffer)
-      (write-region (point-min) (point-max)
-		    (rrb-make-not-modified-file-name rrb-undo-count)
-		    nil 0 nil)))
-  (if (rrb-make-undo-directory)
-      (progn
-	(rrb-make-undo-file)
-	(rrb-make-modified-p-file))))
-	
-
-(defun rrb-make-undo-file-name (undo-count)
-  (expand-file-name (number-to-string undo-count)
-		    rrb-undo-directory))
-
-(defun rrb-make-not-modified-file-name (undo-count)
-  (expand-file-name (format "%s.%s" 
-			    (number-to-string undo-count)
-			    "nmod")
-		    rrb-undo-directory))
-
-(defun rrb-make-undo-directory ()
-  "Make directory for temporary file for undo and redo."
-  (if (not (file-exists-p rrb-undo-directory))
-      (make-directory rrb-undo-directory))
-  (file-accessible-directory-p rrb-undo-directory))
-
-(defun rrb-delete-undo-files ()
-  "Delete temporary files made for undo and redo."
-  (and (file-exists-p rrb-undo-directory)
-       (file-accessible-directory-p rrb-undo-directory)
-       (progn
-	 (mapc 
-	  (lambda (sub-file)
-	    (if (not (file-directory-p sub-file))
-		(delete-file sub-file)))
-	  (directory-files rrb-undo-directory t))
-	 (delete-directory rrb-undo-directory)))
-  (setq rrb-undo-count 0))
-
-
-(defun rrb-notify-file-changed (start end)
-  (if (not rrb-now-refactoring-flag)
-      (rrb-delete-undo-files)))
-;;;
-;;; Undo
-;;;
+(defun rrb-undo-buffer (undo-markar)
+  (set-buffer (car undo-markar))
+  (undo-boundary)
+  (let ((redo-markar buffer-undo-list))
+    (undo (rrb-undo-count buffer-undo-list (cadr undo-markar)))
+    (undo-boundary)
+    (list (current-buffer) redo-markar)))
+    
 (defun rrb-undo ()
-  "Undo the previous refactoring."
   (interactive)
-  (rrb-declare-refactoring
-   (let ((prev-undo-count (- rrb-undo-count 1)))
-     (if (rrb-undo-base (rrb-make-undo-file-name prev-undo-count)
-			(rrb-make-not-modified-file-name prev-undo-count))
-	 (setq rrb-undo-count prev-undo-count)))))
-					  
-;;;
-;;; Redo
-;;;
-(defun rrb-redo ()
-  "Redo the previous undo."
-  (interactive)
-  (rrb-declare-refactoring
-   (let ((next-undo-count (+ rrb-undo-count 1)))
-     (if (rrb-undo-base (rrb-make-undo-file-name next-undo-count)
-			(rrb-make-not-modified-file-name next-undo-count))
-	 (setq rrb-undo-count next-undo-count)))))
-
+  (save-current-buffer
+    (unless (eq last-command 'rrb-undo)
+      (setq rrb-pending-undo-list rrb-undo-list))
+    (if (eq rrb-pending-undo-list nil)
+        (error "Can't undo"))
+    (setq rrb-undo-list (cons (mapcar 'rrb-undo-buffer
+                                        (car rrb-pending-undo-list))
+                                rrb-undo-list))
+    (setq this-command 'rrb-undo)
+    (setq rrb-pending-undo-list (cdr rrb-pending-undo-list))))
+            
 ;;;; Refactoring
 
 ;;;
