@@ -17,7 +17,7 @@ module RRB
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
     end
     
-    
+    # parse and return tree
     def run( file )
       @scope_stack = Array.new
       @scope_stack.push Scope.new
@@ -36,12 +36,12 @@ module RRB
       IdInfo.new :id, lineno, pointer, id
     end
 
-    # on class variable like "has_key?" or "map!"
+    # on class variable 
     def on__CVAR( id )
       IdInfo.new :cvar, lineno, pointer, id
     end
 
-    # on function identifier
+    # on function identifier like "has_key?" or "map!"
     def on__FID( id )
       IdInfo.new :fid, lineno, pointer, id
     end
