@@ -34,15 +34,17 @@
 	(t (rrb-find-all prec (cdr list)))))
 
 (defun rrb-buffer-map-line (prec)
+  "Return list of (PREC line) for each line in current buffer"
   (goto-char (point-max))
-  (beginning-of-line)
-  (let ((result (list (funcall prec (thing-at-point 'line)))))
+  (let ((result nil))
     (while (not (bobp))
       (setq result (cons (funcall prec (thing-at-point 'line)) result))
       (forward-line -1))
     result))
+      
 
 (defun rrb-chop (str)
+  "Return chopped string"
   (substring str 0 -1))
 
 ;;; Main functions
@@ -70,28 +72,25 @@ matches with rrb-ruby-file-name-regexp'"
   "Generate input string on \" *rrb-input*\""
   (save-excursion
     (set-buffer rrb-input-buffer)
+    (erase-buffer)
     (rrb-insert-input-string rrb-main-buffer)
     (mapcar (lambda (buffer)
-	      (if (eq buffer rrb-main-buffer)
-		  nil
+	      (unless (eq buffer rrb-main-buffer)
 		(rrb-insert-input-string buffer)))
 	    (rrb-all-ruby-script-buffer))
     (insert rrb-io-terminator)
     (insert rrb-io-splitter)))
 
-(defun rrb-clean-buffer ()
+(defun rrb-clean-output-buffer ()
   "Clean temporary buffers"
-  (set-buffer rrb-input-buffer)
-  (erase-buffer)
   (set-buffer rrb-output-buffer)
   (erase-buffer)
   (set-buffer rrb-error-buffer)
   (erase-buffer))
 
-
 (defun rrb-output-to-buffer ()
   "Rewrite all ruby script buffer from \" *rrb-output\""
-  (save-excursion
+  (save-current-buffer
     (set-buffer rrb-output-buffer)
     (let ((list-top (split-string (buffer-string) rrb-io-splitter)))
       (while (not (string= (car list-top) rrb-io-terminator))
@@ -102,39 +101,39 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-output-to-error-buffer (filename)
   "load FILENAME to \" *rrb-error\""
-  (save-excursion
+  (save-current-buffer
     (set-buffer rrb-error-buffer)
     (insert-file-contents filename)))
 
 (defun rrb-error-message ()
   "Get Error Message in \" *rrb-error\""
-  (save-excursion
+  (save-current-buffer
     (set-buffer rrb-error-buffer)
     (goto-char (point-min))
     (substring (thing-at-point 'line) 0 -1)))
     
-(defun rrb-do-refactoring (args)
+(defun rrb-do-refactoring (&rest args)
   "Do refactoring"
   (if (/= (apply 'rrb-run-process "rrb" args) 0)
       (error "fail to refactor: %s" (rrb-error-message)))
     (rrb-output-to-buffer))
 
-(defun rrb-run-process (command &rest  args)
+(defun rrb-make-temp-name (base)
+  (make-temp-name (expand-file-name base temporary-file-directory)))
+
+(defun rrb-run-process (command &rest args)
   "Run COMMAND and return error code"
   (let ((error-code)
-	(tmpfile (make-temp-name (expand-file-name rrb-tmp-file-base
-						   temporary-file-directory))))
-    (rrb-clean-buffer)
-    (rrb-setup-input-buffer)
+	(tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
+    (rrb-clean-output-buffer)
     (set-buffer rrb-input-buffer)
     (setq error-code (apply 'call-process-region
 			    (point-min) (point-max)
 			    command
 			    nil
-			    (list rrb-output-buffer
-				  tmpfile)
+			    (list rrb-output-buffer tmpfile)
 			    nil
-			    (append args '("--stdin-stdout"))))
+			    `(,@args "--stdin-stdout")))
     (rrb-output-to-error-buffer tmpfile)
     (delete-file tmpfile)
     error-code))
@@ -150,15 +149,13 @@ matches with rrb-ruby-file-name-regexp'"
     (goto-char (point-min))
     (when (search-forward method nil t)
       (forward-char)
-      (mapcar (lambda (obj) (list obj))
-	      (split-string
-	       (cadr (split-string (rrb-chop (thing-at-point 'line)) ";"))
-	       ",")))))
+      (mapcar 'list
+	      (split-string (buffer-substring (point) (point-at-eol)) ",")))))
 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
   (when (/= (rrb-run-process "rrb_compinfo" "--methods") 0)
-    (error "rrb_info: fail to get information"))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
   (let ((method (completing-read "Refactored method: " (rrb-complist-method))))
     (list method
  	  (completing-read "Old variable: " (rrb-complist-local-var method))
@@ -166,12 +163,15 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
-  (interactive (rrb-comp-read-rename-local-variable))
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-local-variable)))
   (save-excursion
-    (rrb-do-refactoring (list "--rename-local-variable" method old-var new-var))))
+    (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
   (interactive "sOld method: \nsNew method: ")
   (save-excursion
-    (rrb-do-refactoring (list "--rename-method-all" old-method new-method))))
+    (rrb-setup-input-buffer)
+    (rrb-do-refactoring "--rename-method-all" old-method new-method)))
