@@ -1,5 +1,5 @@
 /home/ohai/ruby/test/file1.rb
-
+require 'file2'
 # comment
 
 class Rename
