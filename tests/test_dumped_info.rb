@@ -11,6 +11,8 @@ DUMPED_SCRIPT = <<EOS
 class TestClassA
   def pubA
   end
+  C1 = 2
+  C2 = 4
 end
 
 class TestClassB < TestClassA
@@ -24,6 +26,8 @@ class TestClassB < TestClassA
   def pro2
   end
   private
+  C3 = 1
+  C1 = 3
 end
 EOS
 
@@ -46,6 +50,7 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals( ["pro1", "pro2"], info.protected_method_names.sort )
     assert_equals( [], info.private_method_names )
     assert_equals( ["sing"], info.singleton_method_names )
+    assert_equals( ["C1", "C3"], info.consts )
   end
 
   def test_has_method?
@@ -68,7 +73,7 @@ class TestDumpedInfo < RUNIT::TestCase
       output << RRB::DUMP_MODULES_SCRIPT
     end
     
-    system "ruby #{RUBY_SCRIPT_NAME} > #{DUMPED_FILE_NAME}"    
+    system "ruby -r rrb_reflection #{RUBY_SCRIPT_NAME} > #{DUMPED_FILE_NAME}"    
   end
   
   def teardown
