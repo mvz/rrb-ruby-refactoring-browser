@@ -27,11 +27,24 @@
 
 ;;; Utility functions
 (defun rrb-find-all (prec list)
+  "Return list containing all elements of PREC is true"
   (cond ((eq list nil) nil)
 	((funcall prec (car list)) (cons (car list)
 					 (rrb-find-all prec (cdr list))))
 	(t (rrb-find-all prec (cdr list)))))
-  
+
+(defun rrb-buffer-map-line (prec)
+  (goto-char (point-max))
+  (beginning-of-line)
+  (let ((result (list (funcall prec (thing-at-point 'line)))))
+    (while (not (bobp))
+      (setq result (cons (funcall prec (thing-at-point 'line)) result))
+      (forward-line -1))
+    result))
+
+(defun rrb-chop (str)
+  (substring str 0 -1))
+
 ;;; Main functions
 (defun rrb-set-main-script-buffer (buffer-name)
   "Set ruby main script buffer"
@@ -102,6 +115,12 @@ matches with rrb-ruby-file-name-regexp'"
     
 (defun rrb-do-refactoring (args)
   "Do refactoring"
+  (if (/= (apply 'rrb-run-process "rrb" args) 0)
+      (error "fail to refactor: %s" (rrb-error-message)))
+    (rrb-output-to-buffer))
+
+(defun rrb-run-process (command &rest  args)
+  "Run COMMAND and return error code"
   (let ((error-code)
 	(tmpfile (make-temp-name (expand-file-name rrb-tmp-file-base
 						   temporary-file-directory))))
@@ -110,7 +129,7 @@ matches with rrb-ruby-file-name-regexp'"
     (set-buffer rrb-input-buffer)
     (setq error-code (apply 'call-process-region
 			    (point-min) (point-max)
-			    "rrb"
+			    command
 			    nil
 			    (list rrb-output-buffer
 				  tmpfile)
@@ -118,13 +137,36 @@ matches with rrb-ruby-file-name-regexp'"
 			    (append args '("--stdin-stdout"))))
     (rrb-output-to-error-buffer tmpfile)
     (delete-file tmpfile)
-    (if (/= error-code 0)
-	(message (concat "rrb: fail to refactor: " (rrb-error-message)))
-      (rrb-output-to-buffer))))
+    error-code))
+
+(defun rrb-complist-method ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (rrb-buffer-map-line (lambda (line) (cons (car (split-string line ";")) nil)))))
+
+(defun rrb-complist-local-var (method)
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (goto-char (point-min))
+    (when (search-forward method nil t)
+      (forward-char)
+      (mapcar (lambda (obj) (list obj))
+	      (split-string
+	       (cadr (split-string (rrb-chop (thing-at-point 'line)) ";"))
+	       ",")))))
+
+(defun rrb-comp-read-rename-local-variable ()
+  "Completion read for Rename local variable"
+  (when (/= (rrb-run-process "rrb_compinfo" "--methods") 0)
+    (error "rrb_info: fail to get information"))
+  (let ((method (completing-read "Refactored method: " (rrb-complist-method))))
+    (list method
+ 	  (completing-read "Old variable: " (rrb-complist-local-var method))
+ 	  (read-from-minibuffer "New variable: "))))
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
-  (interactive "sRefactored method: \nsOld variable: \nsNew variable: ")
+  (interactive (rrb-comp-read-rename-local-variable))
   (save-excursion
     (rrb-do-refactoring (list "--rename-local-variable" method old-var new-var))))
 
