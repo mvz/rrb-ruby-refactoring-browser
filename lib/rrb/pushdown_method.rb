@@ -6,29 +6,6 @@ require 'rrb/common_visitor.rb'
 
 module RRB
   
-  class PushdownMethodVisitor < Visitor
-
-    def initialize(old_namespace, method_name, new_namespace)
-      @method_name = method_name
-      @old_namespace = old_namespace
-      @new_namespace = new_namespace
-      @superclass_range = nil
-      @subclass_lineno = nil
-    end
-
-    attr_reader :superclass_range, :subclass_lineno
-
-    def visit_class(namespace, node)
-      cur_namespace = NodeNamespace.new(node, namespace)
-      if cur_namespace.match?(@new_namespace) 
-        @subclass_lineno = node.range.head.lineno
-      elsif cur_namespace.match?(@old_namespace)
-        target_method = node.method_defs.find{|method| method.name == @method_name}
-        @superclass_range = target_method && target_method.range
-      end      
-    end
-  end
-
   class PushdownMethodCheckVisitor < Visitor
     def initialize(dumped_info, old_namespace, method_name, new_namespace)
       @dumped_info = dumped_info
@@ -62,8 +39,12 @@ module RRB
     
   class ScriptFile
 
-    def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
-      visitor = MoveMethodVisitor.new(old_namespace, method_name, new_namespace)
+    def pushdown_method(old_namespace, method_name, new_namespace, 
+                        pushdowned_method,
+                        ignore_new_namespace, specified_lineno)
+      visitor = MoveMethodVisitor.new(old_namespace, method_name, 
+                                      new_namespace, 
+                                      ignore_new_namespace, specified_lineno)
       @tree.accept( visitor )
       @new_script = RRB.insert_str(@input, visitor.insert_lineno,
                                    visitor.delete_range, pushdowned_method, true)
@@ -79,15 +60,19 @@ module RRB
   end
 
   class Script
-    def pushdown_method(old_namespace, method_name, new_namespace)
+    def pushdown_method(old_namespace, method_name, new_namespace,
+                        filename, lineno)
       pushdowned_method = get_string_of_method(old_namespace, method_name)
       @files.each do |scriptfile|
 	scriptfile.pushdown_method(old_namespace, method_name,
-                                   new_namespace, pushdowned_method)
+                                   new_namespace, pushdowned_method, 
+                                   scriptfile.path != filename,
+                                   lineno)
       end      
     end
 
-    def pushdown_method?(old_namespace, method_name, new_namespace)
+    def pushdown_method?(old_namespace, method_name, new_namespace,
+                         filename, lineno)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
         @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
         return false
