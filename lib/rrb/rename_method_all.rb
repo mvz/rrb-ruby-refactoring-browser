@@ -131,15 +131,11 @@ module RRB
           return false
         end
       end
-
-      refactored_classes = info.classes_having_method( old_method )
-      refactored_classes.map!{|c| c.class_name}
-      lhs = Set.new(refactored_classes)
-      rhs = classes_define_method(old_method)
-      diff = (lhs | rhs) - (lhs & rhs)
-
-      if diff.include?(Namespace.new("Kernel"))
-        @error_message = "Don't rename kernel method\n"
+      
+      classes = info.classes_having_method( old_method ).map{|c| c.class_name}
+      classes = Set.new( classes )
+      unless classes_define_method(old_method).superset?( classes ) then
+        @error_message = "Can't rename method out of scripts\n"
         return false
       end
       
