@@ -50,7 +50,7 @@ class TestClassA
   def method_8
     $x = 5
     @y = $x + 4
-    return $xx*@y*@@z
+    return "str #{$xx*@y*@@z}"
   end
   
 end
