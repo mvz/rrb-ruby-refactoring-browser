@@ -144,17 +144,24 @@ module FreeRIDE
 
       end
       
+      def enable_refactor?
+      end
+
       def refactor
       end
 
       def onCmdOK(sender, sel, ptr)
-#        begin
-          refactor
-          FreeRIDE::RRB.rewrite_script(@plugin, @script)
-#        rescue
-#        ensure
+        begin
+          if enable_refactor?
+            refactor
+            FreeRIDE::RRB.rewrite_script(@plugin, @script)
+          else
+            message_box = FXMessageBox.error(self, MBOX_OK, 'Error', @script.error_message)
+          end
+        rescue
+        ensure
           onCmdCancel(sender, sel, ptr)
-#        end
+        end
       end
       
       def onCmdCancel(sender, sel, ptr)
@@ -206,13 +213,18 @@ module FreeRIDE
         super(plugin, "Rename Local Variable")
       end
 
-      def refactor
+      def setup_args
         method = @script.get_method_on_cursor(@filename, @cursor_line).name
-
         method_name = ::RRB::Method[method]
-        if @script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
-          @script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
-        end
+        return [method_name, @old_value, @txt_new_variable.text]        
+      end
+
+      def enable_refactor?
+        return @script.rename_local_var?(*setup_args)
+      end
+
+      def refactor
+        @script.rename_local_var(*setup_args)
       end
     end
 
@@ -221,12 +233,14 @@ module FreeRIDE
         super(plugin, "Rename Instance Variable")
       end
 
+      def enable_refactor?
+        namespace = @script.get_class_on_cursor(@filename, @cursor_line)
+        return @script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
+      end
+
       def refactor
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
-
-        if @script.rename_instance_var?(namespace, @old_value, @txt_new_variable.text)
-          @script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
-        end
+        @script.rename_instance_var(namespace, @old_value, @txt_new_variable.text)
       end
     end
 
@@ -235,12 +249,17 @@ module FreeRIDE
         super(plugin, "Rename Class Variable")
       end
 
-      def refactor
+      def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
+        return [namespace, @old_value, @txt_new_variable.text]
+      end
 
-        if @script.rename_class_var?(namespace, @old_value, @txt_new_variable.text)
-          @script.rename_class_var(namespace, @old_value, @txt_new_variable.text)
-        end
+      def enable_refactor?
+        return @script.rename_class_var?(*setup_args)
+      end
+
+      def refactor
+        @script.rename_class_var(*setup_args)
       end
     end
 
@@ -249,10 +268,16 @@ module FreeRIDE
         super(plugin, "Rename Global Variable")
       end
 
+      def setup_args
+        [@old_value, @txt_new_variable.text]
+      end
+
+      def enable_refactor?
+        return @script.rename_global_var?(*setup_args)
+      end
+
       def refactor
-        if @script.rename_global_var?(@old_value, @txt_new_variable.text)
-          @script.rename_global_var(@old_value, @txt_new_variable.text)
-        end
+        @script.rename_global_var(*setup_args)
       end
     end
 
@@ -261,13 +286,19 @@ module FreeRIDE
         super(plugin, "Rename Constant")
       end
 
-      def refactor
+      def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
         old_methods = [::RRB::Method.new(namespace, @old_value)]
 
-        if @script.rename_method?(old_methods, @txt_new_variable.text)
-          @script.rename_method(old_methods, @txt_new_variable.text)
-        end
+        return [old_methods, @txt_new_variable.text]
+      end
+
+      def enable_refactor?
+        return @script.rename_method?(*setup_args)
+      end
+
+      def refactor
+        @script.rename_method(*setup_args)
       end
     end
 
@@ -276,13 +307,18 @@ module FreeRIDE
         super(plugin, "Rename Constant")
       end
 
-      def refactor
+      def setup_args
         namespace = @script.get_class_on_cursor(@filename, @cursor_line)
         old_const = namespace.name + '::' + @old_value
+        return [old_const, @txt_new_variable.text]
+      end
 
-        if @script.rename_constant?(old_const, @txt_new_variable.text)
-          @script.rename_constant(old_const, @txt_new_variable.text)
-        end
+      def enable_refactor?
+        return @script.rename_constant?(*setup_args)
+      end
+
+      def refactor
+        @script.rename_constant(*setup_args)
       end
     end
 
@@ -300,15 +336,21 @@ module FreeRIDE
         @app.runModalFor(self)
       end
 
-      def refactor
+      def setup_args
         ext_obj = @current_pane['actions/get_ext_object'].invoke
         start_line =  ext_obj.line_from_position(ext_obj.selection_start) + 1
         end_line =  ext_obj.line_from_position(ext_obj.selection_end) + 1
         new_method = @txt_new_method.text
-        
-        if @script.extract_method?(@filename, new_method, start_line, end_line)
-          @script.extract_method(@filename, new_method, start_line, end_line)
-        end    
+
+        return [@filename, new_method, start_line, end_line]
+      end
+
+      def enable_refactor?
+        return @script.extract_method?(*setup_args)
+      end
+
+      def refactor
+        @script.extract_method(*setup_args)
       end
     end
 
@@ -347,13 +389,19 @@ module FreeRIDE
         super(plugin, "Push Down Method")
       end
 
-      def refactor
+      def setup_args
         method_name = ::RRB::Method[@cmb_target_method.text]
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
-        if @script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
-          @script.pushdown_method(method_name, new_namespace, @filename, @cursor_line)
-        end
+        return [method_name, new_namespace, @filename, @cursor_line]
+      end
+
+      def enable_refactor?
+        return @script.pushdown_method?(*setup_args)
+      end
+
+      def refactor
+        @script.pushdown_method(*setup_args)
       end
     end
 
@@ -362,13 +410,20 @@ module FreeRIDE
         super(plugin, "Pull Up Method")
       end
 
-      def refactor
+      def setup_args
         method_name = ::RRB::Method[@cmb_target_method.text]
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
-        if @script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
-          @script.pullup_method(method_name, new_namespace, @filename, @cursor_line)
-        end
+        return [method_name, new_namespace, @filename, @cursor_line]
+      end
+
+      def enable_refactor?
+
+        return @script.pullup_method?(*setup_args)
+      end
+
+      def refactor
+        @script.pullup_method(*setup_args)
       end
     end
   end
