@@ -80,6 +80,12 @@ class TestParser < RUNIT::TestCase
     assert_equals( "def", method_1_info.head_keyword.name )
     assert_equals( 12 , method_1_info.tail_keyword.lineno )
     assert_equals( "end", method_1_info.tail_keyword.name )
+    assert_equals( "class", class_info.head_keyword.name )
+
+    # test first_assign
+    assert_equals( [], method_3_info.first_assign )
+    assert_equals( [ 'c', 'x' ], method_1_info.first_assign.map{|info| info.name})
+    
   end
   
 end
