@@ -69,6 +69,22 @@ module RRB
     end
 
     attr_reader :result
+
+    def visit_call( node )      
+      node.method_calls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end
+
+      node.fcalls.each do |call|
+	if call.name == @old_method then
+	  @result <<
+	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
+	end
+      end      
+    end
     
     def visit_method( namespace, method_node )
       
@@ -79,36 +95,11 @@ module RRB
 				@new_method )
       end
 
-      method_node.method_calls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end
-
-      method_node.fcalls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end
-      
+      visit_call( method_node )      
     end
 
     def visit_toplevel( namespace, top_node )
-      top_node.method_calls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end
-
-      top_node.fcalls.each do |call|
-	if call.name == @old_method then
-	  @result <<
-	    Replacer.new( call.lineno, call.pointer, @old_method, @new_method )
-	end
-      end
+      visit_call( top_node )
     end
     
   end
