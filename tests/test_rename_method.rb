@@ -206,12 +206,6 @@ if __FILE__ == $0 then
 end
 "
 
-  def test_classes_call_method
-    scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
-    assert_equals( [ RRB::NS['B'], RRB::NS['C::D'] ],
-		  scriptfile.classes_call_method( 'foo' ) )
-  end
-
   def test_all_fcalls
     scriptfile = RRB::ScriptFile.new( INPUT_STR, 'test.rb' )
     assert_equals( Set[RRB::MN['B#foo'], RRB::MN['C::D#foo']],
