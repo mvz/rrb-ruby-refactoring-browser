@@ -35,29 +35,30 @@ module RRB
 
     attr_reader :result
 
-    def remove_method_def_parameter(remove_arg)
+    def remove_method_def_parameter(node)
+      remove_arg = node.args[@parameter_index]
       @result << Replacer.new_from_id(remove_arg, '' )
 
     end
 
-    def remove_fcalls_parameter( fcalls )
-      fcalls.each do |fcall|
-
-        remove_arg = fcall.args[@parameter_index]
-        if remove_arg
-          @result << Replacer.new_from_id(remove_arg, '')
-        end
+    def remove_fcall_parameter( fcall )
+      remove_arg = fcall.args[@parameter_index]
+      if remove_arg
+        @result << Replacer.new_from_id(remove_arg, '')
       end
     end
     
     def visit_method( namespace, node )
       
-      if namespace.match?( @namespace ) &&  @method_name == node.name then
-        remove_arg = node.args[@parameter_index]
-        remove_method_def_parameter(remove_arg)
+      if namespace.match?( @namespace ) &&  @method_name == node.name
+        remove_method_def_parameter(node)
       end
-      if namespace.match?( @namespace ) then
-        remove_fcalls_parameter( node.fcalls )
+      if namespace.match?( @namespace )
+        node.fcalls.each do|fcall|
+          if fcall.body.name == @method_name
+            remove_fcall_parameter(fcall)
+          end
+        end
       end
     end
   end
@@ -72,19 +73,26 @@ module RRB
     end
 
     def visit_method(namespace, node)
-      if namespace.match?(@namespace) && @method_name == node.name
-        unless node.args.map{|arg| arg.name}.include?(@target_parameter)
-          @error_message = "#{@target_parameter}: no such parameter\n"
-          @result = false
+      if namespace.match?(@namespace) 
+        if @method_name == node.name
+          unless node.args.map{|arg| arg.name}.include?(@target_parameter)
+            @error_message = "#{@target_parameter}: no such parameter\n"
+            @result = false
+          end
+          
+          if node.local_vars.map{|local_var| local_var.name}.find_all{|var_name|
+              var_name == @target_parameter}.size >= 2
+            @error_message = "#{@target_parameter} is used\n"
+            @result = false
+          end
         end
 
-        if node.local_vars.map{|local_var| local_var.name}.find_all{|var_name|
-            var_name == @target_parameter}.size >= 2
-          @error_message = "#{@target_parameter} is used in #{Method.new(namespace, node).name}\n"
-          @result = false
+        node.fcalls.find_all{|fcall| fcall.name == @method_name}.each do |fcall|
+          if fcall.args.include?(nil) || fcall.args == []
+            @error_message = "parameter is too complex\n"
+            @result = false
+          end
         end
-
-
       end
     end
     
