@@ -19,7 +19,7 @@ end
 
 def split_method_name( str )
   a, b = str.split( /#/ )
-  return a.split(/::/), b
+  return RRB::Namespace.new(a), b
 end
 
 if $0 == __FILE__ then
@@ -39,11 +39,11 @@ if $0 == __FILE__ then
       old_var = ARGV.shift
       new_var = ARGV.shift
     when '--rename-instance-variable'
-      namespace = ARGV.shift.split(/::/)
+      namespace = RRB::Namespace.new( ARGV.shift )
       old_var = ARGV.shift
       new_var = ARGV.shift
     when '--rename-class-variable'
-      namespace = ARGV.shift.split(/::/)
+      namespace = RRB::Namespace.new( ARGV.shift )
       old_var = ARGV.shift
       new_var = ARGV.shift
     when '--rename-global-variable'
