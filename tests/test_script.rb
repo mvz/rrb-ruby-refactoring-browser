@@ -113,6 +113,51 @@ end
 \C-l-- END --\C-l
 "
 
+  RENAME_METHOD_ALL_OUTPUT = "\
+/home/ohai/ruby/main.rb\C-l
+require 'sub.rb'
+
+class B < A
+
+  def foofee( x )
+    @i += x*2
+  end
+
+  def bar
+    hek = 5
+    foofee 1 
+    baz
+  end
+    
+end
+
+if __FILE__ == $0 then
+  obj = B.new
+  
+  obj.foofee
+  p obj.bar
+end
+
+\C-l/home/ohai/ruby/sub.rb\C-l
+
+class A
+
+  def initialize
+    @i = 0
+  end
+  
+  def foofee( x )
+    @i += x
+  end
+
+  def baz
+    @i
+  end
+  
+end
+\C-l-- END --\C-l
+"
+
   def test_rename_method_all?
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
     assert_equals( true, script.rename_method_all?( 'foo', 'foobar' ) )
@@ -122,6 +167,14 @@ end
     assert_equals( false, script.rename_method_all?( 'foo', 'hek' ) )
   end
 
+  def test_rename_method_all
+    script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
+    script.rename_method_all( 'foo', 'foofee' )
+    dst = ''      
+    script.result_to_io( dst )
+    assert_equals( RENAME_METHOD_ALL_OUTPUT, dst )
+  end
+  
   def test_dump
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
     info = script.get_dumped_info
