@@ -11,27 +11,25 @@
 
 ;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
-  "*Regular expression matched ruby script file name")
+  "*Regular expression matching ruby script file name")
 (defvar rrb-first-line-of-ruby-file-regexp "^#!.*ruby.*$"
-  "*Regular expression matched first line of ruby script")
+  "*Regular expression matching first line of ruby script")
 
 (defvar rrb-tmp-file-base "rrblog"
-  "*Base file name to use error log file")
+  "*Base file name of error log file")
 
 (defvar rrb-undo-file-base "rrbundo"
-  "*Base file name for undo file")
+  "*Base file name of undo files")
 
 (defvar rrb-undo-directory 
   (file-name-as-directory
    (make-temp-name
     (expand-file-name rrb-undo-file-base
 		      temporary-file-directory)))
-  "Directory that stores undo files")
+  "Directory which stores undo files")
 
 (defvar rrb-marshal-file-base "rrbmarshal"
-  "*Base file name for marshal file")
-
-(defvar rrb-marshal-file-name "")
+  "*Base file name of marshal file")
 
 
 ;;;; Internal variables
@@ -47,30 +45,22 @@
 (defvar rrb-modified-p-buffer (get-buffer-create " *rrb-modified-p-file"))
 
 (defvar rrb-undo-count 0)
-(defvar rrb-now-refactoring nil)
+(defvar rrb-now-refactoring-flag nil)
+(defvar rrb-marshal-file-name "")
 
 (add-hook 'kill-emacs-hook 'rrb-delete-undo-files)
 
 
 ;;;; Utility functions
 (defun rrb-find-all (prec list)
-  "Return list containing all elements of PREC is true"
+  "Return a list consisted of the elements which satisfy PREC."
   (cond ((eq list nil) nil)
 	((funcall prec (car list)) (cons (car list)
 					 (rrb-find-all prec (cdr list))))
 	(t (rrb-find-all prec (cdr list)))))
 
-(defun rrb-buffer-map-line (prec)
-  "Return list of (PREC line) for each line in current buffer"
-  (mapcar prec
-	  (split-string (buffer-string) "\n")))
-
-(defun rrb-chop (str)
-  "Return chopped string"
-  (substring str 0 -1))
-
 (defun rrb-current-line ()
-  "Return the vertical position of point..."
+  "Return the vertical position of 'point'."
   (+ (count-lines (point-min) (point))
      (if (= (current-column) 0) 1 0)))
 
@@ -89,6 +79,7 @@
 ;;;; Main functions
 
 (defun rrb-ruby-script-p (buffer)
+  "Return if the file BUFFER is visiting is ruby script or not."
   (and (buffer-file-name buffer)
        (or (string-match rrb-ruby-file-name-regexp (buffer-file-name buffer))
 	   (save-current-buffer
@@ -98,20 +89,19 @@
 	       (looking-at rrb-first-line-of-ruby-file-regexp))))))
 
 (defun rrb-all-ruby-script-buffer ()
-  "Return all ruby script buffer,`ruby script buffer' means `its file name
-matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
+  "Return a list containing all ruby script buffers."
   (rrb-find-all 'rrb-ruby-script-p
 		(buffer-list)))
 
 (defun rrb-insert-input-string (src-buffer)
-  "Insert contents of src-buffer to current buffer"
+  "Insert the contents of SRC-BUFFER to 'current-buffer'."
   (insert (buffer-file-name src-buffer))
   (insert rrb-io-splitter)
   (insert-buffer-substring src-buffer)
   (insert rrb-io-splitter))
 
 (defun rrb-insert-modified-p (src-buffer)
-  "Insert if src-buffer is modified or not to current buffer"
+  "Insert if SRC-BUFFER is modified or not to 'current-buffer'."
   (insert (buffer-file-name src-buffer))
   (insert rrb-io-splitter)
   (insert (if (buffer-modified-p src-buffer)
@@ -119,37 +109,37 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	    rrb-not-modifier))
   (insert rrb-io-splitter))
 
-(defun rrb-setup-buffer (proc buffer-list buffer)
-  "Generate input string on \" *rrb-input*\""
+(defun rrb-setup-buffer (proc buffer-list target-buffer)
+  "Generate compound string on TARGET-BUFFER."
   (save-current-buffer
-    (set-buffer buffer)
+    (set-buffer target-buffer)
     (erase-buffer)
     (mapcar proc
 	    buffer-list)
     (insert rrb-io-terminator)
     (insert rrb-io-splitter)))
 
-(defun rrb-clean-buffer (buffer)
-  "Clean buffer"
+(defun rrb-clean-buffer (target-buffer)
+  "Clean TARGET-BUFFER."
   (save-current-buffer
-    (set-buffer buffer)
+    (set-buffer target-buffer)
     (erase-buffer)))
 
 (defun rrb-output-to-error-buffer (filename)
-  "load FILENAME to \" *rrb-error\""
+  "load FILENAME to \" *rrb-error\"."
   (save-current-buffer
     (set-buffer rrb-error-buffer)
     (insert-file-contents filename)))
 
 (defun rrb-error-message ()
-  "Get Error Message in \" *rrb-error\""
+  "Extract Error Message from \" *rrb-error\"."
   (save-current-buffer
     (set-buffer rrb-error-buffer)
     (goto-char (point-min))
     (substring (thing-at-point 'line) 0 -1)))
     
 (defun rrb-do-refactoring (&rest args)
-  "Do refactoring"
+  "Do refactoring."
   (if (/= (apply 'rrb-run-process "rrb" 
 		 (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
       (error "fail to refactor: %s" (rrb-error-message)))
@@ -157,13 +147,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (setq rrb-undo-count (+ rrb-undo-count 1))
   (rrb-output-to-buffer rrb-output-buffer))
 
-;;
-;; Run rrb_compinfo
-;; The output of rrb_compino is like follow line
-;;  A,A::B,A::C,A::C::C1,A::C::C2,
-;;
+;;;
+;;; Run rrb_compinfo
+;;; The output of rrb_compino is like follow line
+;;;  A,A::B,A::C,A::C::C1,A::C::C2,
+;;;
 (defun rrb-run-comp-info (&rest args)
-  "Run rrb_compinfo"
+  "Run rrb_compinfo."
   (save-current-buffer
     (if (/= (apply 'rrb-run-process "rrb_compinfo" 
 		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
@@ -175,7 +165,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 
 (defun rrb-run-default-value (&rest args)
-  "Run rrb_default_value"
+  "Run rrb_default_value."
   (save-current-buffer
     (if (/= (apply 'rrb-run-process "rrb_default_value" 
 		   (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
@@ -189,7 +179,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 
 (defun rrb-run-process (command &rest args)
-  "Run COMMAND and return error code"
+  "Run COMMAND and return the error code."
   (save-current-buffer
     (let ((error-code)
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
@@ -206,7 +196,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       error-code)))
 
 (defun rrb-run-process-region (command &rest args)
-  "Run COMMAND and return error code"
+  "Run COMMAND and return the error code."
   (save-current-buffer
     (let ((error-code)
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
@@ -225,7 +215,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       error-code)))
 
 (defun rrb-add-change-hook-to-all-ruby-script ()
-  "Add hook(before-change-function) to all ruby scripts"
+  "Add hook('before-change-function') to all ruby scripts."
   (save-current-buffer
     (mapc 
      (lambda (buffer)
@@ -238,9 +228,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 (defmacro rrb-declare-refactoring (&rest body)
   `(progn
-     (setq rrb-now-refactoring t)
+     (setq rrb-now-refactoring-flag t)
      (mapc #'(lambda (exp) (eval exp)) ',body)
-     (setq rrb-now-refactoring nil)))
+     (setq rrb-now-refactoring-flag nil)))
 
 
 (defmacro rrb-setup-refactoring (&rest body)
@@ -255,11 +245,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (defun rrb-delete-marshal-file ()
     (delete-file rrb-marshal-file-name))
   (defun rrb-prepare-refactoring ()
-    "Call this function before Refactoring"
     (rrb-add-change-hook-to-all-ruby-script)
     (rrb-make-marshal-file))
   (defun rrb-terminate-refactoring ()
-    "Call this function after Refactoring"
     (rrb-delete-marshal-file))
   `(rrb-declare-refactoring
     (rrb-prepare-refactoring)
@@ -271,7 +259,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 ;;;; operation for script-buffer
 
 (defun rrb-each-for-compound-buffer (function compound-buffer)
-  "Call function for each file included in compound buffer"
+  "Apply FUNCTION to each file included in COMPOUND-BUFFER."
   (save-current-buffer
     (set-buffer compound-buffer)
     (let ((script-list (split-string (buffer-string) rrb-io-splitter)))
@@ -281,7 +269,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   
 
 (defun rrb-get-file-name-list (compound-buffer)
-  "Get filename list from compound buffer"
+  "Return a filename list of COMPOUND-BUFFER."
   (let (file-name-list '())
     (rrb-each-for-compound-buffer 
      (lambda (file-name file-content)
@@ -291,13 +279,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     ))
 
 (defun rrb-get-buffer-list (compound-buffer)
-  "Get buffer list visiting files included in compound-buffer"
+  "Return a list of buffer which is visiting files included in COUMPOUND-BUFFER."
   (mapcar 'get-file-buffer
 	  (rrb-get-file-name-list compound-buffer)))
 
 
-(defun rrb-output-to-buffer (buffer)
-  "Rewrite all ruby script buffer from buffer and reset cursor point"
+(defun rrb-output-to-buffer (compound-buffer)
+  "Rewrite all ruby script buffer, using COMPOUND-BUFFER."
   (save-current-buffer
     (rrb-each-for-compound-buffer 
      (lambda (file-name file-content)
@@ -306,32 +294,32 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	 (erase-buffer)
 	 (insert file-content)
 	 (goto-char before-point)))
-       buffer)))
+       compound-buffer)))
 
 ;;;; Completion
 
 ;;;
 ;;; completion type-2  ( str,str,...,str, )
-;;
+;;;
 
 (defun rrb-comp-read-type-2 (compinfo-arg default-arg prompt1 prompt2)
-  "Completion read for Rename method all, Rename Constant, etc.."
+  "Completely read for Rename method all, Rename Constant, etc.."
   (list (completing-read prompt1 (rrb-run-comp-info compinfo-arg) nil nil default-arg)
 	(read-from-minibuffer prompt2)))
 
 ;;;
 ;;; completion for Pull up method, Push down method
-;;
+;;;
 (defun rrb-comp-read-move-method (compinfo-arg1 prompt1 compinfo-arg2 default-arg2 prompt2)
-  "completion read for Pull up method, etc.."
+  "Completely read for Pull up method, etc.."
   (list (completing-read prompt1 (rrb-run-comp-info compinfo-arg1))
 	(completing-read prompt2 (rrb-run-comp-info compinfo-arg2) nil nil default-arg2)))
 
 ;;;
 ;;; completion for Rename variable defined at some namespace
-;;
+;;;
 (defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
-  "completion read for rename instance variable, etc.."
+  "Completely read for rename instance variable, etc.."
   (let ((result (completing-read prompt1 
 			 (rrb-run-comp-info compinfo-arg1) nil nil default-arg1)))
     (list 
@@ -343,7 +331,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 
 (defun rrb-comp-read-recursively (compinfo-arg default-arg prompt)
-  "completion read for rename method, etc.."
+  "Completing read recursively."
   (let ((compound-result "")
 	(result))
     (while (progn 
@@ -354,61 +342,54 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	     (not (string= result "")))
       (setq default-arg "")
       (setq compound-result (format "%s %s" compound-result result))
-      (message (format "%s %s" "inputed data: " compound-result))
+      (message (format "%s %s" "Inputed data: " compound-result))
       (sit-for 1))
     compound-result))
 
-;;;
-;;; default value
-;;    
+;;;; default value
 (defun rrb-get-value-on-cursor (args)
   (rrb-run-default-value (buffer-file-name) (number-to-string (rrb-current-line)) args))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Undo, Redo
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
+;;;;;  Undo, Redo
 (defun rrb-undo-base (undo-file-name modified-p-file-name)
-  "Base of Undo and Redo of the previous refactoring"
-  (defun rrb-read-undo-file ()
-    (save-current-buffer
-      (set-buffer rrb-output-buffer)
-      (rrb-clean-buffer rrb-output-buffer)
-      (insert-file-contents undo-file-name)
-      (let* ((buffer-list (rrb-get-buffer-list rrb-output-buffer))
-	     (modified-list (mapcar 'buffer-modified-p buffer-list)))
-	(rrb-make-undo-files buffer-list)
-	(rrb-output-to-buffer rrb-output-buffer)
-	modified-list)))
-  (defun rrb-read-modified-p-file (modified-list)
-    (save-current-buffer
-      (set-buffer rrb-output-buffer)
-      (rrb-clean-buffer rrb-output-buffer)
-      (insert-file-contents modified-p-file-name)
-      (rrb-each-for-compound-buffer
-       (lambda (file-name file-contents)
-	 (if (string= file-contents rrb-not-modifier)
-	     (progn
-	       (set-buffer (get-file-buffer file-name))
-	       (set-buffer-modified-p (not (car modified-list)))
-	       (setq modifed-list (cdr modified-list)))))
-       rrb-output-buffer)))
-  (if (file-readable-p undo-file-name)
-      (let* ((modified-list (rrb-read-undo-file)))
-	(rrb-read-modified-p-file modified-list)
-	t)
-    (message "Nothing to do!")
-    nil))
+  "Base function of undo and redo."
+  (let ((undo-buffer-list))
+    (defun rrb-read-undo-file ()
+      (save-current-buffer
+	(set-buffer rrb-output-buffer)
+	(rrb-clean-buffer rrb-output-buffer)
+	(insert-file-contents undo-file-name)
+	(setq undo-buffer-list (rrb-get-buffer-list rrb-output-buffer))
+	(rrb-make-undo-files undo-buffer-list)
+	(rrb-output-to-buffer rrb-output-buffer)))
+    (defun rrb-read-modified-p-file ()
+      (save-current-buffer
+	(set-buffer rrb-output-buffer)
+	(rrb-clean-buffer rrb-output-buffer)
+	(insert-file-contents modified-p-file-name)
+	(let ((modified-list (mapcar 'buffer-modified-p undo-buffer-list)))
+	  (rrb-each-for-compound-buffer
+	   (lambda (file-name file-contents)
+	     (if (string= file-contents rrb-not-modifier)
+		 (progn
+		   (set-buffer (get-file-buffer file-name))
+		   (set-buffer-modified-p (not (car modified-list)))
+		   (setq modifed-list (cdr modified-list)))))
+	   rrb-output-buffer))))
+    (if (file-readable-p undo-file-name)
+	(progn
+	  (rrb-read-undo-file)
+	  (rrb-read-modified-p-file)
+	  t)
+      (message "Nothing to do!")
+      nil)))
 
 
 (defun rrb-make-undo-files (buffer-list)
-  "Make temporary files for Undo, Redo"
+  "Make temporary files for undo and redo."
   (defun rrb-make-undo-file ()
-    "Make temporary file which records previous states of each file"
+    "Make temporary file which records previous states of each file."
     (save-current-buffer
       (set-buffer rrb-undo-buffer)
       (rrb-clean-buffer rrb-undo-buffer)
@@ -418,7 +399,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
       (write-region (point-min) (point-max)
 		    (rrb-make-undo-file-name rrb-undo-count) nil 0 nil)))
   (defun rrb-make-modified-p-file ()
-    "Make temporary file which records if each files are modified or not"
+    "Make temporary file which records if each files are modified or not."
     (save-current-buffer
       (set-buffer rrb-modified-p-buffer)
       (rrb-clean-buffer rrb-modified-p-buffer)
@@ -445,13 +426,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		    rrb-undo-directory))
 
 (defun rrb-make-undo-directory ()
-  "Make directory for temporary file for Undo, Redo"
+  "Make directory for temporary file for undo and redo."
   (if (not (file-exists-p rrb-undo-directory))
       (make-directory rrb-undo-directory))
   (file-accessible-directory-p rrb-undo-directory))
 
 (defun rrb-delete-undo-files ()
-  "Delete temporary files for Undo, Redo"
+  "Delete temporary files made for undo and redo."
   (and (file-exists-p rrb-undo-directory)
        (file-accessible-directory-p rrb-undo-directory)
        (progn
@@ -464,13 +445,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (setq rrb-undo-count 0))
 
 (defun rrb-notify-file-changed (start end)
-  (if (not rrb-now-refactoring)
+  (if (not rrb-now-refactoring-flag)
       (rrb-delete-undo-files)))
 ;;;
 ;;; Undo
-;;
+;;;
 (defun rrb-undo ()
-  "Undo of the last refactoring"
+  "Undo the previous refactoring."
   (interactive)
   (rrb-declare-refactoring
    (let ((prev-undo-count (- rrb-undo-count 1)))
@@ -480,9 +461,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 					  
 ;;;
 ;;; Redo
-;;
+;;;
 (defun rrb-redo ()
-  "Redo of the last Undo"
+  "Redo the previous undo."
   (interactive)
   (rrb-declare-refactoring
    (let ((next-undo-count (+ rrb-undo-count 1)))
@@ -490,15 +471,13 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 			(rrb-make-not-modified-file-name next-undo-count))
 	 (setq rrb-undo-count next-undo-count)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Refactoring
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Refactoring
 
-;;;; Refactoring: Rename local variable 
+;;;
+;;; Refactoring: Rename local variable 
+;;;
 (defun rrb-comp-read-rename-local-variable ()
-  "Completion read for Rename local variable"
+  "Read completely for Rename Local Variable."
   (rrb-comp-read-type-4 "--methods" (rrb-get-value-on-cursor "--method") 
 			"Refactored method: " "--local-vars" "Old variable: "
 			"New variable: "))
@@ -507,15 +486,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-local-variable" method old-var new-var))
 
 (defun rrb-rename-local-variable ()
-  "Refactor code: rename local variable"
+  "Rename Local Variable."
   (interactive)
   (rrb-setup-refactoring 
    (apply 'rrb-rename-local-variable-impl (rrb-comp-read-rename-local-variable))))
 
-;;;; Refactoring: Rename method
-;;;
+;;; Refactoring: Rename method
 (defun rrb-comp-read-rename-method ()
-  "completion read for rename method, etc.."
+  "Read completely for Rename Method"
   (let ((compound-result (rrb-comp-read-recursively
 	  "--classes"
 	  (rrb-get-value-on-cursor "--class")
@@ -532,14 +510,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-method" classes old-method new-method))  
 
 (defun rrb-rename-method ()
-  "Refactor code: rename local variable"
+  "Rename Method."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-method-impl (rrb-comp-read-rename-method))))
 
-;;;; Refactoring: Rename method all
+;;;
+;;; Refactoring: Rename method all
+;;;
 (defun rrb-comp-read-rename-method-all ()
-  "Completion read for Rename method all"
+  "Read completely for Rename Method All"
   (rrb-comp-read-type-2 "--bare-methods" 
 			(rrb-get-value-on-cursor "--bare-name")
 			"Old method: " "New method: "))
@@ -548,7 +528,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-method-all" old-method new-method))
 
 (defun rrb-rename-method-all ()
-  "Refactor code: rename method all old method as new"
+  "Rename Method All."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-method-all-impl (rrb-comp-read-rename-method-all))))
@@ -568,7 +548,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (count-lines (point-min) (point)))
 
 (defun rrb-extract-method (begin end new_method)
-  "Refactor code: Extract method"
+  "Extract Method."
   (interactive "r\nsNew method: ")
   (rrb-setup-refactoring 
    (rrb-do-refactoring "--extract-method"
@@ -577,9 +557,11 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		       (number-to-string (rrb-begin-line-num begin))
 		       (number-to-string (rrb-end-line-num end)))))
 
-;;;; Refactoring: Rename instance variable
+;;;
+;;; Refactoring: Rename instance variable
+;;;
 (defun rrb-comp-read-rename-instance-variable ()
-  "completion read for rename instance variable"
+  "Read completely for Rename Instance Variable."
   (rrb-comp-read-type-4 "--classes" 
 			(rrb-get-value-on-cursor "--class") 
 			"Refactord class: " 
@@ -591,14 +573,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var))
 
 (defun rrb-rename-instance-variable ()
-  "Refactor code: Rename instance variable"
+  "Rename Instance Variable."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-instance-variable-impl (rrb-comp-read-rename-instance-variable))))
 
 ;;;; Refactoring: Rename class variable
 (defun rrb-comp-read-rename-class-variable ()
-  "completion read for rename instance variable"
+  "Read completely for Rename Class Variable"
   (rrb-comp-read-type-4 "--classes"
 			(rrb-get-value-on-cursor "--class") 
 			"Refactord class: " 
@@ -610,14 +592,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-class-variable" ns old-var new-var))
 
 (defun rrb-rename-class-variable ()
-  "Refactor code: Rename instance variable"
+  "Rename Class Variable."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-class-variable-impl (rrb-comp-read-rename-class-variable))))
 
-;;;; Refactoring: Rename global variable
+;;;
+;;; Refactoring: Rename global variable
+;;;
 (defun rrb-comp-read-rename-global-variable ()
-  "compleion read for rename global variable"
+  "Read completely for Rename Global Variable."
   (rrb-comp-read-type-2 "--global-vars"
 			""
 			"Old global variable: " "New global variable: "))
@@ -626,14 +610,14 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-global-variable" old-var new-var))  
 
 (defun rrb-rename-global-variable ()
-  "Refactor code: Rename global variable"
+  "Rename Global Variable."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-global-variable-impl (rrb-comp-read-rename-global-variable))))
 
 ;;;; Refactoring: Rename constant
 (defun rrb-comp-read-rename-constant ()
-  "compleion read for rename constant"
+  "Completely read for Rename Constant."
   (rrb-comp-read-type-2 "--constants" 
 			(rrb-get-value-on-cursor "--class")
 			"Old constant: " "New constant: "))
@@ -642,16 +626,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
     (rrb-do-refactoring "--rename-constant" old-const new-const))  
 
 (defun rrb-rename-constant ()
-  "Refactor code: Rename constant"
+  "Rename Constant."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-constant-impl (rrb-comp-read-rename-constant))))
 
-
-;;;; Refactoring: Rename class
-
+;;;
+;;; Refactoring: Rename class
+;;;
 (defun rrb-comp-read-rename-class ()
-  "compleion read for rename class"
+  "Read completely for Rename Class."
   (rrb-comp-read-type-2 "--classes" 
 			(rrb-get-value-on-cursor "--class")
 			"Old class/module: " "New class/module: "))
@@ -660,15 +644,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (rrb-do-refactoring "--rename-constant" old-class new-class))
 					;class name is a constant.
 (defun rrb-rename-class ()
-  "Refactor code: Rename class or module"
+  "Rename Class or Module."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-rename-class-impl (rrb-comp-read-rename-class))))
-	       
-;;;; Refactoring: Pull up method
-
+	
+;;;       
+;;; Refactoring: Pull up method
+;;;
 (defun rrb-comp-read-pullup-method ()
-  "completion read for pull up method"
+  "Read completely for Pull Up Method."
   (rrb-comp-read-move-method "--methods" "Old Method: "
 			"--classes"
 			(rrb-get-value-on-cursor "--class") "New class: "))
@@ -680,15 +665,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 
 
 (defun rrb-pullup-method ()
-  "Refactor code: Pull up method"
+  "Pull Up Method."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-pullup-method-impl (rrb-comp-read-pullup-method))))
-		 
-;;;; Refactoring: Push down method
 
+;;;		 
+;;; Refactoring: Push down method
+;;;
 (defun rrb-comp-read-pushdown-method ()
-  "completion read for push down method"
+  "Read completely for Push Down Method."
   (rrb-comp-read-move-method "--methods" "Old Method: "
 			"--classes" 
 			(rrb-get-value-on-cursor "--class") "New class: "))
@@ -699,15 +685,16 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 		      (number-to-string (rrb-current-line))))
 
 (defun rrb-pushdown-method ()
-  "Refactor code: Push down method"
+  "Push Down Method."
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-pushdown-method-impl (rrb-comp-read-pushdown-method))))
-		 
-;;;; Refactoring: Extract superclass
+	
+;;;	 
+;;; Refactoring: Extract superclass
 ;;;
 (defun rrb-comp-read-extract-superclass ()
-  "completion read for extract superclass"
+  "Read completely for Extract Superclass."
   (list (completing-read "Location: "
 			 (rrb-run-comp-info "--classes")
 			 nil nil 
@@ -723,7 +710,9 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   
 
 (defun rrb-extract-superclass ()
-  "Refactor code: Extract superclass"
+  "Extract Superclass"
   (interactive)
   (rrb-setup-refactoring
    (apply 'rrb-extract-superclass-impl (rrb-comp-read-extract-superclass))))
+
+;;; rrb.el ends here
