@@ -175,6 +175,18 @@ matches with rrb-ruby-file-name-regexp'"
  	  (read-from-minibuffer prompt3))))
 
 ;;;
+(defun rrb-comp-read-type-4 (compinfo-arg1 default-arg1 prompt1 compinfo-arg2 prompt2 prompt3)
+  "completion read for Pull up method, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((retval-1 (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1)))
+    (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2 "--target" retval-1) 0)
+      (error "rrb_info: fail to get information %s" (rrb-error-message)))
+    (list retval-1
+	  (completing-read prompt2 (rrb-complist-type-2))
+	  (read-from-minibuffer prompt3))))
+
+;;;
 ;;; completion type-2  ( str,str,...,str, )
 ;;
 ;; rrb_compinfo output example
@@ -223,7 +235,7 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename local variable 
 (defun rrb-comp-read-rename-local-variable ()
   "Completion read for Rename local variable"
-  (rrb-comp-read-type-1 "--methods-local-vars" (rrb-get-value-on-cursor "--method") "Refactored method: " "Old variable: " "New variable: "))
+  (rrb-comp-read-type-4 "--methods" (rrb-get-value-on-cursor "--method") "Refactored method: " "--local-vars" "Old variable: " "New variable: "))
 
 (defun rrb-rename-local-variable (method old-var new-var)
   "Refactor code: rename local variable"
@@ -276,9 +288,11 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename instance variable
 (defun rrb-comp-read-rename-instance-variable ()
   "completion read for rename instance variable"
-  (rrb-comp-read-type-1 "--classes-instance-vars" 
+  (rrb-comp-read-type-4 "--classes" 
 			(rrb-get-value-on-cursor "--class") 
-			"Refactord class: " "Old instance variable: "
+			"Refactord class: " 
+			"--instance-vars"
+			"Old instance variable: "
 			"New instance variable: " ))
 
 (defun rrb-rename-instance-variable (ns old-var new-var)
@@ -292,9 +306,11 @@ matches with rrb-ruby-file-name-regexp'"
 ;;;; Refactoring: Rename class variable
 (defun rrb-comp-read-rename-class-variable ()
   "completion read for rename instance variable"
-  (rrb-comp-read-type-1 "--classes-class-vars"
+  (rrb-comp-read-type-4 "--classes"
 			(rrb-get-value-on-cursor "--class") 
-			"Refactord class: " "Old class variable: " 
+			"Refactord class: " 
+			"--class-vars"
+			"Old class variable: " 
 			"New class variable: " ))
 
 (defun rrb-rename-class-variable (ns old-var new-var)
