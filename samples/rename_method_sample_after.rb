@@ -44,4 +44,11 @@ if __FILE__ == $0 then
   
   obj.feefoo
   p obj.bar
+  class << obj
+    def feefoo
+      bar
+    end
+  end
+
+  p obj.feefoo
 end
