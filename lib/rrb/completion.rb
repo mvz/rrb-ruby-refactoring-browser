@@ -37,6 +37,20 @@ module RRB
 
     attr_reader :methods
   end
+
+  class RefactableClassesIVarsVisitor < Visitor
+
+    def initialize
+      @classes = Hash.new
+    end
+
+    def visit_method( namespace, node )
+      @classes[namespace.str] ||= Set.new
+      @classes[namespace.str].merge( node.instance_vars.map{|ivar| ivar.name} )
+    end
+
+    attr_reader :classes
+  end
   
   class ScriptFile
 
@@ -44,6 +58,12 @@ module RRB
       visitor = RefactableMethodsVistor.new
       @tree.accept( visitor )
       visitor.methods
+    end
+
+    def refactable_classes_instance_vars
+      visitor = RefactableClassesIVarsVisitor.new
+      @tree.accept( visitor )
+      visitor.classes
     end
     
   end
@@ -56,5 +76,17 @@ module RRB
       end
     end
 
+    def refactable_classes_instance_vars
+      result = Hash.new
+      @files.each do |scriptfile|
+	scriptfile.refactable_classes_instance_vars.each do |name,ivars|
+	  result[name] ||= Set.new
+	  result[name].merge( ivars )
+	end
+      end
+
+      result
+    end
+    
   end
 end
