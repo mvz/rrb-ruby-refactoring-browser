@@ -44,36 +44,34 @@ module RRB
   end
 
   class GetClassOnRegionVisitor < Visitor
-    def initialize(start_lineno, end_lineno)
-      @start_lineno = start_lineno
-      @end_lineno = end_lineno
+    def initialize( range)
+      @range = range
       @namespace = NodeNamespace.new_toplevel
     end
     attr_reader :namespace
 
     def visit_class(namespace, node)
-      if node.range.contain?( @start_lineno .. @end_lineno ) then
+      if node.range.contain?( @range ) then
         @namespace = NodeNamespace.new(node, namespace)
       else
-        unless node.range.out_of?(@start_lineno .. @end_lineno) then
+        unless node.range.out_of?(@range) then
           @namespace = nil
         end
       end
     end
   end
   class GetMethodOnRegionVisitor < Visitor
-    def initialize(start_lineno, end_lineno)
-      @start_lineno = start_lineno
-      @end_lineno = end_lineno
+    def initialize( range)
+      @range = range
       @method = Method.new_toplevel
     end
     attr_reader :method
 
     def visit_method(namespace, node)
-      if node.range.contain?( @start_lineno .. @end_lineno ) then
+      if node.range.contain?( @range ) then
         @method = Method.new(namespace, node)
       else
-        unless node.range.out_of?(@start_lineno .. @end_lineno) then
+        unless node.range.out_of?( @range ) then
           @method = nil
         end
       end
@@ -89,13 +87,13 @@ module RRB
     end
 
     def get_method_on_region(range)
-      visitor = GetMethodOnRegionVisitor.new(range.begin, range.end)
+      visitor = GetMethodOnRegionVisitor.new( range )
       @tree.accept( visitor )
       visitor.method
     end
 
     def get_class_on_region(range)
-      visitor = GetClassOnRegionVisitor.new(range.begin, range.end)
+      visitor = GetClassOnRegionVisitor.new( range )
       @tree.accept( visitor )
       visitor.namespace
     end    
