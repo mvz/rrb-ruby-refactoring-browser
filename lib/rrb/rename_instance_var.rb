@@ -90,8 +90,8 @@ module RRB
 
   class ScriptFile
 
-    def get_ancestral_ivar_owner( namespace, dumped_info, old_var )
-      get_owner = GetInstanceVarOwnerVisitor.new(namespace, dumped_info, old_var)
+    def get_ancestral_ivar_owner( namespace, dumped_info, var )
+      get_owner = GetInstanceVarOwnerVisitor.new(namespace, dumped_info, var)
       @tree.accept(get_owner)
       get_owner.owner
     end
@@ -115,9 +115,9 @@ module RRB
 
   class Script
 
-    def get_real_ivar_owner( namespace, old_var )
+    def get_real_ivar_owner( namespace, var )
       @files.inject( namespace ) do |owner,scriptfile|
-	scriptfile.get_ancestral_ivar_owner( owner, get_dumped_info, old_var )
+	scriptfile.get_ancestral_ivar_owner( owner, get_dumped_info, var )
       end
     end
     
