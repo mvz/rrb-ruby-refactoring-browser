@@ -28,6 +28,11 @@
 		      temporary-file-directory)))
   "Directory that stores undo files")
 
+(defvar rrb-marshal-file-base "rrbmarshal"
+  "*Base file name for marshal file")
+
+(defvar rrb-marshal-file-name "")
+
 
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
@@ -162,6 +167,28 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-make-temp-name (base)
   (make-temp-name (expand-file-name base temporary-file-directory)))
 
+(defun rrb-make-marshal-file ()
+  (save-current-buffer
+    (let ((error-code)
+	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
+      (setq rrb-marshal-file-name (rrb-make-temp-name rrb-marshal-file-base))
+      (rrb-clean-buffer rrb-output-buffer)
+      (rrb-clean-buffer rrb-error-buffer)
+      (set-buffer rrb-input-buffer)
+      (setq error-code (apply 'call-process-region
+			      (point-min) (point-max)
+			      "rrb_marshal"
+			      nil
+			      (list rrb-output-buffer tmpfile)
+			      nil
+			     (list "--stdin-fileout" rrb-marshal-file-name)))
+      (rrb-output-to-error-buffer tmpfile)
+      (delete-file tmpfile)
+      error-code)))
+
+(defun rrb-delete-marshal-file ()
+  (delete-file rrb-marshal-file-name))
+
 (defun rrb-run-process (command &rest args)
   "Run COMMAND and return error code"
   (save-current-buffer
@@ -169,14 +196,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
       (rrb-clean-buffer rrb-output-buffer)
       (rrb-clean-buffer rrb-error-buffer)
-      (set-buffer rrb-input-buffer)
-      (setq error-code (apply 'call-process-region
-			      (point-min) (point-max)
+      (setq error-code (apply 'call-process
 			      command
 			      nil
 			      (list rrb-output-buffer tmpfile)
 			      nil
-			      `(,@args "--stdin-stdout")))
+			      `(,@args "--marshalin-stdout" ,rrb-marshal-file-name)))
       (rrb-output-to-error-buffer tmpfile)
       (delete-file tmpfile)
       error-code)))
@@ -203,15 +228,15 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   "Call this function before Refactoring"
   (setq rrb-now-refactoring t)
   (rrb-add-change-hook-to-all-ruby-script)
-  (save-current-buffer
-    (rrb-setup-buffer 'rrb-insert-input-string
-		      (rrb-all-ruby-script-buffer)
-		      rrb-input-buffer)))
+  (rrb-setup-buffer 'rrb-insert-input-string
+		    (rrb-all-ruby-script-buffer)
+		    rrb-input-buffer)
+  (rrb-make-marshal-file))
 
 (defun rrb-terminate-refactoring ()
   "Call this function after Refactoring"
-  (setq rrb-now-refactoring nil))
-
+  (setq rrb-now-refactoring nil)
+  (rrb-delete-marshal-file))
 
 ;;;; operation for script-buffer
 
@@ -484,12 +509,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-undo ()
   "Undo of the last refactoring"
   (interactive)
-  (rrb-prepare-refactoring)
+  (setq rrb-now-refactoring t)
   (let ((prev-undo-count (- rrb-undo-count 1)))
     (if (rrb-undo-base (rrb-make-undo-file-name prev-undo-count)
 		       (rrb-make-not-modified-file-name prev-undo-count))
 	(setq rrb-undo-count prev-undo-count)))
-  (rrb-terminate-refactoring))
+  (setq rrb-now-refactoring nil))
 					  
 ;;;
 ;;; Redo
@@ -497,12 +522,12 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
 (defun rrb-redo ()
   "Redo of the last Undo"
   (interactive)
-  (rrb-prepare-refactoring)
+  (setq rrb-now-refactoring t)
   (let ((next-undo-count (+ rrb-undo-count 1)))
     (if (rrb-undo-base (rrb-make-undo-file-name next-undo-count)
 		       (rrb-make-not-modified-file-name next-undo-count))
 	(setq rrb-undo-count next-undo-count)))
-  (rrb-terminate-refactoring))
+  (setq rrb-now-refactoring nil))
 	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
