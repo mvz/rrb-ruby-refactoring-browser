@@ -7,14 +7,14 @@
 
 ;;; Code:
 
-;;; Customizable variables
+;;;; Customizable variables
 (defvar rrb-ruby-file-name-regexp "^.*\\.rb$"
   "*Regular expression matched ruby script file name")
 
 (defvar rrb-tmp-file-base "rrblog"
   "*Base file name to use error log file")
 
-;;; Internal variables
+;;;; Internal variables
 (defvar rrb-main-buffer nil
   "Ruby main script buffer")
 
@@ -25,7 +25,7 @@
 (defvar rrb-output-buffer (get-buffer-create " *rrb-output*"))
 (defvar rrb-error-buffer (get-buffer-create " *rrb-error*"))
 
-;;; Utility functions
+;;;; Utility functions
 (defun rrb-find-all (prec list)
   "Return list containing all elements of PREC is true"
   (cond ((eq list nil) nil)
@@ -47,7 +47,7 @@
   "Return chopped string"
   (substring str 0 -1))
 
-;;; Main functions
+;;;; Main functions
 (defun rrb-set-main-script-buffer (buffer-name)
   "Set ruby main script buffer"
   (interactive "*bSelect main script: ")
@@ -138,7 +138,8 @@ matches with rrb-ruby-file-name-regexp'"
     (delete-file tmpfile)
     error-code))
 
-(defun rrb-complist-method ()
+;;;; Refactoring: Rename local variable 
+(defun rrb-complist-method-fullname ()
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (rrb-buffer-map-line (lambda (line) (cons (car (split-string line ";")) nil)))))
@@ -156,7 +157,8 @@ matches with rrb-ruby-file-name-regexp'"
   "Completion read for Rename local variable"
   (when (/= (rrb-run-process "rrb_compinfo" "--methods-local-vars") 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((method (completing-read "Refactored method: " (rrb-complist-method))))
+  (let ((method (completing-read "Refactored method: "
+				 (rrb-complist-method-fullname))))
     (list method
  	  (completing-read "Old variable: " (rrb-complist-local-var method))
  	  (read-from-minibuffer "New variable: "))))
@@ -169,9 +171,25 @@ matches with rrb-ruby-file-name-regexp'"
   (save-excursion
     (rrb-do-refactoring "--rename-local-variable" method old-var new-var)))
 
+;;;; Refactoring: Rename method all
+(defun rrb-complist-method ()
+  (save-current-buffer
+    (set-buffer rrb-output-buffer)
+    (goto-char (point-min))
+    (mapcar 'list
+     (split-string (buffer-substring (point-at-bol) (point-at-eol)) ","))))
+
+(defun rrb-comp-read-rename-method-all ()
+  "Completion read for Rename method all"
+  (when (/= 0 (rrb-run-process "rrb_compinfo" "--methods"))
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (list (completing-read "Old method: " (rrb-complist-method))
+	(read-from-minibuffer "New variable: ")))
+
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
-  (interactive "sOld method: \nsNew method: ")
+  (interactive (rrb-comp-read-rename-method-all))
   (save-excursion
     (rrb-setup-input-buffer)
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
+
