@@ -15,9 +15,11 @@ module RRB
 	@fcalls = []
 	@singleton_method_defs = []
 	@class_method_defs = []
+	@singleton_class_defs = []      
       end
       attr_reader :class_defs, :method_defs, :method_calls, :local_vars, :fcalls
       attr_reader :singleton_method_defs, :class_method_defs
+      attr_reader :singleton_class_defs
     end
 
     # parse and return tree
@@ -89,6 +91,12 @@ module RRB
     def on__module( module_name, stmts )
       @scope_stack[-2].class_defs << ModuleNode.new( module_name,
 						    @scope_stack.last )
+    end
+
+    def on__sclass( s_obj, stmts )
+      @scope_stack[-2].singleton_class_defs <<
+	SingletonClassNode.new( IdInfo.new( :nil, 0, 0, "" ),
+			       @scope_stack.last )
     end
     
     def on__def( def_str, name, arglist, stmts, rescue_clause )
