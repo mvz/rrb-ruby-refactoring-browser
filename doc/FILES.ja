@@ -2,6 +2,8 @@
 
 README.ja 日本語のREADME
 README.en 英語のREADME
+NEWS.ja   日本語のNEWS
+NEWS.en   英語のNEWS
 
 bin/   実行可能なファイル
   artags        Ruby scriptのemacs用TAGSファイルを生成するコマンド
@@ -9,9 +11,11 @@ bin/   実行可能なファイル
   rrb_compinfo  emacsでの補完のための情報を得るためのコマンド
   rrb_default_value  emacsでのデフォルト値を得るためのコマンド
   rrb_marshal   高速化のためあらかじめソースをparseしておきそれをファイルに保存しておくコマンド
+  rrbcui        CUIインターフェース
 
 lib/   RRBのライブラリ部分
   rrb/
+    rrb.rb             以下のライブラリをまとめたもの
     common_visitor.rb  複数のリファクタリングで使われるvisitorを定義
     completion.rb      インターフェース側での補完のための情報を返すメソッドを定義
     default.rb         ユーザがカスタマイズできる定数を定義
@@ -32,11 +36,12 @@ lib/   RRBのライブラリ部分
     rename_global_var.rb  リファクタリング: Rename global variable
     rename_instance_var.rb  リファクタリング: Rename instance variable
     rename_local_var.rb  リファクタリング: Rename local variable
-    rename_method.rb   リファクタリング: Rename method
+    rename_method.rb  h リファクタリング: Rename method
     rename_method_all.rb  リファクタリング: Rename method all
     script.rb          複数のスクリプトを束ねたclass Scriptを定義
     scriptfile.rb      スクリプトファイル1つをあらわすclass ScriptFileを定義
     utils.rb           その他(例外の定義や汎用的なメソッドを定義してる)
+    cui_interface.rb   CUIインターフェース実現部
     
 ripper/  ripper(Rubyのパーサ)にパッチを当てたもの
   README.ja  ripperのREADME、日本語
@@ -49,6 +54,10 @@ reflection/  Rubyのリフレクション機能強化のための拡張ライブラリ
 
 elisp/  emacs lisp
   rrb.el  emacs側のインターフェース
+
+rubyide_tools_rrb/ FreeRIDE用プラグイン
+  plugin.yaml   プラグイン設定フィアル
+  rrb_plugin.rb プラグイン本体
 
 samples/  テスト用のサンプルスクリプト
   extract_method_sample.rb
@@ -113,5 +122,10 @@ doc/  ドキュメント
     ripper_memo.txt  ripperに関する覚え書き
     ripper_ref.rd  ripperのリファレンス
     rrb_memo.txt  rrbに関する覚え書き
-    rrb_ref.rd  rrb開発者用リファレンス
-    
+    rrb_ref.rd  rrb開発者用リファレンスp
+    embed_rrb.ja.rd rrb組み込みドキュメント(日本語)
+    embed_rrb.en.rd rrb組み込みドキュメント(英語)
+
+package/ パッケージ関連
+  package.sh  パッケージ生成スクリプト
+  setup.rb    青木さん作インストーラ用ファイル
