@@ -4,6 +4,97 @@ require 'runit/cui/testrunner'
 require 'rrb/rename_method'
 
 class TestScript_RenameMethod < RUNIT::TestCase
+
+  INPUT_STR2 = "\
+/home/ohai/ruby/test/test.rb\C-a
+class E
+end
+
+class F < E
+  def bar
+    foo
+  end
+end
+
+class G < F
+  def foo
+  end
+end
+
+if __FILE__ == $0 then
+  G.new.foo
+end
+\C-a-- END --\C-a
+"
+
+  OUTPUT_STR2 = "\
+/home/ohai/ruby/test/test.rb\C-a
+class E
+end
+
+class F < E
+  def bar
+    foofee
+  end
+end
+
+class G < F
+  def foo(*arg); raise 'G#foo is renamed foofee' end
+  def foofee
+  end
+end
+
+if __FILE__ == $0 then
+  G.new.foo
+end
+\C-a-- END --\C-a
+"
+
+  def input_str
+    result = 'test.rb'
+    result << RRB::IO_SPLITTER
+    result << TestScriptFile_RenameMethod::INPUT_STR
+    result << RRB::IO_SPLITTER
+    result << RRB::IO_TERMINATOR
+    result << RRB::IO_SPLITTER
+    result
+  end
+  
+  def test_classes_access_method
+    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
+    assert_equals( %w( C ).map{|x| RRB::NS.new(x)},
+		  script.classes_access_method( [ RRB::NS.new( 'C' ) ], 'foo' ) )
+    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
+		  script.classes_access_method( [ RRB::NS.new( 'A' ) ], 'foo' ) )
+    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
+		  script.classes_access_method( [ RRB::NS.new( 'B' ) ], 'foo' ) )
+    assert_equals( %w( A B C::D ).map{|x| RRB::NS.new(x)},
+		  script.classes_access_method( [ RRB::NS.new( 'C::D' ) ], 'foo' ) )
+    script2 = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
+    assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
+		  script2.classes_access_method( [ RRB::NS.new( 'G' ) ], 'foo' ) )
+    assert_equals( %w( F G ).map{|x| RRB::NS.new(x)},
+		  script2.classes_access_method( [ RRB::NS.new( 'F' ) ], 'foo' ) )
+  end
+
+  def test_rename_method?
+    script = RRB::Script.new_from_io( StringIO.new( input_str ) )
+    assert_equals( true,
+		  script.rename_method?( [ RRB::NS.new( 'C' ) ], 'foo', 'bar' ) )
+    assert_equals( true,
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], 'foo', 'foobar' ) )
+    assert_equals( false,
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], 'foo', 'bar' ) )
+  end
+
+  def test_rename_method
+    script = RRB::Script.new_from_io( StringIO.new( INPUT_STR2 ) )
+    script.rename_method( [ RRB::NS.new('G') ], 'foo', 'foofee' )
+    result = ''
+    script.result_to_io( result )
+    assert_equals( OUTPUT_STR2, result )
+  end
+  
 end
 
 class TestScriptFile_RenameMethod < RUNIT::TestCase
@@ -46,8 +137,10 @@ if __FILE__ == $0 then
 end
 "
 
+
   OUTPUT_STR = "\
 class A
+  def foo(*arg); raise 'A#foo is renamed feefoo' end
   def feefoo    
   end
   def bar
@@ -55,6 +148,7 @@ class A
 end
 
 class B < A
+  def foo(*arg); raise 'B#foo is renamed feefoo' end
   def feefoo
     super
   end
@@ -83,18 +177,17 @@ if __FILE__ == $0 then
   c.foo
 end
 "
-  def test_rename_method
 
-    script_file = RRB::ScriptFile.new( StringIO.new( INPUT_STR ),
-				      '/home/ohai/ruby/rename_method.rb' )
-    
-    applied_classes = [
-      RRB::ClassName.new('A'),
-      RRB::ClassName.new('B'),
-      RRB::ClassName.new('C::D'),
-    ]
-    script_file.rename_method( applied_classes, 'foo', 'feefoo' )
-    assert_equals( OUTPUT_STR, script_file.new_script )
+  def test_classes_call_method
+    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT_STR ), 'test.rb' )
+    assert_equals( [ 'B', 'C::D' ],
+		  scriptfile.classes_call_method( 'foo' ) )
+  end
+  
+  def test_rename_method
+    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT_STR ), 'test.rb' )
+    scriptfile.rename_method( %w(A B C::D).map{|x| RRB::NS.new(x)}, 'foo', 'feefoo' )
+    assert_equals( OUTPUT_STR, scriptfile.new_script )
   end
 
 end
