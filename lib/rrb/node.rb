@@ -8,6 +8,9 @@ module RRB
 
     def visit_method( namespace, method_node )
     end
+
+    def visit_toplevel( namespace, top_node )
+    end
     
   end
 
@@ -49,6 +52,7 @@ module RRB
   class TopLevelNode < Node
 
     def accept( visitor )
+      visitor.visit_toplevel( [], self )
       accept_children( visitor, [] )
     end
     
