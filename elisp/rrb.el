@@ -202,12 +202,11 @@ matches with rrb-ruby-file-name-regexp'"
   "completion read for Pull up method, etc.."
   (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
     (error "rrb_info: fail to get information %s" (rrb-error-message)))
-  (let ((old-class-method (split-string (completing-read prompt1
-				    (rrb-complist-type-2)) "#")))
+  (let ((old-class-method (completing-read prompt1 (rrb-complist-type-2))))
     (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg2) 0)
       (error "rrb_info: fail to get information %s" (rrb-error-message)))
-    (append old-class-method
-	    (list (completing-read prompt2 (rrb-complist-type-2))))))
+    (list old-class-method
+	  (completing-read prompt2 (rrb-complist-type-2)))))
 
 ;;;
 ;;; default value
@@ -360,13 +359,13 @@ matches with rrb-ruby-file-name-regexp'"
   "completion read for pull up method"
   (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
 
-(defun rrb-pullup-method (old-class method new-class)
+(defun rrb-pullup-method (old-method new-class)
   "Refactor code: Pull up method"
   (interactive (progn
 		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-pullup-method)))
   (save-current-buffer
-    (rrb-do-refactoring "--pullup-method" old-class method new-class)))
+    (rrb-do-refactoring "--pullup-method" old-method new-class)))
 		 
 ;;;; Refactoring: Push down method
 
@@ -374,11 +373,11 @@ matches with rrb-ruby-file-name-regexp'"
   "completion read for push down method"
   (rrb-comp-read-type-3 "--methods-fullname" "Old Method: " "--classes" "New class: "))
 
-(defun rrb-pushdown-method (old-class method new-class)
+(defun rrb-pushdown-method (old-method new-class)
   "Refactor code: Push down method"
   (interactive (progn
 		 (rrb-setup-input-buffer (rrb-all-ruby-script-buffer))
 		 (rrb-comp-read-pushdown-method)))
   (save-current-buffer
-    (rrb-do-refactoring "--pushdown-method" old-class method new-class)))
+    (rrb-do-refactoring "--pushdown-method" old-method new-class)))
 		 
