@@ -6,7 +6,8 @@ require 'stringio'
 module RRB
 
   class ScriptFile
-
+    attr_reader :path, :new_script, :input, :error_message
+    
     def initialize( input, path )
       @input = input 
       @path = path
@@ -14,7 +15,6 @@ module RRB
       @new_script = nil
       @error_message = ""
     end
-    attr_reader :path, :new_script
     
     def write_source_to( dir )
       filepath = File.join( dir,@path )
@@ -38,9 +38,6 @@ module RRB
 	f << @new_script
       end
     end
-    
-    attr_reader :new_script, :path, :error_message
-
   end
 
 
