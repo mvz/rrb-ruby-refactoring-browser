@@ -32,4 +32,6 @@
   特にstdoutにデータを書きだしたりしたら確実に情報の取得に失敗する。
   
   #{}による式の文字列展開の文字列中に改行が含まれてはいけない
-  
+
+* RRB::DumpedClassInfo#subclass_of?(classname)
+  self と classname が一致していても真を返す点に注意
