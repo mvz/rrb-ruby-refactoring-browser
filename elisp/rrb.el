@@ -126,7 +126,7 @@ matches with rrb-ruby-file-name-regexp' or `its first line is /^#!.*ruby.*$/'"
   (let ((buffer-point-alist (rrb-buffer-point-alist)))
     (if (/= (apply 'rrb-run-process "rrb" args) 0)
 	(error "fail to refactor: %s" (rrb-error-message)))
-    (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer)
+    (rrb-create-undo-file (rrb-get-buffer-list rrb-output-buffer))
     (setq rrb-undo-count (+ rrb-undo-count 1))
     (rrb-output-to-buffer-and-reset-point buffer-point-alist)))
 
