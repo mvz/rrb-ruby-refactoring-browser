@@ -4,33 +4,24 @@ module RRB
 
   class MoveMethodVisitor < Visitor
 
-    def initialize( moved_method, new_namespace,
-                   ignore_new_namespace, specified_lineno)
+    def initialize( moved_method, lineno )
       @moved_method = moved_method
-      @new_namespace = new_namespace
+      @lineno = lineno
       @delete_range = nil
-      @insert_lineno = nil
-      @ignore_new_namespace = ignore_new_namespace
-      @specified_lineno = specified_lineno
-      @insert_lineno_decided = false
+      @inserted = nil
     end
 
-    attr_reader :delete_range, :insert_lineno
+    attr_reader :delete_range, :inserted
 
-    def visit_class(namespace, node)
-      cur_namespace = namespace.nested( node.name )
-      if cur_namespace == @new_namespace && !@ignore_new_namespace
-        unless @insert_lineno_decided
-          @insert_lineno = node.range.head.lineno
-          if node.range.head.lineno <= @specified_lineno && @specified_lineno <= node.range.tail.lineno
-            @insert_lineno_decided = true
-          end
-        end
+    def visit_class( namespace, class_node )
+      return if @lineno.nil?
+      if class_node.range.contain?( @lineno..@lineno )
+        @inserted = class_node
       end
     end
-
+    
     def visit_method(namespace, method_node )
-      return unless @moved_method.instance_method?
+      return unless @moved_method.instance_method? 
       return unless @moved_method.match_node?( namespace, method_node )
       @delete_range = method_node.range
     end
@@ -41,7 +32,7 @@ module RRB
       @delete_range = cmethod_node.range
     end
   end
-
+  
   class GetStringOfMethodVisitor < Visitor
     def initialize(method_name)
       @method_name = method_name
@@ -99,20 +90,40 @@ module RRB
       end
     end
   end
-  class CountNamespaceDefinitionVisitor < Visitor
-    def initialize(namespace)
-      @namespace = namespace
-      @result = 0
+
+  class GetNamespaceOnLineVisitor < Visitor
+    def initialize( lineno )
+      @lineno = lineno..lineno
+      @namespace = Namespace::Toplevel
+      @node = nil
     end
 
-    attr_reader :result
-
-    def visit_class(namespace, node)
-      if namespace.nested( node.name ) == @namespace
-        @result += 1
+    attr_reader :namespace, :node
+    
+    def check_out_of( node )
+      unless node.range.out_of?( @lineno )
+        @namespace = @node = nil
       end
     end
+    
+    def visit_class( namespace, node )
+      if node.range.contain?( @lineno )
+        @namespace = namespace.nested( node.name )
+        @node = node
+      end
+    end
+    
+    def visit_method( namespace, node )
+      check_out_of( node )
+    end
 
+    def visit_class_method( namespace, node )
+      check_out_of( node )
+    end
+
+    def visit_singleton_method( namespace, node )
+      check_out_of( node )
+    end
   end
 
   class ScriptFile
@@ -135,11 +146,18 @@ module RRB
       visitor.namespace
     end    
     
-    def count_namespace_definition(namespace)
-      visitor = CountNamespaceDefinitionVisitor.new(namespace)
-      @tree.accept(visitor)
-      visitor.result
+    def class_on( lineno )
+      visitor = GetNamespaceOnLineVisitor.new( lineno )
+      @tree.accept( visitor )
+      visitor.namespace
     end
+
+    def class_node_on( lineno )
+      visitor = GetNamespaceOnLineVisitor.new( lineno )
+      @tree.accept( visitor )
+      visitor.node
+    end
+
   end
 
   class Script
@@ -167,9 +185,8 @@ module RRB
       get_method_on_region(path, lineno..lineno)
     end
 
-    def count_namespace_definition(path, namespace)
-      target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
-      target_scriptfile && target_scriptfile.count_namespace_definition(namespace)
+    def class_on( path, lineno )
+      @files.find{|scriptfile| scriptfile.path == path}.class_on( lineno )
     end
 
   end
