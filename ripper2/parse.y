@@ -484,34 +484,34 @@ static void ripper_rb_compile_error _((struct ripper_params*, const char *fmt, .
 /*%
 %type <val> program reswords then do dot_or_colon
 %*/
-%token tUPLUS 		/* unary+ */
-%token tUMINUS 		/* unary- */
-%token tPOW		/* ** */
-%token tCMP  		/* <=> */
-%token tEQ  		/* == */
-%token tEQQ  		/* === */
-%token tNEQ  		/* != */
-%token tGEQ  		/* >= */
-%token tLEQ  		/* <= */
-%token tANDOP tOROP	/* && and || */
-%token tMATCH tNMATCH	/* =~ and !~ */
-%token tDOT2 tDOT3	/* .. and ... */
-%token tAREF tASET	/* [] and []= */
-%token tLSHFT tRSHFT	/* << and >> */
-%token tCOLON2		/* :: */
-%token tCOLON3		/* :: at EXPR_BEG */
+%token <val> tUPLUS 		/* unary+ */
+%token <val> tUMINUS 		/* unary- */
+%token <val> tPOW		/* ** */
+%token <val> tCMP  		/* <=> */
+%token <val> tEQ  		/* == */
+%token <val> tEQQ  		/* === */
+%token <val> tNEQ  		/* != */
+%token <val> tGEQ  		/* >= */
+%token <val> tLEQ  		/* <= */
+%token <val> tANDOP tOROP	/* && and || */
+%token <val> tMATCH tNMATCH	/* =~ and !~ */
+%token <val> tDOT2 tDOT3	/* .. and ... */
+%token <val> tAREF tASET	/* [] and []= */
+%token <val> tLSHFT tRSHFT	/* << and >> */
+%token <val> tCOLON2		/* :: */
+%token <val> tCOLON3		/* :: at EXPR_BEG */
 %token <id> tOP_ASGN	/* +=, -=  etc. */
-%token tASSOC		/* => */
-%token tLPAREN		/* ( */
-%token tLPAREN_ARG	/* ( */
-%token tRPAREN		/* ) */
-%token tLBRACK		/* [ */
-%token tLBRACE		/* { */
-%token tLBRACE_ARG	/* { */
-%token tSTAR		/* * */
-%token tAMPER		/* & */
-%token tSYMBEG tSTRING_BEG tXSTRING_BEG tREGEXP_BEG tWORDS_BEG tQWORDS_BEG
-%token tSTRING_DBEG tSTRING_DVAR tSTRING_END
+%token <val> tASSOC		/* => */
+%token <val> tLPAREN		/* ( */
+%token <val> tLPAREN_ARG	/* ( */
+%token <val> tRPAREN		/* ) */
+%token <val> tLBRACK		/* [ */
+%token <val> tLBRACE		/* { */
+%token <val> tLBRACE_ARG	/* { */
+%token <val> tSTAR		/* * */
+%token <val> tAMPER		/* & */
+%token <val> tSYMBEG tSTRING_BEG tXSTRING_BEG tREGEXP_BEG tWORDS_BEG tQWORDS_BEG
+%token <val> tSTRING_DBEG tSTRING_DVAR tSTRING_END
 
 /*
  *	precedence table
@@ -1049,8 +1049,7 @@ block_command	: block_call
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-		    	$$ = dispatch3(call, $1, ripper_id2sym('.'), $3);
-                        $$ = method_arg($$, $4);
+		    	$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
 		    %*/
 		    }
 		| block_call tCOLON2 operation2 command_args
@@ -1058,8 +1057,7 @@ block_command	: block_call
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-		    	$$ = dispatch3(call, $1, ripper_intern("::"), $3);
-                        $$ = method_arg($$, $4);
+		    	$$ = dispatch4(call, $1, ripper_intern("::"), $3, $4);
 		    %*/
 		    }
 		;
@@ -1290,7 +1288,7 @@ mlhs_node	: variable
 		    /*%%%*/
 			$$ = assignable($1, 0);
 		    /*%
-			$$ = $1;
+			$$ = dispatch1(var_field, $1);
 		    %*/
 		    }
 		| primary_value '[' aref_args ']'
@@ -1520,32 +1518,32 @@ undef_list	: fitem
 		    }
 		;
 
-op		: '|'		{ $$ = symbol('|'); }
-		| '^'		{ $$ = symbol('^'); }
-		| '&'		{ $$ = symbol('&'); }
-		| tCMP		{ $$ = symbol(tCMP); }
-		| tEQ		{ $$ = symbol(tEQ); }
-		| tEQQ		{ $$ = symbol(tEQQ); }
-		| tMATCH	{ $$ = symbol(tMATCH); }
-		| '>'		{ $$ = symbol('>'); }
-		| tGEQ		{ $$ = symbol(tGEQ); }
-		| '<'		{ $$ = symbol('<'); }
-		| tLEQ		{ $$ = symbol(tLEQ); }
-		| tLSHFT	{ $$ = symbol(tLSHFT); }
-		| tRSHFT	{ $$ = symbol(tRSHFT); }
-		| '+'		{ $$ = symbol('+'); }
-		| '-'		{ $$ = symbol('-'); }
-		| '*'		{ $$ = symbol('*'); }
-		| tSTAR		{ $$ = symbol('*'); }
-		| '/'		{ $$ = symbol('/'); }
-		| '%'		{ $$ = symbol('%'); }
-		| tPOW		{ $$ = symbol(tPOW); }
-		| '~'		{ $$ = symbol('~'); }
-		| tUPLUS	{ $$ = symbol(tUPLUS); }
-		| tUMINUS	{ $$ = symbol(tUMINUS); }
-		| tAREF		{ $$ = symbol(tAREF); }
-		| tASET		{ $$ = symbol(tASET); }
-		| '`'		{ $$ = symbol('`'); }
+op		: '|' { $$ = $<val>$; }
+		| '^' { $$ = $<val>$; }
+		| '&' { $$ = $<val>$; }
+		| tCMP		
+		| tEQ		
+		| tEQQ		
+		| tMATCH	
+		| '>' { $$ = $<val>$; }
+		| tGEQ		
+		| '<' { $$ = $<val>$; }
+		| tLEQ		
+		| tLSHFT	
+		| tRSHFT	
+		| '+' { $$ = $<val>$; }
+		| '-' { $$ = $<val>$; }
+		| '*' { $$ = $<val>$; }
+		| tSTAR		
+		| '/' { $$ = $<val>$; }
+		| '%' { $$ = $<val>$; }
+		| tPOW		
+		| '~' { $$ = $<val>$; }
+		| tUPLUS	
+		| tUMINUS	
+		| tAREF		
+		| tASET		
+		| '`' { $$ = $<val>$; }
 		;
 
 reswords	: k__LINE__ | k__FILE__  | klBEGIN | klEND
@@ -2389,7 +2387,7 @@ primary		: literal
 		    /*%%%*/
 			$$ = NEW_FCALL($1, 0);
 		    /*%
-			$$ = method_arg(dispatch1(fcall, $1), arg_new());
+			$$ = dispatch2(fcall, $1, arg_new());
 		    %*/
 		    }
 		| kBEGIN
@@ -2529,7 +2527,7 @@ primary		: literal
 			$$ = $2;
 			fixpos($2->nd_iter, $2);
 		    /*%
-			$$ = method_arg(dispatch1(fcall, $1), arg_new());
+			$$ = dispatch2(fcall, $1, arg_new());
 			$$ = dispatch2(iter_block, $$, $2);
 		    %*/
 		    }
@@ -2690,6 +2688,7 @@ primary		: literal
 			$<num>$ = in_def;
 		        in_def = 0;
 		    /*%
+                        $<num>$ = in_def;
 		        in_def = 0;
 		    %*/
 		    }
@@ -2701,7 +2700,7 @@ primary		: literal
 			class_nest++;
 			local_push(0);
 		    /*%
-		        $$ = in_single;
+		        $<num>$ = in_single;
 		        in_single = 0;
 			class_nest++;
                         dispatch0(local_push);
@@ -2721,8 +2720,8 @@ primary		: literal
 			$$ = dispatch4(sclass, $1, $3, $7, $8);
                         dispatch0(local_pop);
 			class_nest--;
-		        in_def = $<val>4;
-		        in_single = $<val>6;
+		        in_def = $<num>4;
+		        in_single = $<num>6;
 		    %*/
 		    }
 		| kMODULE cpath
@@ -2783,7 +2782,7 @@ primary		: literal
 		    /*%
 			$$ = dispatch5(def, $1, $2, $4, $5, $6);
                         dispatch0(local_pop);
-			class_nest--;
+			in_def--;
 			cur_mid = $<id>3;
 		    %*/
 		    }
@@ -3118,8 +3117,7 @@ block_call	: command do_block
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-			$$ = dispatch3(call, $1, ripper_id2sym('.'), $3);
-			$$ = method_optarg($$, $4);
+			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
 		    %*/
 		    }
 		| block_call tCOLON2 operation2 opt_paren_args
@@ -3127,8 +3125,7 @@ block_call	: command do_block
 		    /*%%%*/
 			$$ = new_call($1, $3, $4);
 		    /*%
-			$$ = dispatch3(call, $1, ripper_intern("::"), $3);
-			$$ = method_optarg($$, $4);
+			$$ = dispatch4(call, $1, ripper_intern("::"), $3, $4);
 		    %*/
 		    }
 		;
@@ -3139,7 +3136,7 @@ method_call	: operation paren_args
 			$$ = new_fcall($1, $2);
 		        fixpos($$, $2);
 		    /*%
-			$$ = method_arg(dispatch1(fcall, $1), $2);
+			$$ = dispatch2(fcall, $1, $2);
 		    %*/
 		    }
 		| primary_value '.' operation2 opt_paren_args
@@ -3148,8 +3145,7 @@ method_call	: operation paren_args
 			$$ = new_call($1, $3, $4);
 		        fixpos($$, $1);
 		    /*%
-			$$ = dispatch3(call, $1, ripper_id2sym('.'), $3);
-			$$ = method_optarg($$, $4);
+			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
 		    %*/
 		    }
 		| primary_value tCOLON2 operation2 paren_args
@@ -3158,8 +3154,7 @@ method_call	: operation paren_args
 			$$ = new_call($1, $3, $4);
 		        fixpos($$, $1);
 		    /*%
-			$$ = dispatch3(call, $1, ripper_id2sym('.'), $3);
-			$$ = method_optarg($$, $4);
+			$$ = dispatch4(call, $1, ripper_id2sym('.'), $3, $4);
 		    %*/
 		    }
 		| primary_value tCOLON2 operation3
@@ -3167,7 +3162,7 @@ method_call	: operation paren_args
 		    /*%%%*/
 			$$ = new_call($1, $3, 0);
 		    /*%
-			$$ = dispatch3(call, $1, ripper_intern("::"), $3);
+			$$ = dispatch4(call, $1, ripper_intern("::"), $3, arg_new());
 		    %*/
 		    }
 		| kSUPER paren_args
@@ -3701,7 +3696,7 @@ variable	: tIDENTIFIER
 		| tCONSTANT
 		| tCVAR
 		| kNIL {$$ = symbol(kNIL);}
-                | kSELF {$$ = symbol(kSELF);}
+                | kSELF 
 		| kTRUE {$$ = symbol(kTRUE);}
 		| kFALSE {$$ = symbol(kFALSE);}
 		| k__FILE__ {$$ = symbol(k__FILE__);}
