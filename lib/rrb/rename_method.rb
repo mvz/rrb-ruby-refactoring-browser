@@ -20,8 +20,8 @@ module RRB
 
     def warning_piece( namespace, num_spaces )
       
-      "def #{@old_method}(*arg); \
-raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
+      "def #{@old_method.name}(*arg); \
+raise '#{namespace.name}##{@old_method.name} is renamed #{@new_method}' end\n" +
 	" "*num_spaces
     end
 
@@ -34,15 +34,16 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
     end
 
     def rename_fcalls( fcalls )
-      fcalls.find_all(){|fcall| fcall.name == @old_method}.each do |fcall|
+      fcalls.find_all(){|fcall| fcall.name == @old_method.name}.each do |fcall|
         @result << Replacer.new_from_id( fcall.body, @new_method )        
       end
     end
     
     def visit_method( namespace, node )
-      
+      return unless @old_method.instance_method?
+
       @classes.each do |classname|
-	if namespace.match?( classname ) &&  @old_method == node.name then
+	if namespace.match?( classname ) &&  @old_method.name == node.name then
 	  rename_method_def( namespace, node.name_id, node.head_keyword )
 	end
 	if namespace.match?( classname ) then
@@ -65,7 +66,7 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
     attr_reader :classes
     
     def visit_method( namespace, node )
-      if node.fcalls.find{|fcall| fcall.name == @method } then
+      if node.fcalls.find{|fcall| fcall.name == @method.name } then
 	@classes << Namespace.new( namespace.name )
       end
     end
@@ -121,7 +122,7 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
       end
 
       classes_respond_to( base_classes, old_method ).each do |ns|
-	if get_dumped_info[ns.name].has_method?( new_method ) then
+	if get_dumped_info[ns.name].has_method?( MethodName.new(new_method, true) ) then
           @error_message = "#{new_method}: already defined at #{ns.name}\n"
 	  return false
 	end
