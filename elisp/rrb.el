@@ -271,6 +271,25 @@ matches with rrb-ruby-file-name-regexp'"
 	  (completing-read prompt2 (rrb-complist-type-2))
 	  (read-from-minibuffer prompt3))))
 
+;;;
+;;; completionm type-6
+(defun rrb-comp-read-type-6 (compinfo-arg1 default-arg1 prompt1 prompt2 prompt3)
+  "completion read for rename method, etc.."
+  (when (/= (rrb-run-process "rrb_compinfo" compinfo-arg1) 0)
+    (error "rrb_info: fail to get information %s" (rrb-error-message)))
+  (let ((namespace (completing-read prompt1 (rrb-complist-type-2) nil nil default-arg1))
+	(new-class (read-from-minibuffer prompt2)))
+    (let ((targets "")
+	  (result))
+      (while (progn 
+	       (setq result (read-from-minibuffer prompt3))
+	       (not (string= result "")))
+	(setq targets (format "%s %s" targets result))
+	(message (format "%s %s" "inputed data: " targets))
+	(sit-for 1))
+      (list namespace new-class targets))))
+
+
 
 ;;;
 ;;; default value
@@ -509,3 +528,19 @@ matches with rrb-ruby-file-name-regexp'"
 			(buffer-file-name)
 			(number-to-string (rrb-current-line)))))
 		 
+;;;; Refactoring: Extract superclass
+(defun rrb-comp-read-extract-superclass ()
+  "completion read for extract superclass"
+  (rrb-comp-read-type-6 "--classes"
+		       (rrb-get-value-on-cursor "--class")
+		       "Namespace: " "New Class: " "Targets: "))
+
+(defun rrb-extract-superclass (namespace new-class targets)
+  "Refactor code: Extract superclass"
+  (interactive (progn
+		 (rrb-prepare-refactoring)
+		 (rrb-comp-read-extract-superclass)))
+  (save-current-buffer
+    (rrb-do-refactoring "--extract-superclass" namespace new-class targets
+			(buffer-file-name)
+			(number-to-string (rrb-current-line)))))
