@@ -56,7 +56,6 @@ class B
   class NEW < ::A
   end
 end
-
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
 EOS
 
@@ -64,7 +63,6 @@ EOS
   OUTPUT_STR2 = <<EOS
 /home/heke/temp/file1.rb#{RRB::IO_SPLITTER}
 class A
-
   class NEW < ::A
   end
   class D
@@ -99,7 +97,6 @@ class A
     end
   end
 end
-
 class P < ::A
 end
 class B < ::P
@@ -121,17 +118,17 @@ EOS
                                                 RRB::NS['C'],
                                                 RRB::NS['A::D::E']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( true,
                    script.extract_superclass?( RRB::NS['B'], 'NEW',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( false,
                    script.extract_superclass?( RRB::NS[''], 'NEW',
                                                [RRB::NS['K']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "K: No such class\n", 
                    script.error_message)
     assert_equals( false,
@@ -140,7 +137,7 @@ EOS
                                                 RRB::NS['C'],
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "B and A::D are not sibling classes\n",
                    script.error_message)
     assert_equals( false,
@@ -148,7 +145,7 @@ EOS
                                                [RRB::NS['B'],
                                                 RRB::NS['A::D']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "B and A::D are not sibling classes\n",
                    script.error_message)
 
@@ -156,7 +153,7 @@ EOS
                    script.extract_superclass?( RRB::NS['A'], 'CONST',
                                                [RRB::NS['B'],RRB::NS['C']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "CONST: already exists\n",
                    script.error_message)
 
@@ -164,7 +161,7 @@ EOS
                    script.extract_superclass?( RRB::NS['A'], 'D',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "D: already exists\n",
                    script.error_message)
 
@@ -172,7 +169,7 @@ EOS
                    script.extract_superclass?( RRB::NS['A::D'], 'D',
                                                [RRB::NS['B']],
                                                '/home/heke/temp/file1.rb',
-                                               19 ))
+                                               20 ))
     assert_equals( "D: already exists\n",
                    script.error_message)
 
@@ -196,7 +193,7 @@ EOS
 
     script.extract_superclass( RRB::NS['B'], 'NEW',
                                [RRB::NS['A::D::E'],RRB::NS['B'],RRB::NS['C']],
-                               '/home/heke/temp/file1.rb', 19 )
+                               '/home/heke/temp/file1.rb', 20 )
     result = ''; script.result_to_io(result)
     assert_equals( OUTPUT_STR1, result )
 
