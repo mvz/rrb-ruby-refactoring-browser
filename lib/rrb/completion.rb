@@ -5,7 +5,7 @@ require 'set'
 
 module RRB
 
-  class RefactableMethodsVistor < Visitor
+  class RefactableInstanceMethodsVistor < Visitor
    
     def initialize
       @methods = []
@@ -16,6 +16,19 @@ module RRB
     end
 
     attr_reader :methods
+  end
+
+  class RefactableClassMethodsVistor < Visitor
+   
+    def initialize
+      @class_methods = []
+    end
+    
+    def visit_class_method( namespace, method_node )
+      @class_methods.push Method.new( namespace, method_node )
+    end
+
+    attr_reader :class_methods
   end
 
   class RefactableClassesVisitor < Visitor
@@ -109,9 +122,19 @@ module RRB
   class ScriptFile
 
     def refactable_methods
-      visitor = RefactableMethodsVistor.new
+      refactable_instance_methods + refactable_class_methods
+    end
+
+    def refactable_instance_methods
+      visitor = RefactableInstanceMethodsVistor.new
       @tree.accept( visitor )
       visitor.methods
+    end
+
+    def refactable_class_methods
+      visitor = RefactableClassMethodsVistor.new
+      @tree.accept( visitor )
+      visitor.class_methods
     end
 
     def refactable_classes
@@ -147,10 +170,19 @@ module RRB
   end
   
   class Script
-
     def refactable_methods
+      refactable_instance_methods + refactable_class_methods
+    end
+
+    def refactable_instance_methods
       @files.inject([]) do |ary, scriptfile|
-	ary + scriptfile.refactable_methods
+	ary + scriptfile.refactable_instance_methods
+      end
+    end
+
+    def refactable_class_methods
+      @files.inject([]) do |ary, scriptfile|
+	ary + scriptfile.refactable_class_methods
       end
     end
 
