@@ -3,7 +3,7 @@ class TestClassA
 
   def <=>( a, b )
   end
-  
+
   def method_1( a, b )
     c = 3
     call( 3, 2 )
@@ -22,7 +22,8 @@ class TestClassA
   def method_3( x )
     ConstNameCall( 2 )    
   end
-
+  
+  
   class TestClassB
 
     def method_4
@@ -31,6 +32,14 @@ class TestClassA
     class TestClassC
     end
     
-  end  
+  end
+  
+  def TestClassA.method_5( x, y )
+    x + y
+  end
+
+  def TestClassB.method_6
+  end
+  
 end
 
