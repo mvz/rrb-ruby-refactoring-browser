@@ -67,6 +67,8 @@ class TestScript_PushdownMethod < RUNIT::TestCase
   INPUT_STR = "\
 /home/yuichi/work/rrb/private/test.rb\C-a
 class Base
+  def Base.hoge
+  end
   def hoge
   end
 end
@@ -91,6 +93,8 @@ end
 OUTPUT_STR1 = "\
 /home/yuichi/work/rrb/private/test.rb\C-a
 class Base
+  def Base.hoge
+  end
 end
 
 class Derived < Base
@@ -107,6 +111,8 @@ end
 OUTPUT_STR2 = "\
 /home/yuichi/work/rrb/private/test.rb\C-a
 class Base
+  def Base.hoge
+  end
 end
 
 class Derived < Base
@@ -123,6 +129,8 @@ end
 OUTPUT_STR3 = "\
 /home/yuichi/work/rrb/private/test.rb\C-a
 class Base
+  def Base.hoge
+  end
 end
 
 class Derived < Base
@@ -140,22 +148,58 @@ class Derived < Base
 end
 \C-a-- END --\C-a
 "
+OUTPUT_STR4 = "\
+/home/yuichi/work/rrb/private/test.rb\C-a
+class Base
+  def hoge
+  end
+end
+
+class Derived < Base
+  def Base.hoge
+  end
+
+end
+
+class Derived < Base
+
+end
+\C-a-- END --\C-a
+"
   def test_pushdown_method_plural_files?
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     assert_equals(true,
                   script.pushdown_method?(RRB::NS['Base'], 
                                           RRB::MN.new('hoge', true),
-                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
+
+    assert_equals(true,
+                  script.pushdown_method?(RRB::NS['Base'], 
+                                          RRB::MN.new('hoge', false),
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 10))
 
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
                                           RRB::MN.new('hoge', true),
-                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 3))
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
     assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+
+    assert_equals(false,
+                  script.pushdown_method?(RRB::NS['Base'], 
+                                          RRB::MN.new('hoge', false),
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test3.rb', 5))
+    assert_equals("No definition of Derived in /home/yuichi/work/rrb/private/test3.rb\n", script.error_message)
+
     assert_equals(false,
                   script.pushdown_method?(RRB::NS['Base'], 
                                           RRB::MN.new('hoge', true),
-                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 6))
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
+    assert_equals("Specify which definition to push down method to\n", script.error_message)
+
+    assert_equals(false,
+                  script.pushdown_method?(RRB::NS['Base'], 
+                                          RRB::MN.new('hoge', false),
+                                          RRB::NS['Derived'], '/home/yuichi/work/rrb/private/test.rb', 8))
     assert_equals("Specify which definition to push down method to\n", script.error_message)
 
   end
@@ -166,7 +210,7 @@ end
     script.pushdown_method(RRB::NS['Base'], 
                            RRB::MN.new('hoge', true),
                            RRB::NS['Derived'], 
-                           '/home/yuichi/work/rrb/private/test.rb', 8)
+                           '/home/yuichi/work/rrb/private/test.rb', 10)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR1, dst)
@@ -175,7 +219,7 @@ end
     script.pushdown_method(RRB::NS['Base'], 
                            RRB::MN.new('hoge', true),
                            RRB::NS['Derived'], 
-                           '/home/yuichi/work/rrb/private/test.rb', 11)
+                           '/home/yuichi/work/rrb/private/test.rb', 13)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR2, dst)
@@ -184,10 +228,19 @@ end
     script.pushdown_method(RRB::NS['Base'], 
                            RRB::MN.new('hoge', true),
                            RRB::NS['Derived'], 
-                           '/home/yuichi/work/rrb/private/test2.rb', 3)
+                           '/home/yuichi/work/rrb/private/test2.rb', 5)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR3, dst)
+
+    script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
+    script.pushdown_method(RRB::NS['Base'], 
+                           RRB::MN.new('hoge', false),
+                           RRB::NS['Derived'], 
+                           '/home/yuichi/work/rrb/private/test.rb', 10)
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals(OUTPUT_STR4, dst)
     
   end
 end
