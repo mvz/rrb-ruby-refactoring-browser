@@ -84,7 +84,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
       classes
     end
     
-    def classes_access_method( basis, methodname )
+    def classes_respond_to( basis, methodname )
       classes = []
       result = []
       basis.each do |namespace|
@@ -117,7 +117,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
     end
     
     def rename_method( base_classes, old_method, new_method )
-      real_classes = classes_access_method( base_classes, old_method )
+      real_classes = classes_respond_to( base_classes, old_method )
       @files.each do |scriptfile|
 	scriptfile.rename_method( real_classes, old_method, new_method )
       end
@@ -125,7 +125,7 @@ raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
 
     def rename_method?( base_classes, old_method, new_method )
       return false unless RRB.valid_method?( new_method )
-      classes_access_method( base_classes, old_method ).each do |ns|
+      classes_respond_to( base_classes, old_method ).each do |ns|
 	if get_dumped_info[ns.str].has_method?( new_method ) then
 	  return false
 	end
