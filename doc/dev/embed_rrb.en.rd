@@ -6,7 +6,8 @@ This document will help you to embed this tool in your IDE, editor, or etc.
 If your editor can run ruby script directly
 you can easily embed refactoring browser in your editor.
 
-lib/rrb/cui_interface is simple sample for you.
+lib/rrb/cui_interface and rubyide_tools_rrb/rrb_plugin are sample scripts
+for you.
 
 First of all, you should load rrb library.
 What you have to do is to write
