@@ -12,7 +12,7 @@ module RRB
 
     def visit_toplevel(namespace, node)
       @namespace = namespace
-    end
+2    end
     
     def visit_class(namespace, node)
       if node.head_keyword.lineno < @start_lineno && @end_lineno < node.tail_keyword.lineno
@@ -135,12 +135,25 @@ module RRB
 
   end
 
+  def space_width( str )
+    result = 0
+    str.each_byte do |c|
+      if c == ?\t then
+        result = (result/TAB_WIDTH + 1)*TAB_WIDTH
+      else
+        result += 1
+      end
+    end
+    result
+  end
+  module_function :space_width
+  
   def extract_method(src, new_method, start_lineno, end_lineno, method_lineno, args, assigned)
     dst = ''
 
     lines = src.readlines
 
-    imp_space_num =  /^(\s*)/.match(lines[start_lineno])[0].length
+    imp_space_num =  RRB.space_width(/^(\s*)/.match(lines[start_lineno])[0])
     if imp_space_num < INDENT_LEVEL
       def_space_num = 0
       offset_space_num = INDENT_LEVEL
