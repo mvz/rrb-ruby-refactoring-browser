@@ -69,9 +69,9 @@ module RRB
   class ScriptFile
 
     def pushdown_method(old_namespace, method_name, new_namespace, pushdowned_method)
-      visitor = PushdownMethodVisitor.new(old_namespace, method_name, new_namespace)
+      visitor = MoveMethodVisitor.new(old_namespace, method_name, new_namespace)
       @tree.accept( visitor )
-      @new_script = RRB.insert_str(@input, visitor.subclass_lineno, visitor.superclass_range, pushdowned_method)
+      @new_script = RRB.insert_str(@input, visitor.insert_lineno, visitor.delete_range, pushdowned_method)
     end
 
     def pushdown_method?(dumped_info, old_namespace, method_name, new_namespace)
