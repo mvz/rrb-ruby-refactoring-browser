@@ -5,7 +5,7 @@ require 'rrb/script.rb'
 
 class TestScript < RUNIT::TestCase
 
-  INPUT_STRING = "
+  RENAME_LOCAL_VAR_INPUT = "
 /home/ohai/ruby/test/file1.rb\C-l
 
 # comment
@@ -28,7 +28,7 @@ end
 \C-l-- END --\C-l
 "
 
-  OUTPUT_STRING = "
+  RENAME_LOCAL_VAR_OUTPUT = "
 /home/ohai/ruby/test/file1.rb\C-l
 
 # comment
@@ -52,7 +52,7 @@ end
 "
 
   def test_rename_local_var?
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STRING ) )
+    script = RRB::Script.new_from_io( StringIO.new( RENAME_LOCAL_VAR_INPUT ) )
     assert_equals( true,
 		  script.rename_local_var?(['Rename'],'method_2','x','yy') )
     assert_equals( false,
@@ -60,11 +60,11 @@ end
   end
 
   def test_rename_local_var
-    script = RRB::Script.new_from_io( StringIO.new( INPUT_STRING ) )
+    script = RRB::Script.new_from_io( StringIO.new( RENAME_LOCAL_VAR_INPUT ) )
     script.rename_local_var( ['Rename'],'method_2','x','yy' )
     dst = ''      
     script.result_to_io( dst )
-    assert_equals( OUTPUT_STRING, dst )
+    assert_equals( RENAME_LOCAL_VAR_OUTPUT, dst )
   end
   
 end
