@@ -351,9 +351,20 @@
         count
       0)))
 
-(defun rrb-do-undo (count)
-  (unless (= count 0)
-    (undo count)))
+(if (<= emacs-major-version 20)
+    (defun rrb-do-undo (count)
+      (unless (= count 0)
+        (undo)
+        (let ((last-command 'undo)
+              (i (1- count)))
+          (while (> i 0)
+            (undo)
+            (setq i (1- i)))))))
+
+(if (>= emacs-major-version 21)
+    (defun rrb-do-undo (count)
+      (unless (= count 0)
+        (undo count))))
 
 (defun rrb-undo-boundary ()
   (cond ((null buffer-undo-list) (setq buffer-undo-list (list nil)))
