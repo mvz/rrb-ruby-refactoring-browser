@@ -116,9 +116,7 @@ module RRB
       visitor = RenameClassVarVisitor.new(real_owner, dumped_info,
 					  old_var, new_var )
       @tree.accept( visitor )
-      unless visitor.result.empty? then
-	@new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def rename_class_var?( namespace, dumped_info, old_var, new_var )

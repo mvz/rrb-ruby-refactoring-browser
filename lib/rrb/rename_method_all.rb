@@ -88,9 +88,7 @@ module RRB
     def rename_method_all( old_method, new_method )
       visitor = RenameMethodAllVisitor.new( old_method, new_method )
       @tree.accept( visitor )
-      unless visitor.result.empty?
-	@new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def rename_method_all?( old_method, new_method )

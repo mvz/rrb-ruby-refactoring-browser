@@ -27,9 +27,7 @@ module RRB
     def extract_superclass( namespace, new_class, targets )
       visitor = ExtractSuperclassVisitor.new( namespace, new_class, targets )
       @tree.accept( visitor )      
-      unless visitor.result.empty?
-        @new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def add_new_superclass( namespace, new_class, old_superclass, dumped_info )

@@ -43,9 +43,7 @@ module RRB
     def rename_global_var(old_var, new_var )
       visitor = RenameGlobalVarVisitor.new( old_var, new_var )
       @tree.accept( visitor )
-      unless visitor.result.empty? then
-	@new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def rename_global_var?(old_var, new_var )

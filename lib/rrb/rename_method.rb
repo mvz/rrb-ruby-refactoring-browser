@@ -142,9 +142,7 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
     def rename_method( class_pathes, old_method, new_method )
       visitor = RenameMethodVisitor.new( class_pathes, old_method, new_method )
       @tree.accept( visitor )
-      unless visitor.result.empty? then
-	@new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
 

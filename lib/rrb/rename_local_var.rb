@@ -66,9 +66,7 @@ module RRB
       visitor = RenameLocalVarVisitor.new( namespace, method_name,
 					  old_var, new_var )
       @tree.accept( visitor )
-      unless visitor.result.empty?
-	@new_script = RRB.replace_str( @input, visitor.result )
-      end
+      @new_script = RRB.replace_str( @input, visitor.result )
     end
 
     def rename_local_var?( namespace, method_name, old_var, new_var )
