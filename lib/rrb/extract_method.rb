@@ -69,7 +69,7 @@ module RRB
     if new_method.instance_method?
       "def #{new_method.bare_name}(" + args.join(", ") + ")\n"
     else
-      "def #{new_method.name}(" + args.join(", ") + ")\n"
+      "def self.#{new_method.bare_name}(" + args.join(", ") + ")\n"
     end
   end
 
