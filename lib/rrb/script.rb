@@ -58,7 +58,11 @@ module RRB
       run_file << "require 'rrb_reflection'\n"
       run_file << "$rrb_run_for_reflection = true\n"
       @files.each do |scriptfile|
+        run_file << "if /.*\\\.(rb|so)/.match('#{scriptfile.path}') then\n"
 	run_file << "require '#{File.join( script_dir_path, scriptfile.path )}'\n"
+        run_file << "else\n"
+        run_file << "load '#{File.join( script_dir_path, scriptfile.path )}'\n"        
+        run_file << "end\n"
       end
       run_file << DUMP_MODULES_SCRIPT
       run_file.close
@@ -113,7 +117,6 @@ module RRB
     attr_reader :error_message
     
   end
-
   module_function
   
   def mk_work_dir
