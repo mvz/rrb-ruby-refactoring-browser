@@ -8,7 +8,7 @@ module RRB
   }
   
   begin
-    load "#{ENV["HOME"]}/.rrbrc"
+    load File.join( ENV["HOME"], ".rrbrc" )
   rescue LoadError
   end
   
