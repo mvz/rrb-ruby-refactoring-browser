@@ -13,39 +13,43 @@ class TestScript_PushdownMethod < RUNIT::TestCase
 
     script = RRB::Script.new_from_filenames(filename)
     assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'x'),
-                                                RRB::NS['C'], filename, 23))
+                                                RRB::NS['C'], filename, 28))
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'],'z'),
-                                                 RRB::NS['C'], filename, 23))
-    assert_equals("B calls B#z", script.error_message)
+                                                 RRB::NS['C'], filename, 28))
+    assert_equals("B calls B#z\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['B'], 'w'),
-                                                 RRB::NS['C'], filename, 23))
+                                                 RRB::NS['C'], filename, 28))
     assert_equals("B#w: already defined at C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'w'),
-                                                 RRB::NS['B'], filename, 18))    
+                                                 RRB::NS['B'], filename, 23))    
     assert_equals("B is not the subclass of C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['C'],'asdf'),
-                                                 RRB::NS['B'], filename, 18))    
+                                                 RRB::NS['B'], filename, 23))    
     assert_equals("C#asdf: no definition in C\n", script.error_message)
     assert_equals(false, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
-                                                 RRB::NS['C'], filename, 23))
-    assert_equals("B calls A#a", script.error_message)
+                                                 RRB::NS['C'], filename, 28))
+    assert_equals("B calls A#a\n", script.error_message)
+
+    assert_equals(false, script.pushdown_method?(RRB::CMN.new(RRB::NS['A'], 'a'),
+                                                 RRB::NS['C'], filename, 28))
+    assert_equals("B calls A.a\n", script.error_message)
 
     assert_equals(true, script.pushdown_method?(RRB::MN.new(RRB::NS['A'], 'a'),
-                                                RRB::NS['B'], filename, 18))
+                                                RRB::NS['B'], filename, 23))
   end
 
   def test_pushdown_method
     filename = "samples/pushdown_method_sample.rb"
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
-                           RRB::NS['C'], filename, 23)
+                           RRB::NS['C'], filename, 28)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
                    dst )    
     script = RRB::Script.new_from_filenames(filename)
     script.pushdown_method(RRB::MN.new(RRB::NS['B'], 'x'),
-                           RRB::NS['C::D'], filename, 27)
+                           RRB::NS['C::D'], filename, 32)
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after2.rb' ).read,
