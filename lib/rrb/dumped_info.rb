@@ -83,7 +83,10 @@ module RRB
       return true if @private_method_names.include?( methodname )
       return false
     end
-    
+
+    def subclass_of?(classname)
+      @ancestor_names.include?(classname) ||  @class_name == classname
+    end
   end
 
 end
