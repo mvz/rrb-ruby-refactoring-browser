@@ -4,7 +4,9 @@
 #        ruby lex.rb filename
 #
 
-require 'ripper.so'
+module RRB
+end
+require 'rrb_ripper.so'
 require 'getopts'
 
 def main
@@ -18,7 +20,7 @@ def main
   end
 end
 
-class RubyLexer < Ripper
+class RubyLexer < RRB::Ripper
   def RubyLexer.lex(src)
     r = new(src)
     r.parse
