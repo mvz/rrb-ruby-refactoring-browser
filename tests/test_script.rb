@@ -8,6 +8,7 @@ require 'rrb/rename_class_var'
 require 'rrb/rename_method_all'
 require 'rrb/pullup_method'
 require 'rrb/pushdown_method'
+require 'rrb/rename_global_var'
 
 class TestScript < RUNIT::TestCase
 
@@ -151,6 +152,85 @@ end
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
 		    dst )    
+  end
+
+  def test_rename_global_var
+    script = RRB::Script.new_from_filenames("samples/rename_global_var_sample.rb")   
+    script.rename_global_var('$x', '$y' )
+    dst = ''
+    script.result_to_io(dst)
+      assert_equals( File.open( 'samples/rename_global_var_sample_after.rb' ).read, dst)
+  end
+
+  def test_rename_global_var?
+    script = RRB::Script.new_from_filenames("samples/rename_global_var_sample.rb")   
+    assert_equals( true, script.rename_global_var?('$x', '$y'))
+    assert_equals( false, script.rename_global_var?('$x', '$z'))
+    assert_equals( false, script.rename_global_var?('$x', 'x'))
+    assert_equals( false, script.rename_global_var?('$x', '@x'))
+    assert_equals( false, script.rename_global_var?('$x', '@@x'))
+    assert_equals( false, script.rename_global_var?('$x', 'print'))
+  end
+
+  def test_rename_local_var
+
+    script = RRB::Script.new_from_filenames("samples/rename_var_sample.rb")   
+      script.rename_local_var( RRB::NS.new('Rename'),
+				   'method_1', 'z', 'bb' )
+      dst = ''
+      script.result_to_io(dst)
+      assert_equals( File.open( 'samples/rename_var_sample_after.rb' ).read,dst)
+	
+  end
+
+  def test_rename_local_var?
+    
+    script = RRB::Script.new_from_filenames("samples/rename_var_sample.rb")   
+    
+    assert_equals( true, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							 'z', 'bb' ) )
+    # collision with other variable
+    assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							 'z', 'x' ) )
+    assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							  'z', 'i' ) )
+    # invalid identifier 
+    assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							  'z', 'Z' ) )
+    assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							  'z', 'print' ) )
+    assert_equals( false, script.rename_local_var?( RRB::NS.new('Rename'),
+							 'method_1',
+							  'z', 'super' ) )
+    
+  end
+  def test_rename_method_all
+
+    script = RRB::Script.new_from_filenames("samples/rename_method_sample.rb")   
+    script.rename_method_all( 'foo', 'feefoo' )
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals( File.open( 'samples/rename_method_sample_after.rb' ).read,dst)
+
+    
+  end
+
+  def test_rename_method_all?
+    script = RRB::Script.new_from_filenames("samples/rename_method_sample.rb")   
+    assert_equals( true, script.rename_method_all?( 'foo', 'feefoo' ) )
+    assert_equals( true, script.rename_method_all?( 'foo', 'foo?' ) )
+    # collision with local variable
+    assert_equals( false, script.rename_method_all?( 'baz', 'hek' ) )
+    # invalid method name 
+    assert_equals( false, script.rename_method_all?( 'foo', 'Foo' ) )
+    assert_equals( false, script.rename_method_all?( 'foo', 'foo=' ) )
+    assert_equals( false, script.rename_method_all?( 'foo', 'when' ) )
+    assert_equals( false, script.rename_method_all?( 'foo', 'foo?fee' ))
   end
 
 
