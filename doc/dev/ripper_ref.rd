@@ -81,7 +81,11 @@
 --- Ripper#on__IVAR( ivar_id )
     * ((|ivar_id|)) インスタンス変数識別子
 
---- Ripper#on__KEYWORD
+--- Ripper#on__KEYWORD( keyword )
+    
+    予約語をscanしたときに呼びだされる
+    * ((|keyword|)) キーワード文字列
+    
 --- Ripper#on__LBRACE
 --- Ripper#on__LBRACE_ARG
 --- Ripper#on__LBRACKET
@@ -227,10 +231,12 @@
 --- Ripper#on__class( class_name, stmts, superclass )
     
     クラス定義時に呼ばれる。parse時に呼びだされる。
+    * ((|kw_class|)) 予約語 "class" (新設)
     * ((|class_name|)) クラス名
     * ((|stmts|)) 中の文
     * ((|superclass|)) スーパークラスの名前。指定されていない場合は nil。
-
+    * ((|kw_end|)) 予約語 "end" (新設)
+    
 --- Ripper#on__comment
 --- Ripper#on__comment_start
 --- Ripper#on__condexpr
@@ -244,15 +250,15 @@
     * ((|receiver|)) ::の左側
     * ((|const_name|)) 定数名。::の右側
     
---- Ripper#on__def( def_str, name, arglist, statements, rescue_clause )
+--- Ripper#on__def( kw_def, name, arglist, statements, rescue_clause, kw_end )
     
     メソッド定義時に呼ばれる
-    * ((|def_str|)) == "def"
+    * ((|kw_def|)) == "def"
     * ((|name|)) メソッド名
     * ((|arglist|)) 引数のリスト
     * ((|statements|)) メソッドの中身
     * ((|rescue_clause|)) レスキュー節
-    
+    * ((|kw_end|)) == "end" (新設)
 
 --- Ripper#on__defined
 --- Ripper#on__else
@@ -402,12 +408,14 @@
 --- Ripper#on__mlhs_paren
 --- Ripper#on__mlhs_star
 --- Ripper#on__mlhs_start
---- Ripper#on__module( module_name, stmts )
+--- Ripper#on__module( kw_module, module_name, stmts, kw_end )
     
     モジュール定義時に呼ばれる。parse時に呼びだされる。
+    * ((|kw_module|)) 予約語 "module" (新設)
     * ((|module_name|)) モジュール名
     * ((|stmts|)) 中の文
-
+    * ((|kw_end|)) 予約語 "end" (新設)
+    
 --- Ripper#on__name
 --- Ripper#on__new_array
 --- Ripper#on__new_hash
@@ -454,20 +462,24 @@
 --- Ripper#on__retry
 --- Ripper#on__return
 --- Ripper#on__scan
---- Ripper#on__sclass( s_obj, statements )
+--- Ripper#on__sclass( kw_class, s_obj, statements kw_end )
     
     特異クラス定義時に呼ばれる。parse時に呼びだされる。
+    * ((|kw_class|)) 予約語 "class" (新設)
     * ((|s_obj|)) 特異クラスを定義するオブジェクトを示すもの
     * ((|statements|)) クラスの中身
-
---- Ripper#on__sdef( s_obj, method_name, arglist, statements )
+    * ((|kw_end|)) 予約語 "end" (新設)
+    
+--- Ripper#on__sdef( kw_def, s_obj, method_name, arglist, statements, kw_end )
     
     特異メソッド定義時に呼ばれる。parse時に呼びだされる。
+    * ((|kw_def|)) == 予約語 "def" (新設)
     * ((|s_obj|)) 特異メソッドを定義するオブジェクトを示すもの
     * ((|method_name|)) メッソド名
     * ((|arglist|)) 仮引数
     * ((|statements|)) メソッドの中身
-
+    * ((|kw_end|)) == 予約語 "end" (新設)
+    
 --- Ripper#on__set_line
 --- Ripper#on__space
 --- Ripper#on__string_add_dstr
