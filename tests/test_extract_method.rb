@@ -5,35 +5,39 @@ require 'rrb/extract_method'
 
   INPUT_STR = "\
 /home/oxy/work/rrb/private/test.rb\C-a
-class A
-  def A.hoge
-    a = 1
-    b = 1
-    c = a * b + 1
-  end
-  def hoge
-    a = 1
-    b = 1
-    c = a * b
+class X
+  class A
+    def A.hoge
+      a = 1
+      b = 1
+      c = a * b + 1
+    end
+    def hoge
+      a = 1
+      b = 1
+      c = a * b
+    end
   end
 end
 \C-a-- END --\C-a
 "
 OUTPUT_STR1 = "/home/oxy/work/rrb/private/test.rb\C-a
-class A
-  def A.fuga()
-    a = 1
-    b = 1
-    return a, b
-  end
-  def A.hoge
-    a, b = fuga()
-    c = a * b + 1
-  end
-  def hoge
-    a = 1
-    b = 1
-    c = a * b
+class X
+  class A
+    def self.fuga()
+      a = 1
+      b = 1
+      return a, b
+    end
+    def A.hoge
+      a, b = fuga()
+      c = a * b + 1
+    end
+    def hoge
+      a = 1
+      b = 1
+      c = a * b
+    end
   end
 end
 \C-a-- END --\C-a
@@ -41,19 +45,21 @@ end
 
 OUTPUT_STR2 = "\
 /home/oxy/work/rrb/private/test.rb\C-a
-class A
-  def A.hoge
-    a = 1
-    b = 1
-    c = a * b + 1
-  end
-  def fuga(a)
-    b = 1
-    c = a * b
-  end
-  def hoge
-    a = 1
-    fuga(a)
+class X
+  class A
+    def A.hoge
+      a = 1
+      b = 1
+      c = a * b + 1
+    end
+    def fuga(a)
+      b = 1
+      c = a * b
+    end
+    def hoge
+      a = 1
+      fuga(a)
+    end
   end
 end
 \C-a-- END --\C-a
@@ -84,13 +90,13 @@ end
 class TestScript_ExtractMethod < RUNIT::TestCase
   def test_extract_method
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 4, 5)
+    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 5, 6)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR1, dst)
 
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
-    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 10, 11)
+    script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 11, 12)
     dst = ''
     script.result_to_io(dst)
     assert_equals(OUTPUT_STR2, dst)
