@@ -12,6 +12,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
     * --methods-local-vars
     * --methods
     * --classes-instance-vars
+    * --constants
   IOTYPE
     * --stdin-stdout
     * --filein-stdout FILES..
@@ -29,7 +30,7 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
   when '--stdin-stdout'
     script = RRB::Script.new_from_io( STDIN )
   when '--filein-stdout'
-    script = RRB::Script.new_from_filenames( ARGV )
+    script = RRB::Script.new_from_filenames( *ARGV )
   end
 
   case infotype
@@ -48,6 +49,9 @@ Usage: rrb_compinfo INFOTYPE IOTYPE
     script.refactable_classes_instance_vars.each do |classname,ivars|
       print classname, ';', ivars.to_a.join(','), "\n"
     end
-  end
-  
+  when '--constants'
+    script.refactable_consts.each do |const|
+      print const, ","
+    end
+  end  
 end
