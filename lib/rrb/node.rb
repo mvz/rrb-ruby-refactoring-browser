@@ -111,7 +111,13 @@ module RRB
 
   # represent one class 
   class ClassNode < ModuleNode
-    
+
+    def initialize( name_id, scope, superclass, head_kw, tail_kw )
+      super name_id, scope, head_kw, tail_kw
+      @superclass = superclass      
+    end
+
+    attr_reader :superclass
   end
   
   # represent one method
