@@ -262,8 +262,8 @@ USG
     
     class RenameInstanceVariable < UI
       def ivars(target)
-        @script.refactable_classes_instance_vars.each do |classname, cvars|
-          return cvars if classname == target.name
+        @script.refactable_classes_instance_vars.each do |classname, ivars|
+          return ivars if classname == target.name
         end
         return []
       end
@@ -281,6 +281,48 @@ USG
       end
     end
 
+    class RenameClassVariable < UI
+      def cvars(target)
+        @script.refactable_classes_class_vars.each do |cname, cvars|
+          return cvars if cname == target.name
+        end
+        return []
+      end
+
+      def run
+        namespace = Namespace[select_one("Refactared class: ", classes)]
+        old_var = select_one("Old variable: ", cvars(namespace))
+        new_var = input_str("New variable: ")
+        unless @script.rename_class_var?(namespace, old_var, new_var)
+          STDERR.print(@script.error_message, "\n")
+          exit
+        end
+        @script.rename_class_var(namespace, old_var, new_var)
+        output_diff
+      end
+    end
+
+    class RenameGlobalVariable < UI
+      def execute(refactoring, *args)
+        unless @script.__send__("#{refactoring}?", *args)
+          STDERR.print(@script.error_message, "\n")
+          exit
+        end
+        @script.__send__(refactoring, *args)
+        output_diff
+      end
+      
+      def gvars
+        @script.refactable_global_vars
+      end
+
+      def run
+        old_var = select_one("Old variable: ", gvars)
+        new_var = input_str("New variable: ")
+        execute("rename_gloval_var", old_var, new_var)
+      end
+    end
+    
     class ExtractMethod < UI
 
       def run
