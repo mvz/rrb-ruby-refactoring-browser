@@ -322,20 +322,23 @@ module RRB
 
   class Namespace
     include Enumerable
-
-    class << self
-      alias _new new
-    end
-
+    
     @@cache = Hash.new
-    def Namespace.new( ns )
-      if @@cache.has_key?( ns ) then
-        @@cache[ns]
-      else
-        _new( ns )
+
+    unless defined?($rrb_run_for_reflection)
+      class << self
+        alias _new new
+      end
+    
+      def Namespace.new( ns )
+        if @@cache.has_key?( ns ) then
+          @@cache[ns]
+        else
+          _new( ns )
+        end
       end
     end
-
+  
     def initialize( ns )
       case ns
       when Array
@@ -349,7 +352,7 @@ module RRB
       end
       @namespace.freeze
     end
-    
+
     def Namespace.[]( arg )
       new( arg )
     end
@@ -391,7 +394,7 @@ module RRB
     def <=>(other)
       self.ary <=> other.ary
     end
-    
+
     Toplevel = Namespace.new( [] )
     Object = Namespace.new( ["Object"] )
   end
