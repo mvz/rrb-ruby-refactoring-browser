@@ -25,8 +25,16 @@
 (defvar rrb-undo-file-base "rrbundo"
   "*Base file name of undo files")
 
+(defvar rrb-undo-directory 
+  (file-name-as-directory
+   (make-temp-name
+    (expand-file-name rrb-undo-file-base
+		      temporary-file-directory)))
+  "Directory which stores undo files")
+
 (defvar rrb-marshal-file-base "rrbmarshal"
   "*Base file name of marshal file")
+
 
 ;;;; Internal variables
 (defconst rrb-io-splitter "\C-a")
@@ -44,18 +52,8 @@
 (defvar rrb-now-refactoring-flag nil)
 (defvar rrb-marshal-file-name "")
 
-(defvar rrb-undo-directory 
-  (file-name-as-directory
-   (make-temp-name
-    (expand-file-name rrb-undo-file-base
-		      temporary-file-directory)))
-  "Directory which stores undo files")
-
-(defvar rrb-undo-1-list nil)
-(defvar rrb-redo-1-list nil)
-
-;;;; Global Hook
 (add-hook 'kill-emacs-hook 'rrb-delete-undo-files)
+
 
 ;;;; Utility functions
 (defun rrb-find-all (prec list)
@@ -152,7 +150,7 @@
   (if (/= (apply 'rrb-run-process "rrb" 
 		 (append args (list "--marshalin-stdout" rrb-marshal-file-name))) 0)
       (error "fail to refactor: %s" (rrb-error-message)))
-;;  (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
+  (rrb-make-undo-files (rrb-get-buffer-list rrb-output-buffer))
   (setq rrb-undo-count (+ rrb-undo-count 1))
   (rrb-output-to-buffer rrb-output-buffer))
 
@@ -257,19 +255,8 @@ This hook clears undo files when ary ruby script buffer is changed"
 		 'rrb-notify-file-changed nil t))
      (rrb-all-ruby-script-buffer))))
 
-(defun rrb-undo-1-set-undo-mark ()
-  (save-current-buffer
-    (setq rrb-undo-1-list
-          (cons (mapcar (lambda (buffer)
-                          (set-buffer buffer)
-                          (undo-boundary)
-                          (list buffer buffer-undo-list))
-                        (rrb-all-ruby-script-buffer))
-                rrb-undo-1-list))))
-           
 (defun rrb-prepare-refactoring ()
-;;  (rrb-add-change-hook-to-all-ruby-script)
-  (rrb-undo-1-set-undo-mark)
+  (rrb-add-change-hook-to-all-ruby-script)
   (rrb-make-marshal-file))
 
 (defun rrb-terminate-refactoring ()
@@ -384,7 +371,7 @@ This hook clears undo files when ary ruby script buffer is changed"
   "Base function of undo and redo."
   (let ((undo-buffer-list))
     (defun rrb-read-undo-file ()
-      (save-current-buffer 
+      (save-current-buffer
 	(set-buffer rrb-output-buffer)
 	(rrb-clean-buffer rrb-output-buffer)
 	(insert-file-contents undo-file-name)
@@ -500,55 +487,6 @@ This hook clears undo files when ary ruby script buffer is changed"
 			(rrb-make-not-modified-file-name next-undo-count))
 	 (setq rrb-undo-count next-undo-count)))))
 
-;;;; Undo-1
-(defun rrb-undo-1-count (undo-list undo-mark)
-  (let ((count 0)
-        (l undo-list))
-    (while (not (or (eq l undo-mark) (eq l nil)))
-      (if (eq (car l) nil)
-          (setq count (1+ count)))
-      (setq l (cdr l)))
-    (if (eq l undo-mark)
-        count
-      0)))
-
-(defun rrb-undo-1-buffer (undo-markar)
-  (set-buffer (car undo-markar))
-  (let ((redo-markar buffer-list))
-    (undo (rrb-undo-1-count buffer-undo-list (cadr undo-markar)))
-    (undo-boundary)
-    (list (current-buffer) redo-markar buffer-undo-list undo-marker)))
-
-
-(defun rrb-check-redo-1 ()
-  (and (not (eq rrb-redo-1-list nil))
-       (rrb-all-p (lambda (redo-info)
-                    (set-buffer (car redo-info))
-                    (eq buffer-undo-list (caddr redo-info)))
-                  (car rrb-redo-1-list))))
-
-(defun rrb-redo-1 ()
-  (interactive)
-  (save-current-buffer
-    (unless (rrb-check-redo-1)
-      (setq rrb-redo-1-list nil)
-      (error "Can't redo: "))
-    (mapcar 'rrb-undo-1-buffer (car rrb-redo-l-list))
-    (setq this-command 'rrb-redo-1)
-    (setq rrb-undo-1-list (cons (caddar rrb-redo-1-list) rrb-undo-1-list))
-    (setq rrb-redo-1-list (cdr rrb-redo-1-list))))
-    
-(defun rrb-undo-1 ()
-  (interactive)
-  (save-current-buffer
-    (if (eq rrb-undo-1-list nil)
-        (error "Can't undo"))
-    (setq rrb-redo-1-list (cons (mapcar 'rrb-undo-1-buffer
-                                        (car rrb-undo-1-list))
-                                rrb-redo-1-list))
-    (setq this-command 'rrb-undo-1)
-    (setq rrb-undo-1-list (cdr rrb-undo-1-list))))
-            
 ;;;; Refactoring
 
 ;;;
