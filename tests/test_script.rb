@@ -41,7 +41,7 @@ TEST_CLASS_A_METHOD_1 =
     assert_equals('TestClassA#method_1', script.get_method_on_region('samples/parser_sample.rb', 8..11).name)
     assert_equals(true, script.get_method_on_region('samples/parser_sample.rbrb', 8..11).nil?)
     assert_equals(true, script.get_method_on_region('samples/parser_sample.rb', 7..11).nil?)
-    assert_equals("", script.get_method_on_region('samples/parser_sample.rb', 38..38).name)
+    assert_equals("TestClassA.method_5", script.get_method_on_region('samples/parser_sample.rb', 38..38).name)
   end
 
 
