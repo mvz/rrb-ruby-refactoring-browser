@@ -53,7 +53,17 @@ class TestParser < RUNIT::TestCase
     # test singleton class
     method_7_info = class_info.singleton_class_defs[0].method_info("method_7")
     assert_not_nil( method_7_info )
-    
+
+    # test global and instance variable
+    method_8_info = class_info.method_info("method_8")
+    assert_equals( [], method_8_info.local_vars )
+    assert_equals( %w($x $x $xx),
+		  method_8_info.global_vars.map{|info| info.name} )
+    assert_equals( %w(@y @y),
+		  method_8_info.instance_vars.map{|info| info.name} )
+    assert_equals( %w(@@z),
+		  method_8_info.class_vars.map{|info| info.name} )
+
   end
   
 end
