@@ -4,13 +4,12 @@ echo "-- RubyRefactoringBrowser package maker --"
 
 # - usage
 usage() {
-  echo "usage: $0 VERSION"
+  echo "usage: $0 VERSION [TAG]"
   exit
 }
 if [ $# = 0 ]; then
   usage
-fi
-if [ $1 = "--help" ]; then
+elif [ $1 = "--help" ]; then
   usage
 fi
 VERSION=$1
@@ -26,7 +25,11 @@ if [ -e "rrb-$VERSION" ]; then
 fi
 
 # - checkout
-cvs -d /cvs/ohai export -D `date +%Y-%m-%d` rrb
+if [ $# = 1 ]; then
+  cvs -d /cvs/ohai export -D `date +%Y-%m-%d` rrb
+else
+  cvs -d /cvs/ohai export -r $2 rrb
+fi
 
 # - move files
 cp setup.rb rrb/
