@@ -323,7 +323,6 @@ module RRB
   class Namespace
     include Enumerable
 
-    # 3.4 -> 2.8
     class << self
       alias _new new
     end
