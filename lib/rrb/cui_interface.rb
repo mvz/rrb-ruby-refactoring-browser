@@ -260,12 +260,7 @@ USG
         method = select_one("Refactored method: ", methods)
         old_var = select_one("Old variable: ", vars(method))
         new_var = input_str("New variable: ")
-        unless @script.rename_local_var?(Method[method], old_var, new_var)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.rename_local_var(Method[method], old_var, new_var)
-        output_diff
+        check_and_execute("rename_local_var", Method[method], old_var, new_var)
       end
     end
     
@@ -281,12 +276,7 @@ USG
         namespace = Namespace[select_one("Refactared class: ", classes)]
         old_var = select_one("Old variable: ", ivars(namespace))
         new_var = input_str("New variable: ")
-        unless @script.rename_instance_var?(namespace, old_var, new_var)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.rename_instance_var(namespace, old_var, new_var)
-        output_diff
+        check_and_execute("rename_instance_var", namespace, old_var, new_var)
       end
     end
 
@@ -302,17 +292,11 @@ USG
         namespace = Namespace[select_one("Refactared class: ", classes)]
         old_var = select_one("Old variable: ", cvars(namespace))
         new_var = input_str("New variable: ")
-        unless @script.rename_class_var?(namespace, old_var, new_var)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.rename_class_var(namespace, old_var, new_var)
-        output_diff
+        check_and_execute("rename_class_var", namespace, old_var, new_var)
       end
     end
 
     class RenameGlobalVariable < UI
-      
       def gvars
         @script.refactable_global_vars
       end
@@ -325,17 +309,12 @@ USG
     end
     
     class ExtractMethod < UI
-
       def run
         path = select_one("What file?: ", files)
         region = select_region(@script.files.find{|sf| sf.path == path})
         new_method = input_str("New method: ")
-        unless @script.extract_method?(path, new_method, region.begin, region.end)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.extract_method(path, new_method, region.begin, region.end)
-        output_diff
+        check_and_execute("extract_method", path, new_method,
+                          region.begin, region.end)
       end
     end
 
@@ -352,13 +331,9 @@ USG
         namespace = input_new_namespace
         new_class = input_str("New class: ")
         targets = select_any("Targets: ", classes).map{|cls| Namespace[cls]}
-        
-        unless @script.extract_superclass?(namespace, new_class, targets, path, lineno)
-          STDERR.print(@script.error_message, "\n")
-          exit
-        end
-        @script.extract_superclass(namespace, new_class, targets, path, lineno)
-        output_diff
+
+        check_and_execute("extract_superclass", namespace, new_class,
+                          targets, path, lineno)
       end
     end
 
