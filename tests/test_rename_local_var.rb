@@ -19,6 +19,10 @@ class Rename
     end
     print z**4, z**5
   end
+  def Rename.method_3( x, y )
+    z = x * y + 1
+    print z ** 3
+  end
 end
 \C-a/home/ohai/ruby/test/file2.rb\C-a
 class Rename
@@ -29,11 +33,31 @@ end
 \C-a-- END --\C-a
 "
 
-  RENAME_LOCAL_VAR_OUTPUT = "\
+  RENAME_LOCAL_VAR_OUTPUT1 = "\
 /home/ohai/ruby/test/file2.rb\C-a
 class Rename
   def method_2( yy, y)
     yy**2 + y**2
+  end
+end
+\C-a-- END --\C-a
+"
+    RENAME_LOCAL_VAR_OUTPUT2 = "\
+/home/ohai/ruby/test/file1.rb\C-a
+
+# comment
+
+class Rename
+  def method_1( x, y )
+    z = 3
+    z.upto(6) do |i|
+      print i*3, \"\\n\"
+    end
+    print z**4, z**5
+  end
+  def Rename.method_3( yy, y )
+    z = yy * y + 1
+    print z ** 3
   end
 end
 \C-a-- END --\C-a
@@ -45,7 +69,15 @@ end
                              'x','yy' )
     dst = ''      
     script.result_to_io( dst )
-    assert_equals( RENAME_LOCAL_VAR_OUTPUT, dst )
+    assert_equals( RENAME_LOCAL_VAR_OUTPUT1, dst )
+
+    script = RRB::Script.new_from_io( StringIO.new( RENAME_LOCAL_VAR_INPUT ) )
+    script.rename_local_var( RRB::NS.new('Rename'),
+                             RRB::MN.new('method_3', false),
+                             'x','yy' )
+    dst = ''      
+    script.result_to_io( dst )
+    assert_equals( RENAME_LOCAL_VAR_OUTPUT2, dst )
 
     script = RRB::Script.new_from_filenames("samples/rename_var_sample.rb")   
     script.rename_local_var( RRB::NS.new('Rename'),
@@ -62,12 +94,23 @@ end
 		  script.rename_local_var?(RRB::NS.new('Rename'),
                                            RRB::MN.new('method_2', true),
 					   'x','yy') )
+    assert_equals( true,
+		  script.rename_local_var?(RRB::NS.new('Rename'),
+                                           RRB::MN.new('method_3', false),
+					   'x','yy') )
 
     assert_equals( false,
 		  script.rename_local_var?(RRB::NS.new('Rename'),
                                            RRB::MN.new('method_1', true),
 					   'x','y') )
     assert_equals("y: already used\n", script.error_message)    
+
+    assert_equals( false,
+		  script.rename_local_var?(RRB::NS.new('Rename'),
+                                           RRB::MN.new('method_3', false),
+					   'x','y') )
+    assert_equals("y: already used\n", script.error_message)    
+
     script = RRB::Script.new_from_filenames("samples/rename_var_sample.rb")   
     
     assert_equals( true, script.rename_local_var?( RRB::NS.new('Rename'),
