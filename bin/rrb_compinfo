@@ -1,0 +1,42 @@
+#!/usr/local/bin/ruby
+
+require 'rrb/completion'
+
+if $0 == __FILE__ then
+  
+  def print_usage
+    print "\
+Usage: rrb_compinfo INFOTYPE IOTYPE
+
+  INFOTYPE
+    * --methods
+
+  IOTYPE
+    * --stdin-stdout
+    * --filein-stdout FILES..
+"
+  end
+  
+  if ARGV.size == 0 || ARGV[0] == '--help' then
+    print_usage
+    exit
+  end
+
+  infotype = ARGV.shift
+
+  case ARGV.shift
+  when '--stdin-stdout'
+    script = RRB::Script.new_from_io( STDIN )
+  when '--filein-stdout'
+    script = RRB::Script.new_from_filenames( ARGV )
+  end
+
+  case infotype
+  when '--methods'
+    script.refactable_methods.each do |method|
+      print method.name, ';'
+      print method.local_vars.to_a.join(",")
+      print "\n"
+    end
+  end
+end
