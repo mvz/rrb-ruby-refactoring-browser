@@ -62,11 +62,11 @@ class TestDumpedInfo < RUNIT::TestCase
   def test_has_method?
     info = make_info["TestClassB"]
 
-    assert_equals( true, info.has_method?( "pub") )
-    assert_equals( true, info.has_method?( "pubA", true ) )
-    assert_equals( false, info.has_method?( "pubA", false ) )
-    assert_equals( true, info.has_method?( "id" ) )
-    assert_equals( false, info.has_method?( "nothing" ) ) 
+    assert_equals( true, info.has_method?( RRB::MN.new("pub", true) ) )
+    assert_equals( true, info.has_method?( RRB::MN.new("pubA", true), true ) )
+    assert_equals( false, info.has_method?( RRB::MN.new("pubA", true), false ) )
+    assert_equals( true, info.has_method?( RRB::MN.new("id", true) ) )
+    assert_equals( false, info.has_method?( RRB::MN.new("nothing", true) ) ) 
   end
 
   def test_subclass_of?
