@@ -69,3 +69,5 @@ class TestClassA
   Const6 = 4
 end
 
+class TestClassD < TestClassA::TestClassB
+end
