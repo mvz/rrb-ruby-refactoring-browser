@@ -182,7 +182,9 @@ matches with rrb-ruby-file-name-regexp'"
 
 (defun rrb-rename-method-all (old-method new-method)
   "Refactor code: rename method all old method as new"
-  (interactive (rrb-comp-read-rename-method-all))
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-method-all)))
   (save-excursion
     (rrb-setup-input-buffer)
     (rrb-do-refactoring "--rename-method-all" old-method new-method)))
