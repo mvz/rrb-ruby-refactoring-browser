@@ -217,16 +217,6 @@
       (delete-file tmpfile)
       error-code)))
 
-(defun rrb-add-change-hook-to-all-ruby-script ()
-  "Add hook('before-change-function') to all ruby scripts."
-  (save-current-buffer
-    (mapc 
-     (lambda (buffer)
-       (set-buffer buffer)
-       (make-local-hook 'before-change-functions)
-       (add-hook 'before-change-functions 
-		 'rrb-notify-file-changed nil t))
-     (rrb-all-ruby-script-buffer))))
 
 
 (defmacro rrb-declare-refactoring (&rest body)
@@ -236,26 +226,41 @@
          ,@body
        (setq rrb-now-refactoring-flag nil))))
 
+(defun rrb-make-marshal-file ()
+  "Run rrb_marchal and make cache file"
+  (rrb-setup-buffer 'rrb-insert-input-string
+                    (rrb-all-ruby-script-buffer)
+                    rrb-input-buffer)
+  (setq rrb-marshal-file-name (rrb-make-temp-name rrb-marshal-file-base))
+  (if (/= (apply 'rrb-run-process-region "rrb_marshal" 
+                 (list "--stdin-fileout" rrb-marshal-file-name)) 0)
+      (error "rrb_marshal: fail to read source files %s" (rrb-error-message))))
+
+(defun rrb-delete-marshal-file ()
+  "Delete cache file that was created by rrb-make-marshal-file"
+  (if (file-readable-p rrb-marshal-file-name)
+      (delete-file rrb-marshal-file-name)))
+
+(defun rrb-add-change-hook-to-all-ruby-script ()
+  "Add hook('before-change-function') to all ruby scripts. 
+This hook clears undo files when ary ruby script buffer is changed"
+  (save-current-buffer
+    (mapc 
+     (lambda (buffer)
+       (set-buffer buffer)
+       (make-local-hook 'before-change-functions)
+       (add-hook 'before-change-functions 
+		 'rrb-notify-file-changed nil t))
+     (rrb-all-ruby-script-buffer))))
+
+(defun rrb-prepare-refactoring ()
+  (rrb-add-change-hook-to-all-ruby-script)
+  (rrb-make-marshal-file))
+
+(defun rrb-terminate-refactoring ()
+  (rrb-delete-marshal-file))
 
 (defmacro rrb-setup-refactoring (&rest body)
-  (defun rrb-make-marshal-file ()
-    "Run rrb_marchal and make cache file"
-    (rrb-setup-buffer 'rrb-insert-input-string
-		      (rrb-all-ruby-script-buffer)
-		      rrb-input-buffer)
-    (setq rrb-marshal-file-name (rrb-make-temp-name rrb-marshal-file-base))
-    (if (/= (apply 'rrb-run-process-region "rrb_marshal" 
-		   (list "--stdin-fileout" rrb-marshal-file-name)) 0)
-	(error "rrb_marshal: fail to read source files %s" (rrb-error-message))))
-  (defun rrb-delete-marshal-file ()
-    "Delete cache marchal file"
-    (if (file-readable-p rrb-marshal-file-name)
-	(delete-file rrb-marshal-file-name)))
-  (defun rrb-prepare-refactoring ()
-    (rrb-add-change-hook-to-all-ruby-script)
-    (rrb-make-marshal-file))
-  (defun rrb-terminate-refactoring ()
-    (rrb-delete-marshal-file))
   `(rrb-declare-refactoring
     (rrb-prepare-refactoring)
     (unwind-protect
@@ -302,7 +307,7 @@
 	 (erase-buffer)
 	 (insert file-content)
 	 (goto-char before-point)))
-       compound-buffer)))
+     compound-buffer)))
 
 ;;;; Completion
 
