@@ -119,9 +119,9 @@ module RRB
   
   class ScriptFile
 
-    def initialize( input, name )
+    def initialize( input, path )
       @input = input
-      @name = name
+      @path = path
       @tree = Parser.new.run( input )
       input.rewind 
       @new_script = nil
@@ -156,7 +156,7 @@ module RRB
     end
 
     def write_source_to( dir )
-      filepath = File.join( dir,@name )
+      filepath = File.join( dir,@path )
       FileUtils.mkdir_p( File.dirname( filepath ) )
       File.open(  filepath , "w" ) do |file|
 	@input.each do |line|
@@ -165,7 +165,7 @@ module RRB
       end
     end
     
-    attr_reader :new_script, :name
+    attr_reader :new_script, :path
 
   end
 

@@ -3,6 +3,7 @@ require 'stringio'
 require 'fileutils'
 require 'find'
 require 'rrb/dumped_info.rb'
+require 'rrb/default'
 
 module RRB
 
@@ -46,7 +47,7 @@ module RRB
     def result_to_io( dst )
 
       @files.each do |scriptfile|
-	dst << scriptfile.name
+	dst << scriptfile.path
 	dst << IO_SPLITTER
 	dst << scriptfile.new_script
 	dst << IO_SPLITTER
@@ -59,35 +60,35 @@ module RRB
 
     def result_overwrite_file
       @files.each do |scriptfile|
-	File.open( scriptfile.name, "w+" ) do |f|
+	File.open( scriptfile.path, "w+" ) do |f|
 	  f << scriptfile.new_script
 	end
       end
     end
 
-    def get_dumped_info( work_dir )
-      Dir.mkdir( work_dir )
+    def get_dumped_info
+      work_dir_path = RRB.mk_work_dir
       begin
 	@files.each do |scriptfile|
-	  scriptfile.write_source_to( work_dir )
+	  scriptfile.write_source_to( work_dir_path )
 	end
 	dirs = []
-	Find.find( work_dir ) do |filepath|
+	Find.find( work_dir_path ) do |filepath|
 	  dirs << filepath if FileTest.directory?( filepath )
 	end
-	run_file_path = File.join( work_dir, 'rrb_dump.rb' )
+	run_file_path = File.join( work_dir_path, 'rrb_dump.rb' )
 	run_file = File.open( run_file_path, "w" ) 
 	dirs.each do |dirpath|
 	  run_file << "$:.unshift '#{dirpath}'\n"
 	end
-	run_file << "require '#{@files[0].name[1..-1]}'\n"
+	run_file << "require '#{@files[0].path[1..-1]}'\n"
 	run_file << IO.read(File.join( File.dirname(__FILE__),"dump_modules.rb"))
 	run_file.close
 	IO.popen("ruby #{run_file_path}") do |io|
 	  return DumpedInfo.get_dumped_info( io )
 	end
       ensure
-	FileUtils.rm_r work_dir
+	FileUtils.rm_r work_dir_path
       end
     end
     
@@ -95,10 +96,10 @@ module RRB
 
       files = []
       loop do	
-	name = input.gets( IO_SPLITTER ).chop
-	break if name == IO_TERMINATOR
+	path = input.gets( IO_SPLITTER ).chop
+	break if path == IO_TERMINATOR
 	content = input.gets( IO_SPLITTER ).chop
-	files << ScriptFile.new( StringIO.new( content ), name )
+	files << ScriptFile.new( StringIO.new( content ), path )
       end
 
       return new( files )
@@ -114,4 +115,23 @@ module RRB
     
   end
 
+  module_function
+  
+  def mk_work_dir
+    
+    n = 0
+    loop do
+      raise_exeption = false
+      path = WORK_DIR_BASENAME+'.'+Process.pid.to_s+'.'+n.to_s
+      begin
+	Dir.mkdir( path )
+      rescue Errno::EEXIST
+	raise_exeption = true
+      end
+      return path unless raise_exeption
+      n += 1
+    end
+    
+  end
+  
 end
