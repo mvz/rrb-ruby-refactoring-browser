@@ -1,0 +1,30 @@
+Ruby Refactoring Browerw
+
+= outline
+Ruby Refactoring Browerw is refactoring brower on Ruby for emacsen.
+
+= Tested Emvironment
+Emacs 20.7.2/21.3, ruby 1.6.7/1.8.0 on Debian GNU/Linux.
+
+= Library needed
+ruby_shim if you use ruby 1.6.x
+
+= Installation
+Please see doc/dev/init.en.rd .
+
+= Documentation
+There is no English document.
+
+= Copyright and License
+Copyright (C) 2004  OHBAYASHI Ippei, YOSHIDA Yuichi, HARA Yutaka
+Copyright (C) 2004  Kyoto univ. Microcomputer Club
+
+RRB is distributed under the same term as Ruby.
+
+= Developers
+OHBAYASHI Ippei
+HARA Yutaka
+YOSHIDA Yuichi
+
+= Bug report and comment
+Please send bug reports and comments to OHBAYASHI(ohai@kmc.gr.jp).
