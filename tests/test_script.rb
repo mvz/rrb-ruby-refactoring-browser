@@ -146,7 +146,7 @@ end
 
   def test_pushdown_method
     script = RRB::Script.new_from_filenames("samples/pushdown_method_sample.rb")
-    script.pullup_method(RRB::NS['B'], 'x', RRB::NS['C'])
+    script.pushdown_method(RRB::NS['B'], 'x', RRB::NS['C'])
     dst = ''
     script.result_to_io(dst)
     assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
