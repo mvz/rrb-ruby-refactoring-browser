@@ -270,6 +270,21 @@ matches with rrb-ruby-file-name-regexp'"
   (save-current-buffer
     (rrb-do-refactoring "--rename-instance-variable" ns old-var new-var)))
 
+;;;; Refactoring: Rename class variable
+(defun rrb-comp-read-rename-class-variable ()
+  "completion read for rename instance variable"
+  (rrb-comp-read-type-1 "--classes-class-vars" "Refactord class: "
+                        "Old class variable: " "New class variable: " ))
+
+(defun rrb-rename-class-variable (ns old-var new-var)
+  "Refactor code: Rename instance variable"
+  (interactive (progn
+		 (rrb-setup-input-buffer)
+		 (rrb-comp-read-rename-class-variable)))
+  (save-current-buffer
+    (rrb-do-refactoring "--rename-class-variable" ns old-var new-var)))
+
+
 ;;;; Refactoring: Rename global variable
 (defun rrb-comp-read-rename-global-variable ()
   "compleion read for rename global variable"
