@@ -14,10 +14,9 @@ module RRB
     attr_reader :owner
     
     def visit_method(namespace, node)
-      str_namespace = namespace.map{|i| i.name}.join('::')
       return unless node.instance_vars.map{|i| i.name}.include?(@old_var)
       ancestor_names = @dumped_info[@owner].ancestor_names
-      index = ancestor_names.index(str_namespace)
+      index = ancestor_names.index(namespace.str)
       if index
         @owner = ancestor_names[index]
       end
@@ -57,8 +56,7 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      rename_instance_var(str_namespace, node)
+      rename_instance_var( namespace.str, node)
     end
   end
 
@@ -94,8 +92,7 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      str_namespace = namespace.map{|i| i.name}.join('::')
-      if !rename_instance_var?(str_namespace, node)
+      if !rename_instance_var?( namespace.str, node)
         @result = false
       end
     end
