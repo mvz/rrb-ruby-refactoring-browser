@@ -7,6 +7,7 @@ require 'rrb/rename_instance_var'
 require 'rrb/rename_class_var'
 require 'rrb/rename_method_all'
 require 'rrb/pullup_method'
+require 'rrb/pushdown_method'
 
 class TestScript < RUNIT::TestCase
 
@@ -239,6 +240,26 @@ end
 		    dst )
 
   end
+
+  def test_pushdown_method?
+    script = RRB::Script.new_from_filenames("samples/pushdown_method_sample.rb")
+    assert_equals(true, script.pushdown_method?('x', RRB::NS['B'], RRB::NS['C']))
+    assert_equals(false, script.pushdown_method?('y', RRB::NS['B'], RRB::NS['C']))
+    assert_equals(false, script.pushdown_method?('z', RRB::NS['B'], RRB::NS['C']))
+    assert_equals(false, script.pushdown_method?('w', RRB::NS['B'], RRB::NS['C']))
+    assert_equals(false, script.pushdown_method?('w', RRB::NS['C'], RRB::NS['B']))    
+    assert_equals(true, script.pushdown_method?('a', RRB::NS['A'], RRB::NS['B']))
+  end
+
+  def test_pushdown_method
+    script = RRB::Script.new_from_filenames("samples/pushdown_method_sample.rb")
+    script.pullup_method('x', RRB::NS['B'], RRB::NS['C'])
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals( File.open( 'samples/pushdown_method_sample_after.rb' ).read,
+		    dst )    
+  end
+
 
   def test_dump
     script = RRB::Script.new_from_io( StringIO.new( RENAME_METHOD_ALL_INPUT ) )
