@@ -8,7 +8,7 @@ module RRB
     end
 
     def match?( namespace )
-      namespace.match?( @nest )
+      namespace.match?( RRB::Namespace.new(@nest) )
     end
     
   end
