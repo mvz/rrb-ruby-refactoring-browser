@@ -39,12 +39,27 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals( "class", info.type )
     assert_equals( "TestClassB", info.class_name )
     assert_equals( ["TestClassA","Object","Kernel"], info.ancestor_names )
+    assert_equals( ["TestClassA","Object","Kernel"],
+		  info.ancestors.map{|klass| klass.class_name} )
     assert_equals( ["pub"], info.public_method_names )
     assert_equals( ["pro1", "pro2"], info.protected_method_names.sort )
     assert_equals( [], info.private_method_names )
     assert_equals( ["sing"], info.singleton_method_names )
   end
 
+  def test_has_method?
+    info = nil
+    File.open(DUMPED_FILE_NAME) do |file|
+      info = RRB::DumpedInfo.get_dumped_info( file )["TestClassB"]
+    end
+
+    assert_equals( true, info.has_method?( "pub") )
+    assert_equals( true, info.has_method?( "pubA", true ) )
+    assert_equals( false, info.has_method?( "pubA", false ) )
+    assert_equals( true, info.has_method?( "id" ) )
+    assert_equals( false, info.has_method?( "nothing" ) ) 
+  end
+  
   def setup
     Dir.mkdir WORK_DIR
     File.open( RUBY_SCRIPT_NAME, "w" ) do |output|
