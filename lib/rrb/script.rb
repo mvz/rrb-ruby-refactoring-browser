@@ -18,6 +18,7 @@ module RRB
 
     def initialize( files )
       @files = files
+      @info = nil
     end
 
 
@@ -72,6 +73,7 @@ module RRB
     end
     
     def get_dumped_info
+      return @info if @info
       work_dir_path = RRB.mk_work_dir
       begin
 	script_dir_path = File.join( work_dir_path, 'scripts' )
@@ -82,7 +84,8 @@ module RRB
 	run_file_path = mk_run_file( work_dir_path, script_dir_path )
 	
 	IO.popen("#{RUBY_COMMAND} #{run_file_path}") do |io|
-	  return DumpedInfo.get_dumped_info( io )
+	  @info = DumpedInfo.get_dumped_info( io ) 
+	  return @info
 	end
       ensure
 	FileUtils.rm_r work_dir_path
