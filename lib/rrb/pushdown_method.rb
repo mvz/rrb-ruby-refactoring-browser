@@ -51,10 +51,6 @@ module RRB
               @result = false
               @error_message = "#{@old_namespace.name}##{@method_name} calls private function \"#{call.name}\"\n"
             end
-            if @dumped_info[@new_namespace].has_method?(call.name, false)
-              @result = false
-              @error_message = "Destination class also has #{call.name}\n"
-            end
           end
         else
           node.calls.each do |call|
@@ -95,7 +91,7 @@ module RRB
 
     def pushdown_method?(old_namespace, method_name, new_namespace)
       unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{old_namespace.name} doesn't have #{method_name}\n"
+        @error_message = "#{old_namespace.name} doesn't have a function called #{method_name}\n"
         return false
       end
 
