@@ -106,9 +106,13 @@ module RRB
 	return false
       end
       
-      return true if @public_method_names.include?( methodname )
-      return true if @protected_method_names.include?( methodname )
-      return true if @private_method_names.include?( methodname )
+      if methodname.instance_method?
+        return true if @public_method_names.include?( methodname.name )
+        return true if @protected_method_names.include?( methodname.name )
+        return true if @private_method_names.include?( methodname.name )
+      else
+        return true if @singleton_method_names.include?(methodname)
+      end
       return false
     end
 
