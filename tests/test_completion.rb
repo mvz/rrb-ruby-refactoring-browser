@@ -11,15 +11,23 @@ class A
     var = arg1 * arg2
   end
   def method_2
+    @var = 1
   end
 end
 
 class B < A
   def method_1( arg1, arg3 )
     print arg1
+    @var = uhe
+    @var2 = heke
   end
 end
 class C < A
+  module D
+    def method_3
+      p @var3 
+    end
+  end
 end
 "
   
@@ -30,8 +38,18 @@ end
     end
     assert_equals( [[ 'A#method_1', Set[ 'arg1', 'arg2', 'var' ] ],
 		    [ 'A#method_2', Set[]],
-		    [ 'B#method_1', Set[ 'arg1', 'arg3' ] ]],
+		    [ 'B#method_1', Set[ 'arg1', 'arg3' ] ],
+		    [ 'C::D#method_3', Set[] ]
+		  ],
 		  methods )
+  end
+
+  def test_refactable_classes_instance_vars
+    scriptfile = RRB::ScriptFile.new( StringIO.new( INPUT ), "/tmp/test.rb" )
+    ivars = scriptfile.refactable_classes_instance_vars
+    assert_equals( { 'A' => Set[ '@var' ], 'B' =>  Set[ '@var', '@var2' ],
+		  'C::D' => Set[ '@var3' ]},
+		  ivars )
   end
   
 end
@@ -44,12 +62,16 @@ require 'test2'
 class B < A
   def method_1( arg1, arg3 )
     print arg1
+    @var = 3
   end
+  @var2 = 4
 end
 \C-a/tmp/test2.rb\C-a
 class A
   def method_1( arg1, arg2 )
     var = arg1 * arg2
+    @varr = var * arg2
+    @varrr = @varr ** 2
   end
   def method_2
   end
@@ -66,6 +88,14 @@ end
 		      [ 'A#method_2', Set[] ] ],
 		  methods )
   end
+
+  def test_refactable_classes_instance_vars
+    script = RRB::Script.new_from_io( StringIO.new( INPUT ) )
+    assert_equals( { 'A' => Set[ '@varr', '@varrr' ], 'B' => Set[ '@var' ] },
+		  script.refactable_classes_instance_vars )
+    
+  end
+  
 end
 
 if $0 == __FILE__
