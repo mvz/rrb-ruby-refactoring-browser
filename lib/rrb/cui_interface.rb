@@ -23,6 +23,7 @@ options:
   -d DIFF         output diff [default, DIFF=output.diff]
   -h              print this message and exit
   -r REFACTORING  do REFACTORING
+  -o              overwrite output diff file
 
 refactoring:
   rename-local-variable [method old-var new-var]
@@ -44,21 +45,7 @@ USG
       ['-w', GetoptLong::NO_ARGUMENT],
       ['--help', '-h', GetoptLong::NO_ARGUMENT],
       ['-r', GetoptLong::REQUIRED_ARGUMENT],
-    ]
-
-    REFACTORING = [
-      'rename-local-variable',
-      'rename-instance-variable',
-      'rename-class-variable',
-      'rename-global-variable',
-      'rename-constant',
-      'rename-class',
-      'rename-method-all',
-      'rename-method',
-      'extract-method',
-      'extract-superclass',
-      'pullup-method',
-      'pushdown-method',
+      ['-o', GetoptLong::NO_ARGUMENT],
     ]
 
     module_function
@@ -83,45 +70,6 @@ USG
       Readline.readline(prompt).split(/\s+/)
     end
     
-    # parse ARGV and do refactoring
-    def execute
-      print_usage if ARGV.empty?
-
-      diff_file = 'output.diff'
-      refactoring = nil
-
-      parser = GetoptLong.new
-      parser.set_options( *OPTIONS )
-      parser.each_option do |name, arg|
-        print_usage if name == '--help'
-        diff_file = arg if name == '-d'
-        refactoring = arg if name == '-r'
-      end
-
-      if File.exist?(diff_file)
-        STDERR.print "ERROR: #{diff_file} exists\n"
-        exit 1
-      end
-      
-      
-
-      refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
-
-      case refactoring
-      when "rename-local-variable"
-        ui = RenameLocalVariable.new(ARGV, diff_file)
-      when "rename-instance-variable"
-        ui = RenameInstanceVariable.new(ARGV, diff_file)
-      when "extract-method"
-        ui = ExtractMethod.new(ARGV, diff_file)
-      when "extract-superclass"
-        ui = ExtractSuperclass.new(ARGV, diff_file)
-      else
-        raise 'No such refactoring'
-      end
-
-      ui.run
-    end
 
     # this class enables you to show file, scroll, select line
     # and select region
@@ -241,8 +189,12 @@ USG
         @diff_file = diff_file
       end
 
+      def setup_diff_file
+        File.open(@diff_file, "wb"){}
+      end
+      
       def output_diff
-        system("touch #{@diff_file}")
+        setup_diff_file
         @script.files.find_all{|sf| sf.new_script != nil}.each do |sf|
           tmp = Tempfile.new("rrbcui")
           begin
@@ -311,13 +263,13 @@ USG
     class RenameInstanceVariable < UI
       def ivars(target)
         @script.refactable_classes_instance_vars.each do |classname, cvars|
-          return cvars if classname == target
+          return cvars if classname == target.name
         end
         return []
       end
       
       def run
-        namespace = select_one("Refactared class: ", classes)
+        namespace = Namespace[select_one("Refactared class: ", classes)]
         old_var = select_one("Old variable: ", ivars(namespace))
         new_var = input_str("New variable: ")
         unless @script.rename_instance_var?(namespace, old_var, new_var)
@@ -366,6 +318,52 @@ USG
         output_diff
       end
     end
+
+    
+    REFACTORING_MAP = {
+      'rename-local-variable' => RenameLocalVariable,
+      'rename-instance-variable' => RenameInstanceVariable,
+      'rename-class-variable' => nil,
+      'rename-global-variable' => nil,
+      'rename-constant' => nil,
+      'rename-class' => nil,
+      'rename-method-all' => nil,
+      'rename-method' => nil,
+      'extract-method' => ExtractMethod,
+      'extract-superclass' => ExtractSuperclass,
+      'pullup-method' => nil,
+      'pushdown-method' => nil,
+    }
+
+    REFACTORING = REFACTORING_MAP.map{|name, klass| name}
+    
+    # parse ARGV and do refactoring
+    def execute
+      print_usage if ARGV.empty?
+
+      diff_file = 'output.diff'
+      refactoring = nil
+      overwrite = false
+      
+      parser = GetoptLong.new
+      parser.set_options( *OPTIONS )
+      parser.each_option do |name, arg|
+        print_usage if name == '--help'
+        diff_file = arg if name == '-d'
+        refactoring = arg if name == '-r'
+        overwrite =true if name == '-o'
+      end
+
+      if !overwrite && File.exist?(diff_file)
+        STDERR.print "ERROR: #{diff_file} exists\n"
+        exit 1
+      end
+      
+      refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
+      ui_class = REFACTORING_MAP.fetch(refactoring){ raise 'No such refactoring' }
+      ui_class.new(ARGV,diff_file).run
+    end
+
   end
 end
 
