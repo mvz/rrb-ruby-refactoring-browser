@@ -226,7 +226,8 @@ module RRB
   end
   
   class IdInfo
-
+    attr_reader :type, :lineno, :pointer, :name
+    
     def initialize( type, lineno, pointer, name )
       @type = type
       @lineno = lineno
@@ -245,11 +246,15 @@ module RRB
     def head_pointer
       @pointer - @name.size
     end
-    attr_reader :type, :lineno, :pointer, :name
-    
+
+    def self?
+      @type == :keyword && @name == "self"
+    end
   end
 
   class ConstInfo
+    attr_reader :elements_id
+    
     def initialize( toplevel, id, lconst=nil )
       if lconst == nil
 	@elements_id = [ id ]
@@ -290,8 +295,11 @@ module RRB
     def body
       @elements_id.last
     end
-    
-    attr_reader :elements_id
+
+    def self?
+      false
+    end
+
   end
 
   class SyntaxRange
@@ -310,7 +318,6 @@ module RRB
     def out_of?( range )
       range.last < @head.lineno || @tail.lineno < range.first
     end
-    
   end
   
 

@@ -90,7 +90,7 @@ module RRB
 
     def on__class( kw_class, class_name, stmts, superclass, kw_end )
       @scope_stack.last.singleton_method_defs.delete_if do |sdef|
-	if sdef.s_obj.name == class_name.name then
+	if sdef.s_obj.name == class_name.name || sdef.s_obj.self?
 	  @scope_stack.last.class_method_defs << ClassMethodNode.new( sdef )
 	  @scope_stack.last.consts.delete( sdef.s_obj )
 	  true
@@ -172,6 +172,8 @@ module RRB
 	const = ConstInfo.new_normal( var )
 	@scope_stack.last.consts << const
 	return const
+      when :keyword
+        return var
       end      
     end
 
