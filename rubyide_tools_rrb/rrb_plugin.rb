@@ -128,7 +128,7 @@ module FreeRIDE
       elsif str['.']
         a, b = str.split( '.' )
         namespace = ::RRB::Namespace.new(a)
-        method_name = ::RRB::Method.new(namespace, b)
+        method_name = ::RRB::ClassMethod.new(namespace, b)
         return method_name
       end
     end
@@ -222,6 +222,7 @@ module FreeRIDE
       def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
         method = script.get_method_on_cursor(@filename, @cursor_line).name
+
         method_name = FreeRIDE::RRB.split_method_name(method)
         if script.rename_local_var?(method_name, @old_value, @txt_new_variable.text)
           script.rename_local_var(method_name, @old_value, @txt_new_variable.text)
@@ -343,18 +344,24 @@ module FreeRIDE
       def initialize(plugin, text)
         super(plugin, "Extract Method")        
 
-        hfr_destination = FXHorizontalFrame.new(self, LAYOUT_FILL_X)
-
+        matrix = FXMatrix.new(self, 2, MATRIX_BY_COLUMNS|LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_FILL_Y)
         begin
           script = FreeRIDE::RRB.new_script(@plugin)
-          candidates = script.refactable_classes
+          method_candidates = script.refactable_methods
+          destination_candidates = script.refactable_classes
         rescue
           return
         end
 
-        FXLabel.new(hfr_destination, "Select Destination class: ", nil, JUSTIFY_LEFT|LAYOUT_CENTER_Y)
-        @cmb_destination = FXComboBox.new(hfr_destination,candidates.size,candidates.size,nil,0,COMBOBOX_INSERT_FIRST|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
-        candidates.each do |candidate|
+        FXLabel.new(matrix, "Select Target Method: ", nil, JUSTIFY_RIGHT|LAYOUT_CENTER_Y|LAYOUT_FILL_ROW)
+        @cmb_target_method = FXComboBox.new(matrix,method_candidates.size,method_candidates.size,nil,0,COMBOBOX_INSERT_FIRST|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN)
+        method_candidates.map{|method| method.name}.each do |candidate|
+          @cmb_target_method.appendItem(candidate)
+        end
+
+        FXLabel.new(matrix, "Select Destination class: ", nil, JUSTIFY_RIGHT|LAYOUT_CENTER_Y|LAYOUT_FILL_ROW)
+        @cmb_destination = FXComboBox.new(matrix,destination_candidates.size,destination_candidates.size,nil,0,COMBOBOX_INSERT_FIRST|FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_ROW|LAYOUT_FILL_COLUMN)
+        destination_candidates.each do |candidate|
           @cmb_destination.appendItem(candidate)
         end
 
@@ -371,8 +378,7 @@ module FreeRIDE
 
       def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
-        method = script.get_method_on_cursor(@filename, @cursor_line).name
-        method_name = FreeRIDE::RRB::split_method_name(method)
+        method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
         if script.pushdown_method?(method_name, new_namespace, @filename, @cursor_line)
@@ -389,8 +395,7 @@ module FreeRIDE
 
       def refactor
         script = FreeRIDE::RRB.new_script(@plugin)
-        method = script.get_method_on_cursor(@filename, @cursor_line).name
-        method_name = FreeRIDE::RRB::split_method_name(method)
+        method_name = FreeRIDE::RRB.split_method_name(@cmb_target_method.text)
         new_namespace = ::RRB::Namespace.new(@cmb_destination.text)
 
         if script.pullup_method?(method_name, new_namespace, @filename, @cursor_line)
