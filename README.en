@@ -19,6 +19,12 @@ Type these lines on command line to install core libraries:
   # ruby setup.rb install
 
 Next, you should copy elisp/rrb.el in load-path and load rrb.el to Emacs.
+
+= How to use
+On Emacs, type M-x rrb-rename-local-variable(or rrb-rename-instance-variable, etc)
+and input required information such as the name of variable.
+And you can undo one refactoring to type M-x rrb-undo.
+
 = Documentation
 Sorry.
 No English document is prepared yet.
