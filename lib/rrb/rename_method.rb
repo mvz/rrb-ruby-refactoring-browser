@@ -1,17 +1,11 @@
+require 'rrb/scriptfile'
+require 'rrb/script'
+require 'rrb/node.rb'
+require 'rrb/parser.rb'
+
+require 'set'
 
 module RRB
-
-  class ClassName
-
-    def initialize( str )
-      @nest = str.split(/::/)
-    end
-
-    def match?( namespace )
-      namespace.match?( RRB::Namespace.new(@nest) )
-    end
-    
-  end
   
   class RenameMethodVisitor < Visitor
 
@@ -23,17 +17,29 @@ module RRB
     end
 
     attr_reader :result
+
+    def warning_piece( namespace, num_spaces )
+      
+      "def #{@old_method}(*arg); \
+raise '#{namespace.str}##{@old_method} is renamed #{@new_method}' end\n" +
+	" "*num_spaces
+    end
     
     def visit_method( namespace, node )
       
       @classes.each do |classname|
-	if classname.match?( namespace ) &&  @old_method == node.name then
+	if namespace.match?( classname ) &&  @old_method == node.name then
 	  @result << Replacer.new( node.name_id.lineno,
 				  node.name_id.pointer,
 				  node.name_id.name,
-				  @new_method )	  
+				  @new_method )
+	  @result << Replacer.new( node.name_id.lineno,
+				  node.head_keyword.head_pointer,
+				  "",
+				  warning_piece( namespace,
+						node.head_keyword.head_pointer ) )
 	end
-	if classname.match?( namespace ) then
+	if namespace.match?( classname ) then
 	  node.fcalls.each do |fcall|
 	    if fcall.name == @old_method then
 	      @result << Replacer.new( fcall.lineno,
@@ -49,29 +55,99 @@ module RRB
     end
 
   end
-  
-  
-  class Script
+    
+  class GetAllClassesCallMethod < Visitor
 
-    def rename_method
+    def initialize( methodname )
+      @method = methodname
+      @classes = []
     end
 
-    def rename_method?
+    attr_reader :classes
+    
+    def visit_method( namespace, node )
+      if node.fcalls.find{|fcall| fcall.name == @method } then
+	@classes << namespace.str
+      end
+    end
+
+  end
+
+  class Script
+
+    def classes_call_method( methodname )
+      classes = Set.new
+      @files.each do |scriptfile|
+	classes.merge scriptfile.classes_call_method( methodname )
+      end
+      classes
+    end
+    
+    def classes_access_method( basis, methodname )
+      classes = []
+      result = []
+      basis.each do |namespace|
+	classes << namespace.str
+	get_dumped_info[namespace.str].ancestors.each do |ancestor|
+	  if ancestor.has_method?( methodname )
+	    classes << ancestor.class_name
+	  end
+	end
+      end
+      classes_call_method( methodname ).each do |classname|
+	basis.each do |namespace|
+	  if get_dumped_info[namespace.str].subclass_of?(classname)
+	    classes << classname
+	  end
+	end
+      end
+      
+
+      get_dumped_info.each do |classinfo|
+	classes.each do |classname|
+	  if classinfo.subclass_of?(classname) then
+	    result << Namespace.new( classinfo.class_name )
+	    break
+	  end
+	end
+      end
+
+      result
+    end
+    
+    def rename_method( base_classes, old_method, new_method )
+      real_classes = classes_access_method( base_classes, old_method )
+      @files.each do |scriptfile|
+	scriptfile.rename_method( real_classes, old_method, new_method )
+      end
+    end
+
+    def rename_method?( base_classes, old_method, new_method )
+      return false unless RRB.valid_method?( new_method )
+      classes_access_method( base_classes, old_method ).each do |ns|
+	if get_dumped_info[ns.str].has_method?( new_method ) then
+	  return false
+	end
+      end
+      true
     end
     
   end
 
   class ScriptFile
-    
-    def rename_method( class_pathes, old_name, new_name )
 
-      visitor = RenameMethodVisitor.new( class_pathes, old_name, new_name )
+    def classes_call_method( methodname )
+      visitor = GetAllClassesCallMethod.new( methodname )
+      @tree.accept( visitor )
+      visitor.classes
+    end
+    
+    def rename_method( class_pathes, old_method, new_method )
+      visitor = RenameMethodVisitor.new( class_pathes, old_method, new_method )
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
-    def rename_method?
-    end
 
   end
   
