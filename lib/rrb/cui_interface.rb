@@ -1,7 +1,7 @@
 require 'tempfile'
 require 'readline'
 require 'getoptlong'
-#require 'curses'
+require 'curses'
 require 'rrb/rrb'
 require 'rrb/completion'
 
