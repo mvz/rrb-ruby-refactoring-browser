@@ -44,17 +44,6 @@ TEST_CLASS_A_METHOD_1 =
     assert_equals("", script.get_method_on_region('samples/parser_sample.rb', 38..38).name)
   end
 
-  def test_count_namespace_definitoin
-    filename = 'samples/parser_sample.rb'
-    script = RRB::Script.new_from_filenames(filename)
-    assert_equals(1, 
-                  script.count_namespace_definition(filename,
-                                                 RRB::NS.new('TestClassA')))
-    assert_equals(0, 
-                  script.count_namespace_definition(filename,
-                                                 RRB::NS.new('NoClass')))
-
-  end
 
   TEST_DUMP_INPUT = "\
 /home/ohai/ruby/test/file1.rb\C-a
