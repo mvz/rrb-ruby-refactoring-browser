@@ -116,6 +116,28 @@ module RRB
 
     attr_reader :result
   end
+
+  class MethodDefineCheckVisitor < Visitor
+
+    def initialize( method, classes )
+      @method = method
+      @classes = classes
+    end
+
+    def visit_class( namespace, node )
+      if node.method_defs.inject( false ){|r,i| (r || i.name == @method) } then
+	classname = (namespace + [node]).map{|c| c.name}.join('::')
+	@classes.delete_if{|class_info| class_info.class_name ==  classname }
+      end
+    end
+
+    def visit_toplevel( namespace, node )
+      if node.method_defs.inject( false ){|r,i| r || i.name == @method } then
+	@classes.delete_if{|class_info| class_info.class_name ==  'Object' }
+      end
+    end
+    
+  end
   
   class ScriptFile
 
@@ -164,6 +186,10 @@ module RRB
 	end
       end
       @input.rewind
+    end
+
+    def method_define_check( method, classes )
+      @tree.accept MethodDefineCheckVisitor.new( method, classes )
     end
     
     attr_reader :new_script, :path
