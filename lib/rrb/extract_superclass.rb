@@ -86,16 +86,12 @@ module RRB
       end
 
       # check name collision
-      ns = namespace
-      until ns == RRB::Namespace::Toplevel
-        return false if get_dumped_info[ns].consts.include?( new_class )
-        ns = ns.chop
-      end
-      get_dumped_info[namespace].ancestors.each do |anc|
-        return false if anc.consts.include?( new_class )
+      if get_dumped_info.resolve_const( namespace, new_class ).nil? then
+        return true
+      else
+        return false
       end
       
-      return true
     end
     
   end
