@@ -46,11 +46,7 @@ module RRB
     end
 
     def visit_class( namespace, node )
-      if namespace.normal == Namespace::Toplevel
-        @classes << '::' + node.name_id.name
-      else
-        @classes << '::' + namespace.str + '::' + node.name_id.name
-      end
+      @classes << NodeNamespace.new(node, namespace).str
     end
 
     attr_reader :classes
@@ -110,7 +106,7 @@ module RRB
 
     attr_reader :consts
   end
-  
+
   class ScriptFile
 
     def refactable_methods
@@ -188,6 +184,5 @@ module RRB
       end
       result
     end
-    
   end
 end
