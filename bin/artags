@@ -1,0 +1,146 @@
+#!/usr/local/bin/ruby
+
+require 'rrb/parser'
+require 'rrb/node'
+
+module RRB
+  class Node
+    def attrs
+      @attr_readers + @attr_writers + @attr_accessors
+    end
+  end
+end
+
+class TAGS
+
+  class Guard
+    def lineno
+      -1
+    end
+  end
+
+  def tag_to_tagfile( input, tags )
+    
+    sorted_tags = tags.sort{|a,b| a.lineno <=> b.lineno}
+    sorted_tags.push Guard.new
+    input.rewind
+    
+    dst = ''
+    i = 0
+    pos = 0
+    size = 0
+    line = input.gets
+    
+    while line
+      
+      if input.lineno == sorted_tags[i].lineno then
+	tag = sorted_tags[i]
+	dst << sprintf( "%s\C-?%s\C-A%d,%s\n",
+		       line[0,tag.pos],
+		       tag.abs_name,
+		       tag.lineno,
+		       pos )
+	i += 1
+      else
+	pos = input.pos
+	line = input.gets
+      end
+      
+    end
+
+    return dst
+  end
+
+  class TAG
+    
+    def initialize( namespace, id )
+      @namespace = namespace
+      @id = id
+    end
+
+    def lineno
+      @id.lineno
+    end
+
+    def pos
+      @id.pointer
+    end
+    
+  end
+  
+  class MethodTAG < TAG
+    
+    def abs_name
+      '::' + @namespace + '#' + @id.name
+    end
+    
+  end
+
+  class ClassTAG < TAG
+    def abs_name
+      if @namespace == '' then
+	'::' + @id.name
+      else
+	'::' + @namespace + '::' + @id.name
+      end
+    end    
+  end
+
+  class ClassMethodTAG < TAG
+    def abs_name
+      '::' + @namespace + '.' + @id.name
+    end
+  end
+  
+  class TagVisitor < RRB::Visitor
+
+    def initialize
+      @tags = []
+    end
+    
+    def visit_class( namespace, class_node )
+      @tags << ClassTAG.new( namespace.str, class_node.name_id )
+      class_node.attrs.each do |sym|
+	@tags << MethodTAG.new( RRB::NodeNamespace.new( class_node, namespace ).str,
+			       sym )
+      end
+    end
+    
+    def visit_class_method( namespace, node )
+      @tags << ClassMethodTAG.new( namespace.str, node.name_id )
+    end
+    
+    def visit_method( namespace, method_node )
+      @tags << MethodTAG.new( namespace.str, method_node.name_id )
+    end
+
+    attr_reader :tags
+  end
+  
+  def initialize( files )
+    @files = files
+  end
+
+  def shipout
+
+    parser = RRB::Parser.new
+    tree = nil
+    File.open( 'TAGS', 'w' ) do |output|
+      @files.each do |filename|
+	File.open( filename, 'r' ) do |input|
+	  tree = parser.run( input )
+	  visitor = TagVisitor.new
+	  tree.accept( visitor )
+
+	  result = tag_to_tagfile( input, visitor.tags )
+	  output.print "\C-L\n#{filename},#{result.size}\n"
+	  output.print result
+	end
+      end
+    end
+    
+  end
+
+end
+
+TAGS.new(ARGV).shipout
