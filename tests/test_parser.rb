@@ -78,7 +78,11 @@ class TestParser < RUNIT::TestCase
 		  method_9_info.consts.map{|info| info.name} )
     
     assert_equals( %w(TestClassB TestClassB Const6), class_info.consts.map{|info| info.name } )
-    
+
+    # test class method
+    assert_equals( [ "method_5", "method_10" ],
+                   class_info.class_method_defs.map{|cm| cm.name} )
+
     # test head_keyword and tail_keyword
     assert_equals( 5, method_1_info.head_keyword.pointer )
     assert_equals( 7, method_1_info.head_keyword.lineno )
