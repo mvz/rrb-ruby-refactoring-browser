@@ -1,3 +1,4 @@
+require 'rrb/node'
 require 'rrb/script'
 require 'rrb/rename_constant'
 require 'set'
@@ -5,35 +6,13 @@ require 'set'
 module RRB
 
   class RefactableMethodsVistor < Visitor
-
-    class Method
-
-      def initialize( namespace, method_node )
-	@namespace = namespace
-	@node = method_node
-      end
-
-      def fullname
-	@namespace.str + '#' + @node.name
-      end
-
-      def local_vars
-	Set.new( @node.local_vars.map{|var| var.name} )
-      end
-
-      def name
-	@node.name
-      end
-      
-    end
-
-    
+   
     def initialize
       @methods = []
     end
     
     def visit_method( namespace, method_node )
-      @methods.push RefactableMethodsVistor::Method.new( namespace, method_node )
+      @methods.push Method.new( namespace, method_node )
     end
 
     attr_reader :methods
@@ -46,7 +25,7 @@ module RRB
     end
 
     def visit_class( namespace, node )
-      @classes << NodeNamespace.new(node, namespace).str
+      @classes << NodeNamespace.new(node, namespace).name
     end
 
     attr_reader :classes
@@ -60,8 +39,8 @@ module RRB
     end
 
     def visit_method( namespace, node )
-      @classes[namespace.str] ||= Set.new
-      @classes[namespace.str].merge( node.instance_vars.map{|ivar| ivar.name} )
+      @classes[namespace.name] ||= Set.new
+      @classes[namespace.name].merge( node.instance_vars.map{|ivar| ivar.name} )
     end
 
     attr_reader :classes
@@ -73,7 +52,7 @@ module RRB
     end
 
     def visit_class(namespace, node)
-      class_name = NodeNamespace.new(node, namespace).str
+      class_name = NodeNamespace.new(node, namespace).name
       @classes[class_name] ||= Set.new
       @classes[class_name].merge(node.class_vars.map{|cvar| cvar.name})
     end
@@ -103,9 +82,9 @@ module RRB
     end
 
     def visit_node( namespace, node)
-      ns = namespace.str
+      ns = namespace.name
       if ModuleNode === node || SingletonClassNode === node
-        ns << '::' unless namespace.str==""
+        ns << '::' unless namespace.name==""
         ns << node.name_id.name
       end
 
@@ -115,7 +94,7 @@ module RRB
     end
 
     def visit_class( namespace, node)
-      @consts << resolve_const(@dumped_info, namespace.str, node.name_id.name)
+      @consts << resolve_const(@dumped_info, namespace.name, node.name_id.name)
     end
 
     attr_reader :consts
