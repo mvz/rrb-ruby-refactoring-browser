@@ -1,5 +1,5 @@
 /**********************************************************************
-
+1
   parse.y -
 
   Author: matz
@@ -777,6 +777,7 @@ stmt		: kALIAS fitem {lex_state = EXPR_FNAME;} fitem
 			if (in_def || in_single) {
 			    yyerror("BEGIN in method");
 			}
+                        dispatch0(local_push);
 		    %*/
 		    }
 		  '{' compstmt '}'
@@ -788,6 +789,7 @@ stmt		: kALIAS fitem {lex_state = EXPR_FNAME;} fitem
 		        $$ = 0;
 		    /*%
 			$$ = dispatch1(BEGIN, $4);
+                        dispatch0(local_pop);
 		    %*/
 		    }
 		| klEND '{' compstmt '}'
@@ -2665,6 +2667,7 @@ primary		: literal
 			if (in_def || in_single)
 			    yyerror("class definition in method body");
 			class_nest++;
+                        dispatch0(local_push);
 		    %*/
 		    }
 		  bodystmt
@@ -2677,6 +2680,7 @@ primary		: literal
 			class_nest--;
 		    /*%
 			$$ = dispatch5(class, $1, $2, $3, $5, $6);
+                        dispatch0(local_pop);
 			class_nest--;
 		    %*/
 		    }
@@ -2700,6 +2704,7 @@ primary		: literal
 		        $$ = in_single;
 		        in_single = 0;
 			class_nest++;
+                        dispatch0(local_push);
 		    %*/
 		    }
 		  bodystmt
@@ -2714,6 +2719,7 @@ primary		: literal
 		        in_single = $<num>6;
 		    /*%
 			$$ = dispatch4(sclass, $1, $3, $7, $8);
+                        dispatch0(local_pop);
 			class_nest--;
 		        in_def = $<val>4;
 		        in_single = $<val>6;
@@ -2731,6 +2737,7 @@ primary		: literal
 			if (in_def || in_single)
 			    yyerror("module definition in method body");
 			class_nest++;
+                        dispatch0(local_push);
 		    %*/
 		    }
 		  bodystmt
@@ -2743,6 +2750,7 @@ primary		: literal
 			class_nest--;
 		    /*%
 			$$ = dispatch4(module, $1, $2, $4, $5);
+                        dispatch0(local_pop);
 			class_nest--;
 		    %*/
 		    }
@@ -2757,6 +2765,7 @@ primary		: literal
 			$<id>$ = cur_mid;
 			cur_mid = $2;
 			in_def++;
+                        dispatch0(local_push);
 		    %*/
 		    }
 		  f_arglist
@@ -2773,6 +2782,7 @@ primary		: literal
 			cur_mid = $<id>3;
 		    /*%
 			$$ = dispatch5(def, $1, $2, $4, $5, $6);
+                        dispatch0(local_pop);
 			class_nest--;
 			cur_mid = $<id>3;
 		    %*/
@@ -2785,6 +2795,7 @@ primary		: literal
 		        lex_state = EXPR_END; /* force for args */
 		    /*%
 			in_single++;
+                        dispatch0(local_push);
 		        lex_state = EXPR_END;
 		    %*/
 		    }
@@ -2801,6 +2812,7 @@ primary		: literal
 			in_single--;
 		    /*%
 			$$ = dispatch7(defs, $1, $2, $3, $5, $7, $8, $9);
+                        dispatch0(local_pop);
 			in_single--;
 		    %*/
 		    }
