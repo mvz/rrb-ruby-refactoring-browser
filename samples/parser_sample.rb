@@ -70,7 +70,10 @@ class TestClassA
   attr_writer( :y, :z )
   attr_accessor :a, :b
   attr_accessor :c,
-    :d
+  :d
+
+  def self.method_10
+  end
 end
 
 class TestClassD < TestClassA::TestClassB
