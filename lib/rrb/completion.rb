@@ -71,6 +71,19 @@ module RRB
     attr_reader :classes
   end
 
+  class RefactableGlobalVarsVisitor < Visitor
+
+    def initialize
+      @gvars = Set.new
+    end
+    
+    def visit_node( namespace, node )
+      @gvars.merge( node.global_vars.map{|gvar| gvar.name} )
+    end
+
+    attr_reader :gvars
+  end
+  
   class RefactableConstsVisitor < Visitor
     include ConstResolver
     
@@ -118,6 +131,12 @@ module RRB
       visitor.classes
     end
 
+    def refactable_global_vars
+      visitor = RefactableGlobalVarsVisitor.new
+      @tree.accept( visitor )
+      visitor.gvars
+    end
+    
     def refactable_consts(dumped_info)
       visitor = RefactableConstsVisitor.new(dumped_info)
       @tree.accept( visitor )
@@ -154,6 +173,14 @@ module RRB
       result
     end
 
+    def refactable_global_vars
+      result = Set.new
+      @files.each do |scriptfile|
+        result.merge scriptfile.refactable_global_vars
+      end
+      result
+    end
+    
     def refactable_consts
       result = Set.new
       @files.each do |scriptfile|
