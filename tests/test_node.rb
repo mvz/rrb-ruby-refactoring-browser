@@ -42,6 +42,16 @@ class TestNode < RUNIT::TestCase
     
   end
 
+  class Visitor3 < RRB::Visitor
+
+    def visit_toplevel( namespace, top_node )
+      @top_classes = top_node.class_defs.map{|i| i.name}
+    end
+    attr_reader :top_classes
+    
+  end
+    
+      
   def test_accept
 
     parser = RRB::Parser.new
@@ -71,6 +81,11 @@ class TestNode < RUNIT::TestCase
 		    [['TestClassA','TestModuleA'],'TestModuleB'],
 		  ],
 		  visitor2.classes )
+
+    visitor3 = Visitor3.new
+    tree.accept( visitor3 )
+    assert_equals( [ 'TestClassA' ], visitor3.top_classes )
+    
   end
 
 end
