@@ -8,8 +8,7 @@ module RRB
   class ExtractMethodVisitor < Visitor
 
     def initialize(start_lineno, end_lineno)
-      @start_lineno = start_lineno
-      @end_lineno = end_lineno
+      @extracted_range = start_lineno..end_lineno
       @method_lineno = 1
       @args = []
       @assigned = []
@@ -17,35 +16,30 @@ module RRB
 
     attr_reader :method_lineno, :args, :assigned 
 
-    def visit_method( namespace, node )
-      return unless node.range.contain?(@start_lineno .. @end_lineno)
-      vars = node.local_vars.map{|i| i.name}
-      out_vars = []
-      in_vars = []
-      node.local_vars.each do |id|
-        out_vars << id unless (@start_lineno..@end_lineno) === id.lineno
-        in_vars << id if (@start_lineno..@end_lineno) === id.lineno
+    def partition_vars( vars, range )
+      before_range = []; in_range = []; after_range = []
+      vars.each do |id|
+        before_range << id if id.lineno < range.begin
+        in_range << id if range === id.lineno
+        after_range << id if range.end < id.lineno
       end
-
+      return before_range, in_range, after_range
+    end
+    
+    def visit_method( namespace, node )
+      return unless node.range.contain?(@extracted_range)
+      
+      before_vars, in_vars, after_vars = partition_vars( node.local_vars,
+                                                         @extracted_range )
+      out_vars = before_vars + after_vars
       in_assigned = (node.assigned & in_vars)
       in_var_ref = in_vars - in_assigned
-      @assigned = (node.assigned & in_vars).map{|i| i.name} & out_vars.map{|i| i.name}
-      candidates = out_vars.map{|i| i.name} & in_vars.map{|i| i.name}
-      candidates.each do |id|
-        first_var_ref = in_var_ref.find{|i| i.name == id}
-        first_assigned = in_assigned.find{|i| i.name == id}
-        next unless first_var_ref
-        unless first_assigned
-          @args << id
-          next
-        end
-  
-        @args << id if first_var_ref.lineno <= first_assigned.lineno
-      end
-      @args.uniq!
+      
+      @assigned = in_assigned.map{|i| i.name} & out_vars.map{|i| i.name}
+      @args = before_vars.map{|i| i.name} & in_var_ref.map{|i| i.name}
 
       if node.name_id.name == 'toplevel'
-        @method_lineno = @start_lineno
+        @method_lineno = @extracted_range.begin
       else
         @method_lineno = node.name_id.lineno
       end
