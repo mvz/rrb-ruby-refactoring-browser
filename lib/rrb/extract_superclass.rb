@@ -5,7 +5,7 @@ module RRB
 
   class ExtractSuperclassVisitor < Visitor
     def initialize( namespace, new_class, targets )
-      @new_superclass = '::' + namespace.name + '::' + new_class
+      @new_superclass = namespace.abs_name + '::' + new_class
       @targets = targets
       @result = []
     end
