@@ -190,7 +190,10 @@ module RRB
       @lineno = lineno
       @pointer += pointer
     end
-    
+
+    def head_pointer
+      @pointer - @name.size
+    end
     attr_reader :type, :lineno, :pointer, :name
     
   end
@@ -301,6 +304,10 @@ module RRB
       @namespace
     end
 
+    def ==(other)
+      ary == other.ary
+    end
+    
   end
 
   # shortcut name
