@@ -33,6 +33,7 @@ call check methods.
 Last, you should modify files and output it.
   script.rename_local_variable(method,old_var,new_var)
   script.files.each do |file|
+    next if file.new_script.nil?
     buffers.find{|buffer| buffer.path == file.path}.set_string(file.new_script)
   end
 
@@ -116,7 +117,8 @@ This class represents one script file.
 
 --- new_script
 
-    Return refactored script as string.
+    Return refactored script as string. Return nil if this file is not 
+    modified.
 
 == RRB::Namespace
 This class represents the name of namespace such as class or module.

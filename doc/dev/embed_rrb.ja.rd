@@ -41,6 +41,7 @@ rename local variable$B$r$9$k>l9g$O!"JQ998e$NJQ?t$,$9$G$KB8:_$7$J$$$+(B
 $B0J2<$N$h$&$J46$8$K$J$k$G$7$g$&!#(B
   script.rename_local_variable(method,old_var,new_var)
   script.files.each do |file|
+    next if file.new_script.nil?
     buffers.find{|buffer| buffer.path == file.path}.set_string(file.new_script)
   end
 
@@ -124,6 +125,7 @@ IDE$B$J$I$G$O!"!V%W%m%8%'%/%H!W$H8F$P$l$k$h$&$J$b$N$G$"$k$H9M$($l$PNI$$$G$7$g$&
 --- new_script
 
     $B%j%U%!%/%?%j%s%0$5$l$?%=!<%9%3!<%I$rJV$7$^$9!#(B
+    $B2?$bJQ99$5$l$J$+$C$?>l9g$O(Bnil$B$rJV$7$^$9!#(B
     
 == RRB::Namespace
 $B$3$N%/%i%9$O%/%i%9!"%b%8%e!<%k$H$$$C$?!VL>A06u4V!W$rI=$7$^$9!#(B
