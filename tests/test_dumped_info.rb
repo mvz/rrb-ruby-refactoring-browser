@@ -36,10 +36,7 @@ class TestDumpedInfo < RUNIT::TestCase
   # this test includes the test of dump_module.rb
   def test_initialize
 
-    info = nil
-    File.open(DUMPED_FILE_NAME) do |file|
-      info = RRB::DumpedInfo.get_dumped_info( file )["TestClassB"]
-    end
+    info = make_info["TestClassB"]
     
     assert_equals( "class", info.type )
     assert_equals( "TestClassB", info.class_name )
@@ -54,16 +51,35 @@ class TestDumpedInfo < RUNIT::TestCase
   end
 
   def test_has_method?
-    info = nil
-    File.open(DUMPED_FILE_NAME) do |file|
-      info = RRB::DumpedInfo.get_dumped_info( file )["TestClassB"]
-    end
+    info = make_info["TestClassB"]
 
     assert_equals( true, info.has_method?( "pub") )
     assert_equals( true, info.has_method?( "pubA", true ) )
     assert_equals( false, info.has_method?( "pubA", false ) )
     assert_equals( true, info.has_method?( "id" ) )
     assert_equals( false, info.has_method?( "nothing" ) ) 
+  end
+
+  def test_subclass_of?
+    info = make_info
+
+    assert_equals( true, info["TestClassB"].subclass_of?("TestClassA") )
+    assert_equals( true, info["TestClassB"].subclass_of?("TestClassB") )
+    assert_equals( false, info["TestClassA"].subclass_of?("TestClassB") )
+    assert_equals( false, info["TestClassX"].subclass_of?("Object") )
+  end
+
+  def test_EQUAL
+    info = make_info["TestClassB"]
+    assert_equals( RRB::NullDumpedClassInfo.new, RRB::NullDumpedClassInfo.new )
+    assert_equals( false, RRB::NullDumpedClassInfo.new ==  info )
+    assert_equals( false, Object.new ==  RRB::NullDumpedClassInfo.new )
+  end
+
+  def make_info
+    File.open(DUMPED_FILE_NAME) do |file|
+      return RRB::DumpedInfo.get_dumped_info( file )
+    end
   end
   
   def setup
