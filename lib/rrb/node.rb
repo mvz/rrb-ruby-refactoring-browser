@@ -29,7 +29,7 @@ module RRB
   
   class Node    
     
-    def initialize( name_id, scope )
+    def initialize( name_id, scope, head_kw, tail_kw )
       @name_id = name_id
       @class_defs = scope.class_defs
       @method_defs = scope.method_defs
@@ -43,12 +43,15 @@ module RRB
       @singleton_method_defs = scope.singleton_method_defs
       @class_method_defs = scope.class_method_defs
       @singleton_class_defs = scope.singleton_class_defs
+      @head_keyword = head_kw
+      @tail_keyword = tail_kw
     end
 
     attr_reader :name_id, :class_defs, :method_defs, :method_calls, :local_vars
     attr_reader :global_vars, :instance_vars, :class_vars, :consts
     attr_reader :fcalls, :singleton_method_defs, :class_method_defs
     attr_reader :singleton_class_defs
+    attr_reader :head_keyword, :tail_keyword
     
     def method_info( method_name )
       @method_defs.find{|m| m.name == method_name}
@@ -80,7 +83,7 @@ module RRB
   class TopLevelNode < Node
 
     def initialize( scope )
-      super IdInfo.new( :toplevel, nil, nil, 'toplevel' ), scope
+      super IdInfo.new( :toplevel, nil, nil, 'toplevel' ), scope, nil, nil
     end
     
     def accept( visitor )
@@ -122,9 +125,9 @@ module RRB
 
   class SingletonMethodNode < Node
 
-    def initialize( s_obj, method_name, scope )
+    def initialize( s_obj, method_name, scope, head_kw, tail_kw )
       @s_obj = s_obj
-      super method_name, scope
+      super method_name, scope, head_kw, tail_kw
     end
     
     def accept( visitor, namespace )
@@ -149,6 +152,8 @@ module RRB
       @class_method_defs = sdef.class_method_defs
       @singleton_class_defs = sdef.singleton_class_defs
       @s_obj = sdef.s_obj
+      @head_keyword = sdef.head_keyword
+      @tail_keyword = sdef.tail_keyword
     end
 
     def accept( visitor, namespace )
