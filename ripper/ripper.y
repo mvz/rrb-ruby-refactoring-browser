@@ -152,6 +152,8 @@ static int in_defined = 0;
 #define s_dispatch1(name,a)      (dispatch1(scan,a), dispatch1(name,a))
 #define s_dispatch2(name,a,b)    (dispatch1(scan,b), dispatch2(name,a,b))
 
+#define op_dispatch1(name,a)      (dispatch1(scan,a), dispatch1(name,a), dispatch1(OP,a))
+ 
 #include "dispids.h"
 
 /* --------------- ripper class struct ------------------- */
@@ -783,32 +785,32 @@ undef_list	: fitem
                         $$ = dispatch2(list_add, $1, $4);
 		    }
 
-op		: '|'		{ $$ = ID2SYM('|'); }
-		| '^'		{ $$ = ID2SYM('^'); }
-		| '&'		{ $$ = ID2SYM('&'); }
-		| tCMP		{ $$ = rip_tok2sym("<=>"); }
-		| tEQ		{ $$ = rip_tok2sym("=="); }
-		| tEQQ		{ $$ = rip_tok2sym("==="); }
-		| tMATCH	{ $$ = rip_tok2sym("=~"); }
-		| '>'		{ $$ = ID2SYM('>'); }
-		| tGEQ		{ $$ = rip_tok2sym(">="); }
-		| '<'		{ $$ = ID2SYM('<'); }
-		| tLEQ		{ $$ = rip_tok2sym("<="); }
-		| tLSHFT	{ $$ = rip_tok2sym("<<"); }
-		| tRSHFT	{ $$ = rip_tok2sym(">>"); }
-		| '+'		{ $$ = ID2SYM('+'); }
-		| '-'		{ $$ = ID2SYM('-'); }
-		| '*'		{ $$ = ID2SYM('*'); }
-		| tSTAR		{ $$ = ID2SYM('*'); }
-		| '/'		{ $$ = ID2SYM('/'); }
-		| '%'		{ $$ = ID2SYM('%'); }
-		| tPOW		{ $$ = rip_tok2sym("**"); }
-		| '~'		{ $$ = ID2SYM('~'); }
-		| tUPLUS	{ $$ = rip_tok2sym("+@"); }
-		| tUMINUS	{ $$ = rip_tok2sym("-@"); }
-		| tAREF		{ $$ = rip_tok2sym("[]"); }
-		| tASET		{ $$ = rip_tok2sym("[]="); }
-		| '`'		{ $$ = ID2SYM('`'); }
+op		: '|'		{ $$ = $<val>1 }
+		| '^'		{ $$ = $<val>1 }
+		| '&'		{ $$ = $<val>1 }
+		| tCMP		{ $$ = $<val>1 }
+		| tEQ		{ $$ = $<val>1 }
+		| tEQQ		{ $$ = $<val>1 }
+		| tMATCH	{ $$ = $<val>1 }
+		| '>'		{ $$ = $<val>1 }
+		| tGEQ		{ $$ = $<val>1 }
+		| '<'		{ $$ = $<val>1 }
+		| tLEQ		{ $$ = $<val>1 }
+		| tLSHFT	{ $$ = $<val>1 }
+		| tRSHFT	{ $$ = $<val>1 }
+		| '+'		{ $$ = $<val>1 }
+		| '-'		{ $$ = $<val>1 }
+		| '*'		{ $$ = $<val>1 }
+		| tSTAR		{ $$ = $<val>1 }
+		| '/'		{ $$ = $<val>1 }
+		| '%'		{ $$ = $<val>1 }
+		| tPOW		{ $$ = $<val>1 }
+		| '~'		{ $$ = $<val>1 }
+		| tUPLUS	{ $$ = $<val>1 }
+		| tUMINUS	{ $$ = $<val>1 }
+		| tAREF		{ $$ = $<val>1 }
+		| tASET		{ $$ = $<val>1 }
+		| '`'		{ $$ = $<val>1 }
 
 reswords	: k__LINE__ | k__FILE__  | klBEGIN | klEND
 		| kALIAS | kAND | kBEGIN | kBREAK | kCASE | kCLASS | kDEF
@@ -3586,11 +3588,11 @@ rip_yylex0(parser)
 	    lex_state = EXPR_BEG;
 	    if (nextc() == '=') {
 		yylval.val = rip_id2sym(tPOW);
-                s_dispatch1(tPOW_ASSIGN, rb_str_new2("**="));
+                s_dispatch1(POW_ASSIGN, rb_str_new2("**="));
 		return tOP_ASGN;
 	    }
 	    pushback(c);
-            s_dispatch1(POW, rb_str_new2("**"));
+            yylval.val = op_dispatch1(POW, rb_str_new2("**"));
 	    return tPOW;
 	}
 	if (c == '=') {
@@ -3602,15 +3604,15 @@ rip_yylex0(parser)
 	pushback(c);
 	if (IS_ARG() && space_seen && !ISSPACE(c)){
 	    rb_warning("`*' interpreted as argument prefix");
-            s_dispatch1(STAR, rb_str_new2("*"));
+            yylval.val = op_dispatch1(STAR, rb_str_new2("*"));
 	    c = tSTAR;
 	}
 	else if (lex_state == EXPR_BEG || lex_state == EXPR_MID) {
-            s_dispatch1(STAR, rb_str_new2("*"));
+            yylval.val = op_dispatch1(STAR, rb_str_new2("*"));
 	    c = tSTAR;
 	}
 	else {
-            s_dispatch1(MUL, rb_str_new2("*"));
+            yylval.val = op_dispatch1(MUL, rb_str_new2("*"));
 	    c = '*';
 	}
 	lex_state = EXPR_BEG;
@@ -3665,15 +3667,15 @@ rip_yylex0(parser)
 	lex_state = EXPR_BEG;
 	if ((c = nextc()) == '=') {
 	    if ((c = nextc()) == '=') {
-                s_dispatch1(EQQ, rb_str_new2("==="));
+                yylval.val = op_dispatch1(EQQ, rb_str_new2("==="));
 		return tEQQ;
 	    }
 	    pushback(c);
-            s_dispatch1(EQ, rb_str_new2("=="));
+            yylval.val = op_dispatch1(EQ, rb_str_new2("=="));
 	    return tEQ;
 	}
 	if (c == '~') {
-            s_dispatch1(MATCH, rb_str_new2("=~"));
+            yylval.val = op_dispatch1(MATCH, rb_str_new2("=~"));
 	    return tMATCH;
 	}
 	else if (c == '>') {
@@ -3705,11 +3707,11 @@ rip_yylex0(parser)
 	lex_state = EXPR_BEG;
 	if (c == '=') {
 	    if ((c = nextc()) == '>') {
-                s_dispatch1(CMP, rb_str_new2("<=>"));
+	        yylval.val = op_dispatch1(CMP, rb_str_new2("<=>"));
 		return tCMP;
 	    }
 	    pushback(c);
-            s_dispatch1(CMP, rb_str_new2("<="));
+            yylval.val = op_dispatch1(CMP, rb_str_new2("<="));
 	    return tLEQ;
 	}
 	if (c == '<') {
@@ -3719,17 +3721,17 @@ rip_yylex0(parser)
 		return tOP_ASGN;
 	    }
 	    pushback(c);
-            s_dispatch1(LSHIFT, rb_str_new2("<<"));
+            yylval.val = op_dispatch1(LSHIFT, rb_str_new2("<<"));
 	    return tLSHFT;
 	}
 	pushback(c);
-        s_dispatch1(LT, rb_str_new2("<"));
+        yylval.val = op_dispatch1(LT, rb_str_new2("<"));
 	return '<';
 
       case '>':
 	lex_state = EXPR_BEG;
 	if ((c = nextc()) == '=') {
-            s_dispatch1(GEQ, rb_str_new2(">="));
+            yylval.val = op_dispatch1(GEQ, rb_str_new2(">="));
 	    return tGEQ;
 	}
 	if (c == '>') {
@@ -3739,11 +3741,11 @@ rip_yylex0(parser)
 		return tOP_ASGN;
 	    }
 	    pushback(c);
-            s_dispatch1(RSHIFT, rb_str_new2(">>"));
+            yylval.val = op_dispatch1(RSHIFT, rb_str_new2(">>"));
 	    return tRSHFT;
 	}
 	pushback(c);
-        s_dispatch1(GT, rb_str_new2(">"));
+        yylval.val = op_dispatch1(GT, rb_str_new2(">"));
 	return '>';
 
       case '"':
@@ -3751,7 +3753,7 @@ rip_yylex0(parser)
 	return parse_string(context,c,c,c);
       case '`':
 	if (lex_state == EXPR_FNAME || lex_state == EXPR_DOT) {
-            s_dispatch1(BACKQUOTE, rb_str_new2("`"));
+            yylval.val = op_dispatch1(BACKQUOTE, rb_str_new2("`"));
             return c;
         }
 	context = s_dispatch1(new_xstring, rb_str_new2("`"));
@@ -3816,7 +3818,7 @@ rip_yylex0(parser)
 	    c = tAMPER;
 	}
 	else {
-            s_dispatch1(AND, rb_str_new2("&"));
+	    yylval.val = op_dispatch1(AND, rb_str_new2("&"));
 	    c = '&';
 	}
 	lex_state = EXPR_BEG;
@@ -3840,18 +3842,18 @@ rip_yylex0(parser)
 	    return tOP_ASGN;
 	}
 	pushback(c);
-        s_dispatch1(OR, rb_str_new2("|"));
+        yylval.val = op_dispatch1(OR, rb_str_new2("|"));
 	return '|';
 
       case '+':
 	c = nextc();
 	if (lex_state == EXPR_FNAME || lex_state == EXPR_DOT) {
 	    if (c == '@') {
-                s_dispatch1(UPLUS, rb_str_new2("+@"));
+                yylval.val = op_dispatch1(UPLUS, rb_str_new2("+@"));
 		return tUPLUS;
 	    }
 	    pushback(c);
-            s_dispatch1(PLUS, rb_str_new2("+"));
+            yylval.val = op_dispatch1(PLUS, rb_str_new2("+"));
 	    return '+';
 	}
 	if (c == '=') {
@@ -3875,18 +3877,18 @@ rip_yylex0(parser)
 	}
 	lex_state = EXPR_BEG;
 	pushback(c);
-        s_dispatch1(PLUS, rb_str_new2("+"));
+        yylval.val = op_dispatch1(PLUS, rb_str_new2("+"));
 	return '+';
 
       case '-':
 	c = nextc();
 	if (lex_state == EXPR_FNAME || lex_state == EXPR_DOT) {
 	    if (c == '@') {
-                s_dispatch1(UMINUS, rb_str_new2("-@"));
+                yylval.val = op_dispatch1(UMINUS, rb_str_new2("-@"));
 		return tUMINUS;
 	    }
 	    pushback(c);
-            s_dispatch1(MINUS, rb_str_new2("-"));
+            yylval.val = op_dispatch1(MINUS, rb_str_new2("-"));
 	    return '-';
 	}
 	if (c == '=') {
@@ -3910,7 +3912,7 @@ rip_yylex0(parser)
 	}
 	lex_state = EXPR_BEG;
 	pushback(c);
-        s_dispatch1(MINUS, rb_str_new2("-"));
+        yylval.val = op_dispatch1(MINUS, rb_str_new2("-"));
 	return '-';
 
       case '.':
@@ -4160,7 +4162,7 @@ rip_yylex0(parser)
 	    }
 	}
 	lex_state = EXPR_BEG;
-        s_dispatch1(SLASH, rb_str_new2("/"));
+        yylval.val = op_dispatch1(SLASH, rb_str_new2("/"));
 	return '/';
 
       case '^':
@@ -4171,7 +4173,7 @@ rip_yylex0(parser)
 	    return tOP_ASGN;
 	}
 	pushback(c);
-        s_dispatch1(HAT, rb_str_new2("^"));
+        yylval.val = op_dispatch1(HAT, rb_str_new2("^"));
 	return '^';
 
       case ';':
@@ -4192,7 +4194,7 @@ rip_yylex0(parser)
 	    }
 	}
 	lex_state = EXPR_BEG;
-        s_dispatch1(TILDE, rb_str_new2("~"));
+        yylval.val = op_dispatch1(TILDE, rb_str_new2("~"));
 	return '~';
 
       case '(':
@@ -4229,11 +4231,11 @@ rip_yylex0(parser)
 	if (lex_state == EXPR_FNAME || lex_state == EXPR_DOT) {
 	    if ((c = nextc()) == ']') {
 		if ((c = nextc()) == '=') {
-                    s_dispatch1(ASET, rb_str_new2("[]="));
+                    yylval.val = op_dispatch1(ASET, rb_str_new2("[]="));
 		    return tASET;
 		}
 		pushback(c);
-                s_dispatch1(AREF, rb_str_new2("[]"));
+                yylval.val = op_dispatch1(AREF, rb_str_new2("[]"));
 		return tAREF;
 	    }
 	    pushback(c);
@@ -4360,7 +4362,7 @@ rip_yylex0(parser)
 	}
 	lex_state = EXPR_BEG;
 	pushback(c);
-        s_dispatch1(PERCENT, rb_str_new2("%"));
+        yylval.val = op_dispatch1(PERCENT, rb_str_new2("%"));
 	return '%';
 
       case '$':
