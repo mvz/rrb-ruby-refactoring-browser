@@ -28,6 +28,13 @@ class TestScript_PullupMethod < RUNIT::TestCase
     assert_equals( File.open( 'samples/pullup_method_sample_after.rb' ).read,
                    dst )
 
+    script = RRB::Script.new_from_filenames("samples/pullup_method_sample.rb")
+    script.pullup_method(RRB::NS['Derived::Derived2'], 'bar', RRB::NS['Base'])
+    dst = ''
+    script.result_to_io(dst)
+    assert_equals( File.open( 'samples/pullup_method_sample_after2.rb' ).read,
+                   dst )
+
   end  
 end
 
