@@ -49,12 +49,7 @@ module RRB
 	return false if has_old_method && has_new_method
       end
 
-      refactored_classes = []
-      info.each do |class_info|
-	if class_info.has_method?( old_method ) then
-	  refactored_classes << class_info
-	end
-      end
+      refactored_classes = info.classes_having_method( old_method )
       
       @files.each do |scriptfile|
 	scriptfile.method_define_check( old_method, refactored_classes )
