@@ -24,12 +24,10 @@ module RRB
     end
 
     def visit_method( namespace, method_node )
-      return unless @method_name.instance_method?
       rename_local_var(namespace, method_node)
     end
 
     def visit_class_method(namespace, method_node)
-      return unless @method_name.class_method?
       rename_local_var(namespace, method_node)
     end
   end
@@ -60,12 +58,10 @@ module RRB
 
 
     def visit_method( namespace, method_node )
-      return unless @method_name.instance_method?
       rename_local_var?(namespace, method_node)
     end
 
     def visit_class_method(namespace, method_node)
-      return unless @method_name.class_method?
       rename_local_var?(namespace, method_node)      
     end
     
