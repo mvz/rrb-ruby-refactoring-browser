@@ -5,37 +5,38 @@ Ruby Refactoring Browser
 まだアルファ版であり、ドキュメント等はほとんどありません。
 
 = 動作環境
-Linux上、ruby 1.6.7, 1.8.1での動作が確認されています。
+Linux上、ruby 1.6.7, 1.8.1での動作を確認しています。
 
 = 必要なもの
 * ruby 1.6.x + ruby_shim もしくは ruby 1.8.x
 
-= インストール
+= インストール / 本体
 青木峰郎さんのsetup.rbを利用しています。
-まず、
   $ ruby setup.rb config
   $ ruby setup.rb setup
   # ruby setup.rb install
-でライブラリ部がインストールできます。
+で、RRB本体をインストールすることができます。
+(具体的には、bin/以下の実行ファイル、lib/以下のライブラリ、ext/以下の
+拡張ライブラリがインストールされます。)
 
-その後、elisp/rrb.elをEmacsのロードパスの通った場所にコピーし、Emacsにロード
-してください。
+= インストール / Emacsインターフェース
+elisp/rrb.elをEmacsのロードパスの通った場所にコピーしてください。
 
-= 動作方法
+使用方法は以下の通りです。
+まず M-x load-library[ENTER]rrb.el[ENTER] として、rrb.elをEmacsにロードします。
 M-x rrb-rename-local-variableなどとし、必要な情報(変数名など)を入力してください。
 TABキーを押すことによって、対象を自動的に補完することができます。(複数の候補が
 存在するときは、一覧が表示されます。)
 M-x rrb-undoで、直前のリファクタリングによる全ての変化をundoすることができます。
 
-= FreeRIDEプラグインのインストール
-まず、上記のインストールを終えてください。
-次にrubyide_tools_rrb/をディレクトリごと${FreeRIDE}/plugins/にコピーし
-て下さい。
-あとはFreeRIDEを起動すれば、メニューバーにRefactorというメニューが追加
-され、リファクタリングができるようになっています。
+= インストール / FreeRIDEプラグイン
+まず、RRB本体をインストールしてください。
+次にrubyide_tools_rrb/をディレクトリごと${FreeRIDE}/plugins/にコピーしてください。
+あとはFreeRIDEを起動すれば、メニューバーにRefactorというメニューが追加され、
+リファクタリングができるようになっています。
 
 = ドキュメント
-ユーザ向けのドキュメントは用意していません。開発者向けのものがdoc/dev/に置い
+ユーザ向けのドキュメントはまだ用意されていません。開発者向けのものがdoc/dev/に置い
 てあります。
 
 = ライセンス
