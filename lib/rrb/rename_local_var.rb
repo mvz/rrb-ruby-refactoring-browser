@@ -4,8 +4,7 @@ module RRB
 
   class RenameLocalVarVisitor < Visitor
 
-    def initialize( namespace, method_name, old_var, new_var )
-      @namespace = namespace
+    def initialize( method_name, old_var, new_var )
       @method_name = method_name
       @old_var = old_var
       @new_var = new_var
@@ -15,8 +14,7 @@ module RRB
     attr_reader :result
     
     def rename_local_var(namespace, method_node)
-      return unless method_node.name == @method_name.name
-      return unless namespace.match?(@namespace)
+      return unless @method_name.match_node?( namespace, method_node )
 	
       method_node.local_vars.each do |id|
 	if id.name == @old_var then
@@ -38,8 +36,7 @@ module RRB
 
   class RenameLocalVarCheckVisitor < Visitor
     
-    def initialize( namespace, method_name, old_var, new_var )
-      @namespace = namespace
+    def initialize( method_name, old_var, new_var )
       @method_name = method_name
       @old_var = old_var
       @new_var = new_var
@@ -49,8 +46,7 @@ module RRB
     attr_reader :result
 
     def rename_local_var?(namespace, method_node)
-      return unless method_node.name == @method_name.name
-      return unless namespace.match?(@namespace)
+      return unless @method_name.match_node?(namespace, method_node)
 
       if method_node.local_vars.find{|i| i.name == @new_var} then
         @error_message = "#{@new_var}: already used\n"
@@ -77,15 +73,15 @@ module RRB
 
   class ScriptFile
     
-    def rename_local_var( namespace, method_name, old_var, new_var )
-      visitor = RenameLocalVarVisitor.new( namespace, method_name,
+    def rename_local_var( method_name, old_var, new_var )
+      visitor = RenameLocalVarVisitor.new( method_name,
 					  old_var, new_var )
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
-    def rename_local_var?( namespace, method_name, old_var, new_var )
-      visitor = RenameLocalVarCheckVisitor.new( namespace, method_name,
+    def rename_local_var?( method_name, old_var, new_var )
+      visitor = RenameLocalVarCheckVisitor.new( method_name,
 					       old_var, new_var )
       @tree.accept( visitor )
       @error_message = visitor.error_message unless visitor.result
@@ -96,20 +92,20 @@ module RRB
 
   class Script
     
-    def rename_local_var( namespace, method_name, old_var, new_var )
+    def rename_local_var( method_name, old_var, new_var )
       @files.each do |scriptfile|
-	scriptfile.rename_local_var( namespace, method_name,
+	scriptfile.rename_local_var( method_name,
 				    old_var, new_var )
       end
     end
 
-    def rename_local_var?( namespace, method_name, old_var, new_var )
+    def rename_local_var?( method_name, old_var, new_var )
       unless RRB.valid_local_var?( new_var )
         @error_message = "#{new_var}: not a valid name for local variables\n"
         return false
       end
 
-      if error_scriptfile = @files.find(){|scriptfile| not scriptfile.rename_local_var?( namespace, method_name, old_var, new_var ) }
+      if error_scriptfile = @files.find(){|scriptfile| not scriptfile.rename_local_var?( method_name, old_var, new_var ) }
         @error_message = error_scriptfile.error_message
         return false        
       end

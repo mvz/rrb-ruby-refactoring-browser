@@ -416,11 +416,12 @@ module RRB
   NS = Namespace
 
   class MethodName
-    def initialize( str_method_name )
+    def initialize( namespace, str_method_name )
+      @namespace = namespace
       @str_method_name = str_method_name
     end
 
-    attr_reader :str_method_name
+    attr_reader :str_method_name, :namespace
 
     def instance_method?
       true
@@ -432,20 +433,46 @@ module RRB
 
     def ==(other)
       return false unless other.kind_of?( MethodName )
-      return @str_method_name == other.str_method_name 
+      return false unless @str_method_name == other.str_method_name
+      return false unless @namespace == other.namespace
+      return true
     end
 
-    def name
-      @str_method_name
+    def match_node?( namespace, method_node )
+      return false unless method_node.kind_of?( MethodNode ) 
+      return false unless namespace.match?( @namespace ) 
+      return false unless method_node.name == @str_method_name 
+      return true
     end
+    
+    def name
+      @namespace.name + '#' + @str_method_name
+    end
+
+    def inspect
+      "#<#{self.class.to_s} #{self.name}>"
+    end
+
+    def MethodName.[](str)
+      case str
+      when /\A([^#.]*)#([^#.]+)\Z/
+        MethodName.new( Namespace.new( $1 ), $2 )
+      when /\A([^#.]*).([^#.]+)\Z/
+        ClassMethodName.new( Namespace.new( $1 ), $2 )
+      else
+        raise Error, "#{str} is invalid as method name"
+      end
+    end
+
   end
 
   class ClassMethodName
-    def initialize( str_method_name )
+    def initialize( namespace, str_method_name )
+      @namespace = namespace
       @str_method_name = str_method_name
     end
 
-    attr_reader :str_method_name
+    attr_reader :str_method_name, :namespace
     
     def instance_method?
       false
@@ -457,11 +484,21 @@ module RRB
 
     def ==(other)
       return false unless other.instance_of?( ClassMethodName )
-      return @str_method_name == other.str_method_name
+      return false unless @str_method_name == other.str_method_name
+      return false unless @namespace == other.namespace
+      return true
     end
 
+    def match_node?( namespace, method_node )
+      method_node.kind_of?( ClassMethodNode ) && namespace.match?( @namespace ) && method_node.name == @str_method_name
+    end
+    
     def name
-      @str_method_name
+      @namespace.name + '.' + @str_method_name
+    end
+
+    def inspect
+      "#<#{self.class.to_s} #{self.name}>"
     end
   end
   

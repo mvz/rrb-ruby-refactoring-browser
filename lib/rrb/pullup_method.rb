@@ -7,10 +7,9 @@ require 'rrb/common_visitor'
 module RRB
 
   class PullupMethodCheckVisitor < Visitor
-    def initialize(dumped_info, old_namespace, method_name, new_namespace)
+    def initialize(dumped_info, method_name, new_namespace)
       @dumped_info = dumped_info
       @method_name = method_name
-      @old_namespace = old_namespace
       @new_namespace = new_namespace
       @result = true
     end
@@ -18,14 +17,15 @@ module RRB
     attr_reader :result
 
     def check_pullup_method(namespace, node)
-      return unless node.name == @method_name.name
-      return unless namespace.match?(@old_namespace)
+      return unless @method_name.match_node?( namespace, node )
       
-      subclass_info = @dumped_info[@old_namespace]
-      node.calls.each do |call|
-        if subclass_info.has_method?(MethodName.new(call.name), false)
+      node.fcalls.each do |fcall|
+        called_method =
+              @dumped_info.real_method( MethodName.new( @method_name.namespace,
+                                                        fcall.name ) ) 
+        unless @dumped_info[@new_namespace].subclass_of?( called_method.namespace )
           @result = false
-          @error_message = "#{@old_namespace.name}##{@method_name.name} uses #{call.name} defined at #{@old_namespace.name}\n"
+          @error_message = "#{@method_name.name} uses #{called_method.name}\n"
         end
       end
     end
@@ -43,9 +43,9 @@ module RRB
 
   class ScriptFile
 
-    def pullup_method(old_namespace, method_name, new_namespace, 
+    def pullup_method(method_name, new_namespace, 
                       pullupped_method, ignore_new_namespace, specified_lineno)
-      visitor = MoveMethodVisitor.new(old_namespace, method_name,
+      visitor = MoveMethodVisitor.new(method_name,
                                       new_namespace,
                                       ignore_new_namespace, specified_lineno)
       @tree.accept( visitor )
@@ -57,8 +57,8 @@ module RRB
                                    true)
     end
 
-    def pullup_method?(dumped_info, old_namespace, method_name, new_namespace)
-      visitor = PullupMethodCheckVisitor.new(dumped_info, old_namespace,
+    def pullup_method?(dumped_info, method_name, new_namespace)
+      visitor = PullupMethodCheckVisitor.new(dumped_info,
                                              method_name, new_namespace)
       @tree.accept(visitor)
       @error_message = visitor.error_message unless visitor.result
@@ -67,21 +67,22 @@ module RRB
   end
 
   class Script
-    def pullup_method(old_namespace, method_name, new_namespace,
+    def pullup_method(method_name, new_namespace,
                       path, lineno)
-      pullupped_method = get_string_of_method(old_namespace, method_name)
+      pullupped_method = get_string_of_method(method_name)
       @files.each do |scriptfile|
-	scriptfile.pullup_method(old_namespace, method_name,
+	scriptfile.pullup_method(method_name,
                                  new_namespace, pullupped_method,
                                  scriptfile.path != path,
                                  lineno)
       end      
     end
 
-    def pullup_method?(old_namespace, method_name, new_namespace,
+    def pullup_method?(method_name, new_namespace,
                        path, lineno)
-      unless get_dumped_info[old_namespace].has_method?(method_name, false)
-        @error_message = "#{method_name.name}: no definition at #{old_namespace.name}\n"
+      old_namespace = method_name.namespace
+      unless get_dumped_info.exist?( method_name, false )
+        @error_message = "#{method_name.name} is not defined\n"
         return false
       end
 
@@ -90,8 +91,9 @@ module RRB
         return false
       end
 
-      if get_dumped_info[new_namespace].has_method?(method_name)
-        @error_message = "#{method_name.name}: already defined at #{new_namespace.name}\n"
+      super_method = get_dumped_info[old_namespace].superclass.real_method( method_name.str_method_name )
+      if super_method != nil
+        @error_message = "#{super_method.name} is already defined\n"
         return false
       end
 
@@ -109,7 +111,7 @@ module RRB
 
 
       @files.each do |scriptfile|
-        unless scriptfile.pullup_method?(get_dumped_info, old_namespace, method_name, new_namespace)
+        unless scriptfile.pullup_method?(get_dumped_info, method_name, new_namespace)
           @error_message = scriptfile.error_message
           return false          
         end

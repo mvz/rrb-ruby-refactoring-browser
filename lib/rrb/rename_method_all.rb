@@ -121,15 +121,15 @@ module RRB
       info = get_dumped_info
       
       info.each do |class_info|
-	has_old_method = class_info.has_method?( MethodName.new(old_method) ) 
-	has_new_method = class_info.has_method?( MethodName.new(new_method) ) 
+	has_old_method = class_info.has_method?( old_method ) 
+	has_new_method = class_info.has_method?( new_method ) 
 	if has_old_method && has_new_method
           @error_message = "#{new_method}: already defined at #{class_info.class_name.name}\n"
           return false
         end
       end
       
-      classes = info.classes_having_method( MethodName.new(old_method)).map{|c| c.class_name}
+      classes = info.classes_having_method( old_method ).map{|c| c.class_name}
       classes = Set.new( classes )
       unless classes_define_method(old_method).superset?( classes ) then
         @error_message = "Can't rename method out of scripts\n"

@@ -53,6 +53,23 @@ module RRB
       return Namespace::Toplevel if classinfo.class_name == Namespace::Object
       return classinfo.class_name
     end
+
+    def exist?( methodname, inherited_too=true )
+      if methodname.instance_method?
+        self[methodname.namespace].has_method?( methodname.str_method_name,
+                                                inherited_too )
+      else
+        self[methodname.namespace].has_class_method?( methodname.str_method_name,
+                                                      inherited_too )
+      end
+    end
+
+    def real_method( methodname )
+      if methodname.class_method?
+        raise
+      end
+      self[methodname.namespace].real_method( methodname.str_method_name )
+    end
     
     def DumpedInfo.get_dumped_info( io )
       info_hash = Hash.new(NullDumpedClassInfo.instance)
@@ -106,16 +123,36 @@ module RRB
 	return false
       end
       
-      if methodname.instance_method?
-        return true if @public_method_names.include?( methodname.name )
-        return true if @protected_method_names.include?( methodname.name )
-        return true if @private_method_names.include?( methodname.name )
-      elsif methodname.class_method?
-        return true if @singleton_method_names.include?(methodname.name)
-      end
+      return true if @public_method_names.include?( methodname )
+      return true if @protected_method_names.include?( methodname )
+      return true if @private_method_names.include?( methodname )
       return false
     end
 
+    def real_method( methodname )
+      if has_method?( methodname, false )
+        return MethodName.new( self.class_name, methodname )
+      end
+      @ancestors.each do |ancestor|
+        if ancestor.has_method?( methodname, false )
+          return MethodName.new( ancestor.class_name, methodname )
+        end
+      end
+      nil
+    end
+    
+    def has_class_method?( methodname, inherited_too=true )
+      if inherited_too
+        return true if has_class_method?( methodname, false )
+        @ancestors.each do |ancestor|
+	  return true if ancestor.has_class_method?( methodname, false )
+	end
+	return false
+      end
+
+      return @singleton_method_names.include?( methodname )
+    end
+    
     def subclass_of?(classname)
       classname = Namespace.new( classname ) if classname.kind_of?( String )
       @ancestor_names.include?(classname) ||  @class_name == classname

@@ -4,10 +4,9 @@ module RRB
 
   class MoveMethodVisitor < Visitor
 
-    def initialize(old_namespace, method_name, new_namespace,
+    def initialize( moved_method, new_namespace,
                    ignore_new_namespace, specified_lineno)
-      @method_name = method_name
-      @old_namespace = old_namespace
+      @moved_method = moved_method
       @new_namespace = new_namespace
       @delete_range = nil
       @insert_lineno = nil
@@ -27,42 +26,41 @@ module RRB
             @insert_lineno_decided = true
           end
         end
-      elsif cur_namespace.match?(@old_namespace)
-        if @method_name.instance_method?
-          target_defs = node.method_defs
-        elsif @method_name.class_method?
-          target_defs = node.class_method_defs
-        end 
-        target_method = target_defs.find(){|method| method.name == @method_name.name}
-        @delete_range = target_method && target_method.range
-      end      
+      end
+    end
+
+    def visit_method(namespace, method_node )
+      return unless @moved_method.instance_method?
+      return unless @moved_method.match_node?( namespace, method_node )
+      @delete_range = method_node.range
+    end
+
+    def visit_class_method( namespace, cmethod_node )
+      return unless @moved_method.class_method?
+      return unless @moved_method.match_node?( namespace, cmethod_node )
+      @delete_range = cmethod_node.range
     end
   end
 
   class GetStringOfMethodVisitor < Visitor
-    def initialize(namespace, method_name)
+    def initialize(method_name)
       @method_name = method_name
-      @namespace = namespace
       @result_range = nil
     end
 
     attr_reader :result_range
 
     def get_string_of_method(namespace, node)
-      if namespace.match?(@namespace)
-        if node.name == @method_name.name
-          @result_range = node.range
-        end
+      if @method_name.match_node?( namespace, node )
+        @result_range = node.range
       end
     end
 
     def visit_method(namespace, node)
-      return unless @method_name.instance_method?
       get_string_of_method(namespace, node)
     end
 
     def visit_class_method(namespace, node)
-      return unless @method_name.class_method?
       get_string_of_method(namespace, node)
     end
   end
@@ -118,8 +116,8 @@ module RRB
   end
 
   class ScriptFile
-    def get_string_of_method(namespace, method_name)
-      visitor = GetStringOfMethodVisitor.new(namespace, method_name)
+    def get_string_of_method(method_name)
+      visitor = GetStringOfMethodVisitor.new(method_name)
       @tree.accept(visitor)
       range = visitor.result_range
       range && @input.split(/^/)[range.head.lineno-1..range.tail.lineno-1].join
@@ -145,9 +143,9 @@ module RRB
   end
 
   class Script
-    def get_string_of_method(namespace, method_name)
+    def get_string_of_method(method_name)
       @files.inject(nil) do |result, scriptfile|
-        result ||= scriptfile.get_string_of_method(namespace, method_name)
+        result ||= scriptfile.get_string_of_method(method_name)
       end
     end
     

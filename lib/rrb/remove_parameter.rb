@@ -6,8 +6,7 @@ require 'stringio'
 module RRB
 
   class GetParameterIndexVisitor < Visitor
-    def initialize(namespace, method_name, target_parameter)
-      @namespace = namespace
+    def initialize(method_name, target_parameter)
       @method_name = method_name
       @target_parameter = target_parameter
       @parameter_index = nil
@@ -18,7 +17,7 @@ module RRB
     def visit_method( namespace, node )
       return unless @method_name.instance_method?
 
-      if namespace.match?( @namespace ) &&  @method_name.name == node.name
+      if @method_name.match_node?( namespace, node )
         @parameter_index = node.args.map{|arg| arg.name}.index(@target_parameter)
       end
     end
@@ -28,8 +27,8 @@ module RRB
 
   class RemoveParameterVisitor < Visitor
 
-    def initialize(namespace, method_name, parameter_index)
-      @namespace = namespace
+    def initialize(dumped_info, method_name, parameter_index)
+      @dumped_info = dumped_info
       @method_name = method_name
       @parameter_index = parameter_index
       @result = []
@@ -53,14 +52,15 @@ module RRB
     def visit_method( namespace, node )
       return unless @method_name.instance_method?
 
-      if namespace.match?( @namespace ) &&  @method_name.name == node.name
+      if @method_name.match_node?( namespace, node )
         remove_method_def_parameter(node)
       end
-      if namespace.match?( @namespace )
-        node.fcalls.each do|fcall|
-          if fcall.body.name == @method_name.name
-            remove_fcall_parameter(fcall)
-          end
+
+      node.fcalls.each do|fcall|
+        called = MethodName.new( namespace.normal, fcall.name )
+        real_called = @dumped_info.real_method( called )
+        if real_called == @method_name
+          remove_fcall_parameter(fcall)
         end
       end
     end
@@ -68,8 +68,7 @@ module RRB
 
   class RemoveParameterCheckVisitor < Visitor
 
-    def initialize(namespace, method_name, target_parameter)
-      @namespace = namespace
+    def initialize( method_name, target_parameter)
       @method_name = method_name
       @target_parameter = target_parameter
       @result = true
@@ -78,21 +77,21 @@ module RRB
     def visit_method(namespace, node)
       return unless @method_name.instance_method?
 
-      if namespace.match?(@namespace) 
-        if @method_name.name == node.name
-          unless node.args.map{|arg| arg.name}.include?(@target_parameter)
-            @error_message = "#{@target_parameter}: no such parameter\n"
-            @result = false
-          end
-          
-          if node.local_vars.map{|local_var| local_var.name}.find_all{|var_name|
-              var_name == @target_parameter}.size >= 2
-            @error_message = "#{@target_parameter} is used\n"
-            @result = false
-          end
+      if @method_name.match_node?( namespace, node )
+        unless node.args.map{|arg| arg.name}.include?(@target_parameter)
+          @error_message = "#{@target_parameter}: no such parameter\n"
+          @result = false
         end
-
-        node.fcalls.find_all{|fcall| fcall.name == @method_name.name}.each do |fcall|
+        
+        if node.local_vars.map{|local_var| local_var.name}.find_all{|var_name|
+            var_name == @target_parameter}.size >= 2
+          @error_message = "#{@target_parameter} is used\n"
+          @result = false
+        end
+      end
+      
+      if namespace.match?(@namespace) 
+        node.fcalls.find_all{|fcall| fcall.name == @method_name.str_method_name}.each do |fcall|
           if fcall.args.include?(nil) || fcall.args == []
             @error_message = "parameter is too complex\n"
             @result = false
@@ -107,22 +106,22 @@ module RRB
   
 
   class ScriptFile
-    def get_parameter_index(namespace, method_name, target_parameter)
-      visitor = GetParameterIndexVisitor.new(namespace, method_name,
-                                           target_parameter) 
+    def get_parameter_index( method_name, target_parameter)
+      visitor = GetParameterIndexVisitor.new(method_name, target_parameter) 
       @tree.accept( visitor )
       return visitor.parameter_index
     end
 
-    def remove_parameter(namespace, method_name, parameter_index)
-      visitor = RemoveParameterVisitor.new(namespace, method_name,
+    def remove_parameter(dumped_info, method_name, parameter_index)
+      visitor = RemoveParameterVisitor.new(dumped_info,
+                                           method_name,
                                            parameter_index) 
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
     end
 
-    def remove_parameter?(namespace, method_name, target_parameter)
-      visitor = RemoveParameterCheckVisitor.new(namespace, method_name,
+    def remove_parameter?(method_name, target_parameter)
+      visitor = RemoveParameterCheckVisitor.new(method_name,
                                                 target_parameter)
       @tree.accept( visitor )
       @error_message = visitor.error_message unless visitor.result
@@ -131,30 +130,30 @@ module RRB
   end
 
   class Script    
-    def get_parameter_index(namespace, method_name, target_parameter)
+    def get_parameter_index( method_name, target_parameter)
       @files.inject(nil) do |parameter_index, scriptfile|
-        parameter_index ||= scriptfile.get_parameter_index(namespace, 
-                                                           method_name,
+        parameter_index ||= scriptfile.get_parameter_index(method_name,
                                                            target_parameter)
       end
     end
 
-    def remove_parameter(namespace, method_name, target_parameter)
-      parameter_index = get_parameter_index(namespace, method_name,
+    def remove_parameter(method_name, target_parameter)
+      parameter_index = get_parameter_index(method_name,
                                             target_parameter)
       @files.each do |scriptfile|
-	scriptfile.remove_parameter(namespace, method_name, parameter_index)
+	scriptfile.remove_parameter(get_dumped_info, method_name, parameter_index)
       end
     end
     
-    def remove_parameter?(namespace, method_name, target_parameter)
-      unless get_dumped_info[namespace.name].has_method?(method_name, false)
-        @error_message = "#{method_name.name} isn't defined at #{namespace.name}\n"
+    def remove_parameter?( method_name, target_parameter)
+
+      unless get_dumped_info.exist?( method_name, false )
+        @error_message = "#{method_name.name} isn't defined\n"
         return false
       end
-
+      
       @files.each do |scriptfile|
-        unless scriptfile.remove_parameter?(namespace, method_name,
+        unless scriptfile.remove_parameter?(method_name,
                                             target_parameter)
           @error_message = scriptfile.error_message
           return false          

@@ -127,7 +127,7 @@ module RRB
         return false
       end
 
-      if get_dumped_info[namespace.name].has_method?(MethodName.new(new_method))
+      if get_dumped_info[namespace.name].has_method?(new_method)
         @error_message = "#{new_method}: already defined at #{namespace.name}\n"
         return false
       end
