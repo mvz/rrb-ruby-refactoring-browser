@@ -163,6 +163,10 @@ module RRB
     def class_method?
       false
     end
+
+    def method_factory
+      Method
+    end
     
     attr_reader :args
     
@@ -204,6 +208,10 @@ module RRB
 
     def class_method?
       true
+    end
+
+    def method_factory
+      ClassMethod
     end
   end
 
@@ -445,7 +453,15 @@ module RRB
     def hash
       @namespace.hash ^ @bare_name.hash 
     end
-    
+
+    def ns_replaced( new_namespace )
+      Method.new( new_namespace, @bare_name )
+    end
+
+    def bare_name_replaced( new_bare_name )
+      Method.new( @namespace, new_bare_name )
+    end
+
     def Method.[](str)
       case str
       when /\A([^#.]*)#([^#.]+)\Z/
@@ -502,6 +518,15 @@ module RRB
     def inspect
       "#<#{self.class.to_s} #{self.name}>"
     end
+
+    def ns_replaced( new_namespace )
+      ClassMethod.new( new_namespace, @bare_name )
+    end
+
+    def bare_name_replaced( new_bare_name )
+      ClassMethod.new( @namespace, new_bare_name )
+    end
+
   end
   
   # shortcut name
@@ -552,8 +577,12 @@ module RRB
     def self.new_toplevel
       new( nil, nil )
     end
-    
+
+    def method_factory
+      @node.method_factory
+    end
   end
+  
   class MethodCall
     extend Forwardable
     def initialize(body, args)
