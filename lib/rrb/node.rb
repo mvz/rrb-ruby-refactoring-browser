@@ -58,6 +58,10 @@ module RRB
   # represent one script file    
   class TopLevelNode < Node
 
+    def initialize( scope )
+      super IdInfo.new( :toplevel, nil, nil, 'toplevel' ), scope
+    end
+    
     def accept( visitor )
       visitor.visit_toplevel( [], self )
       super visitor, []
