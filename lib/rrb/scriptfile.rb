@@ -98,7 +98,7 @@ module RRB
             def_space_num += INDENT_LEVEL
           end
           insert_lines = insert_str.split("\n")
-          base_space_num = count_min_indent_of_lines(insert_lines)
+          base_space_num = count_indent(insert_lines)
           reindent_lines(insert_lines, def_space_num).each do |str|
             dst << str + "\n"
           end
@@ -177,20 +177,6 @@ module RRB
     return 0 if lines.empty?
     return count_indent( lines[1..-1] ) if /\A(\s*)\Z/ =~ lines[0]
     count_indent_str( lines[0] )
-  end
-
-  def count_min_indent_of_lines( lines )
-    return 0 if lines.empty?
-    min = nil
-    0.upto(lines.length-1) do |i|
-      unless /\A(\s*)\Z/ =~ lines[i]
-        temp = count_indent_str( lines[i] ) 
-        unless min && temp >= min
-          min = temp
-        end
-      end
-    end
-    return min || 0
   end
 
   def delete_indent( lines )
