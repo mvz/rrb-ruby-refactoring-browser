@@ -5,7 +5,7 @@ class TestClassA
   end
 
   def method_1( a, b )
-    c = 3
+    c = 3; @x = 2
     call( 3, 2 )
     a.each{|x| print x}
     yield b+c
