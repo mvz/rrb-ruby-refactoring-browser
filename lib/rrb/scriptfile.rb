@@ -93,10 +93,11 @@ module RRB
     0.upto(lines.length - 1) do |lineno|
       if lineno == insert_lineno
         if adjust_space
-          def_space_num =  RRB.space_width(/^(\s*)/.match(lines[lineno])[0])
-          def_space_num += 2 if lines[lineno].strip == "end"
-
-          base_space_num = insert_str.split("\n").map{|str| RRB.space_width(/^(\s*)/.match(str)[0])}.sort[0]
+          def_space_num =  count_indent_str(lines[lineno - 1])
+          if lines[lineno - 1] =~ /^(\s*)class/ || lines[lineno - 1] =~ /^(\s*)def/
+            def_space_num += 2
+          end
+          base_space_num = insert_str.split("\n").map{|str| RRB.count_indent_str(str)}.sort[0]
           insert_str.split("\n").each do |str|
             dst << "\s" * def_space_num + str[base_space_num..-1] + "\n"
           end
@@ -159,7 +160,11 @@ module RRB
   end
 
   def count_indent_str( str )
-    space_width(/\A(\s*)/.match(str)[0])
+    if /\A(\s*)/.match(str)
+      space_width($1)
+    else
+      0
+    end
   end
   
   def expand_tabs( str )
