@@ -2320,7 +2320,11 @@ ripper_s_new(argc, argv, klass)
 
 static VALUE rip_do_parse _((VALUE));
 static VALUE rip_ensure _((VALUE));
+#if RUBY_VERSION_CODE < 170
 extern VALUE rb_thread_pass _((void));
+#else
+extern VALUE rb_thread_schedule _((void));
+#endif
 
 struct rip_arg {
     struct ruby_parser *parser;
@@ -2340,7 +2344,11 @@ ripper_parse(argc, argv, self)
     Data_Get_Struct(self, struct ruby_parser, parser);
 
     while (parser->parsing) {
-        rb_thread_pass();
+#if RUBY_VERSION_CODE < 170
+       rb_thread_pass();
+#else
+       rb_thread_schedule();
+#endif
     }
     parser->parsing = 1;
     arg.parser = parser;
@@ -2838,10 +2846,12 @@ rip_parse_regx(parser, context, term, paren)
 		  case 'x':
 		    options |= RE_OPTION_EXTENDED;
 		    break;
-		  case 'p':	/* /p is obsolete */
+#if RUBY_VERSION_CODE < 170
+                  case 'p':	/* /p is obsolete */
 		    rb_warn("/p option is obsolete; use /m\n\tnote: /m does not change ^, $ behavior");
 		    options |= RE_OPTION_POSIXLINE;
 		    break;
+#endif                    
 		  case 'm':
 		    options |= RE_OPTION_MULTILINE;
 		    break;
