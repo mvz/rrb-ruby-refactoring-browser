@@ -1,5 +1,5 @@
 require 'rrb/script'
-
+require 'set'
 module RRB
 
   
