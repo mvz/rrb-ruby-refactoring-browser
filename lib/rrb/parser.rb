@@ -97,6 +97,7 @@ module RRB
       
       @scope_stack[-2].class_defs << ClassNode.new( class_name,
 						   @scope_stack.last,
+						   superclass,
 						   kw_class, kw_end )
     end
 
