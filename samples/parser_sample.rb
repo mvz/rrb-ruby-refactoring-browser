@@ -40,6 +40,12 @@ class TestClassA
 
   def TestClassB.method_6
   end
+
+  class << TestClassB
+    def method_7( z )
+      z ** 3
+    end
+  end
   
 end
 
