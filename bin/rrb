@@ -1,12 +1,18 @@
+#!/usr/bin/env ruby
 require 'rrb/emacs_interface'
 
 def print_usage
 
   print "\
-Usage: rrb [refactoring type] [refactoring parameter]
+Usage: rrb refactoring-type refactoring-parameter io-type
 
-  refactoring type
+  refactoring-type
     * rename-local-variable Class#method old_var new_var
+
+  io-type
+    * --stdin-stdout
+    * --filein-overwrite FILES..
+    * --filein-stdout FILES..
 "
 end
 
@@ -37,11 +43,41 @@ if $0 == __FILE__ then
   end
 
   begin
-    
-    case ARGV[0]
+
+    #  analyze options
+    refactor_type = ARGV.shift
+    case refactor_type
     when 'rename-local-variable'
-      namespace, method_name = split_method_name ARGV[1]
-      rename_local_variable namespace, method_name, ARGV[2], ARGV[3]
+      namespace, method_name = split_method_name ARGV.shift
+      old_var = ARGV.shift
+      new_var = ARGV.shift
+    end
+
+    case ARGV.shift
+    when '--stdin-stdout'
+      script = RRB::Script.new_from_io( STDIN )
+      output = proc{ script.result_to_io( STDOUT ) }
+    when '--filein-overwrite'
+      files = []
+      ARGV.each do |filename|
+	files << RRB::ScriptFile.new( File.open(filename), filename )
+      end
+      script = RRB::Script.new( files )
+      output = proc{ script.close_input; script.result_overwrite_file }
+    when '--filein-stdout'
+      files = []
+      ARGV.each do |filename|
+	files << RRB::ScriptFile.new( File.open(filename), filename )
+      end
+      script = RRB::Script.new( files )
+      output = proc{ script.result_to_io( STDOUT ) }
+    end
+
+    # refactoring
+    case refactor_type
+    when 'rename-local-variable'
+      script.rename_local_var( namespace, method_name, old_var, new_var )
+      output.call
     end
     
   rescue
