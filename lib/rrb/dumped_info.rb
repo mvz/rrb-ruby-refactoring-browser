@@ -14,6 +14,17 @@ module RRB
     def each( &block )
       @classes.each_value( &block )
     end
+
+    def classes_having_method( method )
+      result = []
+      @classes.each_value do |info|
+	if info.has_method?( method, false ) then
+	  result << info
+	end
+      end
+
+      result
+    end
     
     def DumpedInfo.get_dumped_info( io )
       info_hash = {}
