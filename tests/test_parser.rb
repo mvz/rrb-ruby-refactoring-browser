@@ -49,6 +49,10 @@ class TestParser < RUNIT::TestCase
       x.name == "method_6"
     }
     assert_not_nil( method_6_info )
+
+    # test singleton class
+    method_7_info = class_info.singleton_class_defs[0].method_info("method_7")
+    assert_not_nil( method_7_info )
     
   end
   
