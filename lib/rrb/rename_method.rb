@@ -93,40 +93,6 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
         result + scriptfile.all_fcalls
       end
     end
-    
-    def classes_call_method( methodname )
-      @files.inject(Set.new) do |result, scriptfile|
-        result.merge scriptfile.classes_call_method(methodname)
-      end
-    end
-    
-    def classes_respond_to( basis, methodname )
-      classes = []
-      result = []
-      basis.each do |namespace|
-	classes << namespace
-	get_dumped_info[namespace].ancestors.each do |ancestor|
-	  if ancestor.has_method?( methodname )
-	    classes << ancestor.class_name
-	  end
-	end
-      end
-      classes_call_method( methodname ).each do |classname|
-	if basis.find{|ns| get_dumped_info[ns].subclass_of?(classname)} then
-	  classes << classname
-	end
-      end
-      
-
-      get_dumped_info.each do |classinfo|
-	if classes.find{|classname| classinfo.subclass_of?(classname)} then
-	  result << classinfo.class_name
-	end
-      end
-
-      result
-    end
-
     def supermethod?( method1, method2 )
       unless get_dumped_info[method2.namespace].subclass_of?( method1.namespace )
         return false
@@ -192,12 +158,6 @@ raise '#{namespace.name}##{@old_method} is renamed #{@new_method}' end\n" +
   end
 
   class ScriptFile
-
-    def classes_call_method( methodname )
-      visitor = GetAllClassesCallMethod.new( methodname )
-      @tree.accept( visitor )
-      visitor.classes
-    end
     
     def rename_method( old_methods, new_method )
       visitor = RenameMethodVisitor.new(  old_methods, new_method )
