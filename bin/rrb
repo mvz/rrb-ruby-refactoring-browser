@@ -16,20 +16,6 @@ Usage: rrb refactoring-type refactoring-parameter io-type
 "
 end
 
-
-def rename_local_variable( namaspace, method_name, old_var, new_var )
-
-  script = RRB::Script.new_from_io( STDIN )
-  unless script.rename_local_var?( namaspace, method_name, old_var, new_var )
-    STDOUT << "ERROR: cannot rename local variable"
-    STDOUT << RRB::STREAM_SPLITTER
-    return
-  end
-
-  script.rename_local_var( namaspace, method_name, old_var, new_var )
-  script.result_to_io( STDOUT )
-end
-
 def split_method_name( str )
   a, b = str.split( /#/ )
   return a.split(/::/), b
@@ -57,19 +43,11 @@ if $0 == __FILE__ then
     when '--stdin-stdout'
       script = RRB::Script.new_from_io( STDIN )
       output = proc{ script.result_to_io( STDOUT ) }
-    when '--filein-overwrite'
-      files = []
-      ARGV.each do |filename|
-	files << RRB::ScriptFile.new( File.open(filename), filename )
-      end
-      script = RRB::Script.new( files )
-      output = proc{ script.close_input; script.result_overwrite_file }
+    when '--filein-overwrite'      
+      script = RRB::Script.new_from_filenames( ARGV )
+      output = proc{ script.result_overwrite_file }
     when '--filein-stdout'
-      files = []
-      ARGV.each do |filename|
-	files << RRB::ScriptFile.new( File.open(filename), filename )
-      end
-      script = RRB::Script.new( files )
+      script = RRB::Script.new_from_filenames( ARGV )
       output = proc{ script.result_to_io( STDOUT ) }
     end
 
