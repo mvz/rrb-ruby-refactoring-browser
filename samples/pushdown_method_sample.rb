@@ -22,4 +22,6 @@ end
 class C < B
   def w
   end
+  class D < B
+  end
 end
