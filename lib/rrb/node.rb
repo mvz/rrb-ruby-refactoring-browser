@@ -236,11 +236,7 @@ module RRB
     end
     
     def name
-      if @toplevel then
-	'::' + basename
-      else
-	basename
-      end
+      basename
     end
 
     def toplevel?
