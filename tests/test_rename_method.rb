@@ -85,6 +85,11 @@ end
 		  script.rename_method?( [ RRB::NS.new( 'B' ) ], 'foo', 'foobar' ) )
     assert_equals( false,
 		  script.rename_method?( [ RRB::NS.new( 'B' ) ], 'foo', 'bar' ) )
+    assert_equals( "C::D already has bar\n", script.error_message)
+    assert_equals( false,
+		  script.rename_method?( [ RRB::NS.new( 'B' ) ], 'foo', '@@bar' ) )
+    assert_equals( "@@bar is not a valid name for methods\n",
+                   script.error_message)
   end
 
   def test_rename_method
