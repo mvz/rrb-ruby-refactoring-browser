@@ -23,8 +23,10 @@ module RRB
 			      split_list[5].split(/;/) )
 	info_hash[info.class_name] = info
       end
-
-	  
+      
+      info_hash.each_value do |info|
+	info.ancestors = info.ancestor_names.map{|name| info_hash[name]}
+      end
       new(info_hash)
     end
   end
@@ -47,8 +49,18 @@ module RRB
     attr_reader( :type, :class_name, :ancestor_names, :public_method_names,
 		:protected_method_names, :private_method_names,
 		:singleton_method_names )
+
+    attr_accessor :ancestors
     
-    def have_method?( methodname )
+    def has_method?( methodname, inherited_too=true )
+      if inherited_too then
+	return true if has_method?( methodname, false )
+	@ancestors.each do |ancestor|
+	  return true if ancestor.has_method?( methodname, false )
+	end
+	return false
+      end
+      
       return true if @public_method_names.include?( methodname )
       return true if @protected_method_names.include?( methodname )
       return true if @private_method_names.include?( methodname )
