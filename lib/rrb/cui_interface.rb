@@ -68,12 +68,21 @@ USG
     end
 
     def select_one(prompt, words)
+      Readline.basic_word_break_characters = "\t\n\"\\'"
       Readline.completion_proc = Proc.new do |word|
         words.grep(/^#{Regexp.quote(word)}/)
       end
       Readline.readline(prompt).trim
     end
 
+    def select_any(prompt, words)
+      Readline.basic_word_break_characters = " \t\n\"\\'"
+      Readline.completion_proc = Proc.new do |word|
+        words.grep(/^#{Regexp.quote(word)}/)
+      end
+      Readline.readline(prompt).split(/\s+/)
+    end
+    
     # parse ARGV and do refactoring
     def execute
       print_usage if ARGV.empty?
@@ -94,7 +103,7 @@ USG
         exit 1
       end
       
-      Readline.basic_word_break_characters = "\t\n\"\\'"
+      
 
       refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
 
@@ -105,10 +114,12 @@ USG
         ui = RenameInstanceVariable.new(ARGV, diff_file)
       when "extract-method"
         ui = ExtractMethod.new(ARGV, diff_file)
+      when "extract-superclass"
+        ui = ExtractSuperclass.new(ARGV, diff_file)
       else
         raise 'No such refactoring'
       end
-      
+
       ui.run
     end
 
@@ -247,6 +258,16 @@ USG
       def select_one(prompt, words)
         CUI.select_one(prompt, words)
       end
+
+      def input_str_completion(prompt, words)
+        result = CUI.select_one(prompt, words)
+        return "" if result == nil
+        return result
+      end
+      
+      def select_any(prompt, words)
+        CUI.select_any(prompt, words)
+      end
       
       def input_str(prompt)
         Readline.completion_proc = proc{ [] }
@@ -255,6 +276,18 @@ USG
   
       def select_region(scriptfile)
         Screen.new(scriptfile.input).select_region
+      end
+
+      def select_line(scriptfile)
+        Screen.new(scriptfile.input).select_line
+      end
+      
+      def classes
+        @script.refactable_classes
+      end
+
+      def files
+        @script.files.map{|sf| sf.path}
       end
     end
 
@@ -272,7 +305,7 @@ USG
         old_var = select_one("Old variable: ", vars(method))
         new_var = input_str("New variable: ")
         unless @script.rename_local_var?(Method[method], old_var, new_var)
-          STDERR.print(script.error_message, "\n")
+          STDERR.print(@script.error_message, "\n")
           exit
         end
         @script.rename_local_var(Method[method], old_var, new_var)
@@ -281,10 +314,6 @@ USG
     end
     
     class RenameInstanceVariable < UI
-      def classes
-        @script.refactable_classes
-      end
-
       def ivars(target)
         @script.refactable_classes_instance_vars.each do |classname, cvars|
           return cvars if classname == target
@@ -297,7 +326,7 @@ USG
         old_var = select_one("Old variable: ", ivars(namespace))
         new_var = input_str("New variable: ")
         unless @script.rename_instance_var?(namespace, old_var, new_var)
-          STDERR.print(script.error_message, "\n")
+          STDERR.print(@script.error_message, "\n")
           exit
         end
         @script.rename_instance_var(namespace, old_var, new_var)
@@ -306,19 +335,33 @@ USG
     end
 
     class ExtractMethod < UI
-      def files
-        @script.files.map{|sf| sf.path}
-      end
 
       def run
         path = select_one("What file?: ", files)
         region = select_region(@script.files.find{|sf| sf.path == path})
         new_method = input_str("New method: ")
         unless @script.extract_method?(path, new_method, region.begin, region.end)
-          STDERR.print(script.error_message, "\n")
+          STDERR.print(@script.error_message, "\n")
           exit
         end
         @script.extract_method(path, new_method, region.begin, region.end)
+        output_diff
+      end
+    end
+
+    class ExtractSuperclass < UI
+      def run
+        path = select_one("What file new class is created?: ", files)
+        lineno = select_line(@script.files.find{|sf| sf.path == path})
+        namespace = Namespace[input_str_completion("What namespace is your new class in: ", classes)]
+        new_class = input_str("New class: ")
+        targets = select_any("Targets: ", classes).map{|cls| Namespace[cls]}
+        
+        unless @script.extract_superclass?(namespace, new_class, targets, path, lineno)
+          STDERR.print(@script.error_message, "\n")
+          exit
+        end
+        @script.extract_superclass(namespace, new_class, targets, path, lineno)
         output_diff
       end
     end
