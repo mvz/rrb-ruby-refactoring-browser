@@ -1,5 +1,40 @@
 
 module RRB
+  DEFINE_LOAD_SCRIPT = <<'EOS'
+$__rrb_load_path = Array.new
+$__rrb_loaded = Array.new
+alias __rrb_orig_require require
+def __rrb_search( file )
+  $__rrb_load_path.each do |path|
+    fname = File.join( path, file )
+    return fname if File.exist?( fname )
+    fname = File.join( path, file + ".rb" )
+    return fname if File.exist?( fname )
+  end
+  return nil
+end
+def __rrb_load( file )
+
+  fname = __rrb_search( file )
+  if fname == nil
+    #STDERR.print "R:", file.inspect, "\n"
+    return __rrb_orig_require file
+  end
+  #STDERR.print "L:", fname.inspect, "\n"
+  unless $__rrb_loaded.member?( fname ) 
+    load fname
+    $__rrb_loaded << fname
+    return true
+  end
+
+  return false
+end
+def require( feature )
+  __rrb_load( feature )
+end
+
+EOS
+  
   DUMP_MODULES_SCRIPT = <<'EOS'
 ObjectSpace.each_object( Module ) do |mod|
 
