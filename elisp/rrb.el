@@ -150,7 +150,7 @@ matches with rrb-ruby-file-name-regexp'"
     (set-buffer rrb-output-buffer)
     (rrb-buffer-map-line (lambda (line) (split-string line ";")))))
 
-(defun rrb-complist-second-for-type-1 ()
+(defun rrb-complist-second-for-type-1 (method)
   (save-current-buffer
     (set-buffer rrb-output-buffer)
     (goto-char (point-min))
@@ -165,7 +165,7 @@ matches with rrb-ruby-file-name-regexp'"
   (let ((method (completing-read prompt1
 				 (rrb-complist-first-for-type-1))))
     (list method
- 	  (completing-read prompt2 (rrb-complist-local-var method))
+ 	  (completing-read prompt2 (rrb-complist-second-for-type-1 method))
  	  (read-from-minibuffer prompt3))))
 
 ;;;
