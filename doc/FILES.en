@@ -1,0 +1,120 @@
+file list
+
+README.ja Japanse README
+README.en English README
+NEWS.ja   Japanse NEWS
+NEWS.en   English NEWS
+
+bin/   executable files
+  artags        generate emacsen's rtag
+  rrb           emacs-ruby interface
+  rrb_compinfo  get completion information for emacs
+  rrb_default_value  get default input value command for emacs
+  rrb_marshal   dump source tree 
+  rrbcui        CUI interface
+
+lib/   library files
+   rrb/
+    rrb.rb             stub
+    common_visitor.rb  define common visitor's
+    completion.rb      define some methods for completion
+    default.rb         define customizable constants
+    default_value.rb   for bin/default_value
+    dump_modules.rb    part of dumped_info.rb
+    dumped_info.rb     gather class/constant information with reflection
+    emacs_interface.rb emacs-ruby interface library
+    extract_method.rb  Refactoring: Extract method
+    extract_superclass.rb  Refactoring: Extract superclass
+    move_method.rb     Refactoring: Move method
+    node.rb            define nodes of syntax tree
+    parser.rb          parser
+    pullup_method.rb   Refactoring: Pullup method
+    pushdown_method.rb  Refactoring: Pushdown method
+    remove_parameter.rb  Refactoring: Remove parameter
+    rename_class_var.rb  Refactoring: Rename class variable
+    rename_constant.rb  Refactoring: Rename constant
+    rename_global_var.rb  Refactoring: Rename global variable
+    rename_instance_var.rb  Refactoring: Rename instance variable
+    rename_local_var.rb  Refactoring: Rename local variable
+    rename_method.rb  h Refactoring: Rename method
+    rename_method_all.rb  Refactoring: Rename method all
+    script.rb          define Script class
+    scriptfile.rb      define ScriptFile class
+    utils.rb           utility methods
+    cui_interface.rb   CUI interface implementation
+
+ripper/ ruby's parser
+
+reflection/ extension library for more reflection 
+  rrb_refletion.c 
+  extconf.rb
+
+elisp/ emacs lisp
+  rrb.el
+
+rubyide_tools_rrb/ FreeRIDE plugin
+  plugin.yaml     plugin configuration file
+  rrb_plugin.rb   plugin file
+
+sample/  data for unit test 
+  extract_method_sample.rb
+  extract_method_sample_after.rb
+  move_method_sample.rb
+  move_method_sample_after.rb
+  parser_sample.rb
+  pullup_method_sample.rb
+  pullup_method_sample_after.rb
+  pullup_method_sample_after2.rb
+  pushdown_method_sample.rb
+  pushdown_method_sample_after.rb
+  pushdown_method_sample_after2.rb
+  remove_parameter_sample.rb
+  remove_parameter_sample_after.rb
+  rename_class_var_sample.rb
+  rename_class_var_sample_after.rb
+  rename_global_var_sample.rb
+  rename_global_var_sample_after.rb
+  rename_instance_var_sample.rb
+  rename_instance_var_sample2.rb
+  rename_instance_var_sample_after.rb
+  rename_method_sample.rb
+  rename_method_sample_after.rb
+  rename_var_sample.rb
+  rename_var_sample_after.rb
+  rename_var_sample_stream
+  visitor_sample.rb
+
+tests/ unit test script
+   all.rb       run all tests/test_*.rb
+  test_completion.rb
+  test_default_value.rb
+  test_dumped_info.rb
+  test_extract_method.rb
+  test_extract_superclass.rb
+  test_function.rb
+  test_namespace.rb
+  test_node.rb
+  test_parser.rb
+  test_pullup_method.rb
+  test_pushdown_method.rb
+  test_remove_parameter.rb
+  test_rename_class_var.rb
+  test_rename_constant.rb
+  test_rename_global_var.rb
+  test_rename_instance_var.rb
+  test_rename_local_var.rb
+  test_rename_method.rb
+  test_rename_method_all.rb
+  test_script.rb
+  test_scriptfile.rb
+
+doc/ documentation
+   FILES.en  this file
+   FILES.ja  Japanese file list
+   rrbrc.sample  sample configuration file for ~/.rrbrb
+
+   dev/ documentation for developers
+      embed_rrb.en.rd  simple documentation for rrb interface developer
+
+package/ packaging scripts
+  
