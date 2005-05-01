@@ -114,6 +114,7 @@ tests/  ユニットテスト
 doc/  ドキュメント
 
   FILES.ja このファイル
+  FILES.en このファイルの英語版
   rrbrc.sample  ~/.rrbrcのサンプルファイル
 
   dev/  開発用ドキュメント
@@ -122,7 +123,7 @@ doc/  ドキュメント
     ripper_memo.txt  ripperに関する覚え書き
     ripper_ref.rd  ripperのリファレンス
     rrb_memo.txt  rrbに関する覚え書き
-    rrb_ref.rd  rrb開発者用リファレンスp
+    rrb_ref.rd  rrb開発者用リファレンス
     embed_rrb.ja.rd rrb組み込みドキュメント(日本語)
     embed_rrb.en.rd rrb組み込みドキュメント(英語)
 
