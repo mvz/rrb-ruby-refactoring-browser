@@ -31,10 +31,18 @@ class TestClassC < TestClassA
 end
 class TestClassD
   C1 = 7
+  C4 = 4
   class TestClassE < TestClassA
   end
 end
 class TestClassF < TestClassB
+end
+class TestClassG
+  class TestClassA
+    C5 = 1
+  end
+  class TestClassH
+  end
 end
 class << TestClassA
   class InnerSingletonClass
@@ -120,6 +128,26 @@ class TestDumpedInfo < RUNIT::TestCase
                    info.resolve_const( RRB::NS[""], "C1" ) )
   end
 
+  def test_shrink_const
+    info = make_info
+    assert_equals("C1",
+                  info.shrink_const(RRB::NS["TestClassA"],"TestClassA::C1"))
+    assert_equals("TestClassA",
+                  info.shrink_const(RRB::NS[""], "TestClassA"))
+    assert_equals("TestClassB::C1",
+                  info.shrink_const(RRB::NS::Toplevel, "TestClassB::C1"))
+    assert_equals("::TestClassA",
+                  info.shrink_const(RRB::NS["TestClassG"],"TestClassA"))
+    assert_equals("::TestClassA::C1",
+                  info.shrink_const(RRB::NS["TestClassG"],"TestClassA::C1"))
+    assert_equals("C4",
+                  info.shrink_const(RRB::NS["TestClassD::TestClassE"],
+                                    "TestClassD::C4"))
+    assert_equals("TestClassA::C5",
+                  info.shrink_const(RRB::NS["TestClassG::TestClassH"],
+                                    "TestClassG::TestClassA::C5"))
+  end
+  
   def test_exist?
     info = make_info
     assert_equals( true,
