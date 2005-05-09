@@ -55,6 +55,21 @@ module RRB
       return classinfo.class_name
     end
 
+    def shrink_const(namespace, const)
+      splitted = const.split(/::/)
+      (-1).downto(-(splitted.size)) do |idx|
+        if resolve_const(namespace, splitted[idx])==NS.new(splitted[0..(idx-1)])
+          return splitted[idx..-1].join("::")
+        end
+#         p splitted
+#         p idx
+#         p resolve_const(namespace, splitted[idx])
+#         p NS.new(splitted[0..(idx-1)])
+#         p "next"
+      end
+      return "::#{const}"
+    end
+    
     def exist?( methodname, inherited_too=true )
       if methodname.instance_method?
         self[methodname.namespace].has_method?( methodname.bare_name,
