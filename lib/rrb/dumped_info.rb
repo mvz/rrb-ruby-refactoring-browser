@@ -61,11 +61,6 @@ module RRB
         if resolve_const(namespace, splitted[idx])==NS.new(splitted[0..(idx-1)])
           return splitted[idx..-1].join("::")
         end
-#         p splitted
-#         p idx
-#         p resolve_const(namespace, splitted[idx])
-#         p NS.new(splitted[0..(idx-1)])
-#         p "next"
       end
       return "::#{const}"
     end
