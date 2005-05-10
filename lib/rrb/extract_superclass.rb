@@ -4,10 +4,11 @@ require 'rrb/common_visitor'
 module RRB
 
   class ExtractSuperclassVisitor < Visitor
-    def initialize( namespace, new_class, targets )
-      @new_superclass = namespace.abs_name + '::' + new_class
+    def initialize( namespace, new_class, targets, dumped_info )
+      @new_superclass = namespace.nested(new_class).name
       @targets = targets
       @result = []
+      @dumped_info = dumped_info
     end
 
     attr_reader :result
@@ -16,14 +17,17 @@ module RRB
       classname = namespace.nested( node.name )
       return unless @targets.include?( classname )
       return if node.superclass == nil
-      @result << Replacer.new_from_id( node.superclass.body, @new_superclass )
+      @result << Replacer.new_from_id(node.superclass.body,
+                                      @dumped_info.shrink_const(namespace,
+                                                                @new_superclass))
     end
   end
   
   class ScriptFile
     
-    def extract_superclass( namespace, new_class, targets )
-      visitor = ExtractSuperclassVisitor.new( namespace, new_class, targets )
+    def extract_superclass( namespace, new_class, targets, dumped_info )
+      visitor = ExtractSuperclassVisitor.new( namespace, new_class, targets,
+                                              dumped_info)
       @tree.accept( visitor )
       @new_script = RRB.replace_str( @input, visitor.result )
     end
@@ -38,8 +42,9 @@ module RRB
   class Script
     
     def superclass_def( namespace, new_class, old_superclass, where )
+      old_superclass = get_dumped_info.shrink_const(namespace, old_superclass.name)
       result = [
-        "class #{new_class} < ::#{old_superclass.name}\n",
+        "class #{new_class} < #{old_superclass}\n",
         "end\n"
       ]
 
@@ -53,10 +58,21 @@ module RRB
 
       result
     end
+
+    def add_new_class_to_dumped_info(namespace, new_class)
+      if namespace == Namespace::Toplevel
+        get_dumped_info[Namespace::Object].consts << new_class
+      else
+        get_dumped_info[namespace].consts << new_class
+      end
+    end
     
     def extract_superclass( namespace, new_class, targets, path, lineno )
+      add_new_class_to_dumped_info(namespace, new_class)
+      
       @files.each do |scriptfile|
-        scriptfile.extract_superclass( namespace, new_class, targets )
+        scriptfile.extract_superclass(namespace, new_class, targets,
+                                      get_dumped_info )
       end
       
       deffile = @files.find{|scriptfile| scriptfile.path == path}
