@@ -50,7 +50,7 @@ EOS
 class A
 
   class D
-    class E < ::B::NEW
+    class E < B::NEW
       def heke
         p CONST
       end
@@ -58,15 +58,15 @@ class A
   end
 end
 
-class B < ::B::NEW
+class B < B::NEW
   
 end
 
-class C < ::B::NEW
+class C < B::NEW
 end
 CONST = 3
 class B
-  class NEW < ::A
+  class NEW < A
   end
 end
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
@@ -76,10 +76,10 @@ EOS
   OUTPUT_STR2 = <<EOS
 /home/heke/temp/file1.rb#{RRB::IO_SPLITTER}
 class A
-  class NEW < ::A
+  class NEW < A
   end
   class D
-    class E < ::A::NEW
+    class E < NEW
       def heke
         p CONST
       end
@@ -87,11 +87,11 @@ class A
   end
 end
 
-class B < ::A::NEW
+class B < A::NEW
   
 end
 
-class C < ::A::NEW
+class C < A::NEW
 end
 CONST = 3
 
@@ -110,13 +110,13 @@ class A
     end
   end
 end
-class P < ::A
+class P < A
 end
-class B < ::P
+class B < P
   
 end
 
-class C < ::P
+class C < P
 end
 CONST = 3
 
@@ -124,7 +124,7 @@ CONST = 3
 EOS
 
   OUTPUT_STR4 = <<EOS
-/home/heke/temp/file1.rb#{RRB::IO_SPLITTER}class NEW < ::A
+/home/heke/temp/file1.rb#{RRB::IO_SPLITTER}class NEW < A
 end
 
 #{RRB::IO_SPLITTER}/home/heke/temp/file2.rb#{RRB::IO_SPLITTER}
@@ -132,7 +132,7 @@ require "file1"
 
 class A
 end
-class B < ::NEW
+class B < NEW
 end
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
 EOS
@@ -248,7 +248,7 @@ EOS
 
   NEW_SUPERCLASS_DEF = [
     "class D\n",
-    "  class NEW < ::C\n",
+    "  class NEW < C\n",
     "  end\n",
     "end\n",
   ]
