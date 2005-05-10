@@ -26,9 +26,9 @@ fi
 
 # - checkout
 if [ $# = 1 ]; then
-  cvs -d /cvs/ohai export -D `date +%Y-%m-%d` rrb
+  cvs -z3 -d:pserver:anonymous@rubyforge.org:/var/cvs/rrb export -D `date +%Y-%m-%d` rrb
 else
-  cvs -d /cvs/ohai export -r $2 rrb
+  cvs -z3 -d:pserver:anonymous@rubyforge.org:/var/cvs/rrb export -r $2 rrb
 fi
 
 # - move files
