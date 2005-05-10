@@ -41,7 +41,10 @@ class TestClassG
   class TestClassA
     C5 = 1
   end
+  C6 = 10
   class TestClassH
+    class TestClassI
+    end
   end
 end
 class << TestClassA
@@ -146,6 +149,9 @@ class TestDumpedInfo < RUNIT::TestCase
     assert_equals("TestClassA::C5",
                   info.shrink_const(RRB::NS["TestClassG::TestClassH"],
                                     "TestClassG::TestClassA::C5"))
+    assert_equals("C6",
+                  info.shrink_const(RRB::NS["TestClassG::TestClassH::TestClassI"],
+                                    "TestClassG::C6"))
   end
   
   def test_exist?
