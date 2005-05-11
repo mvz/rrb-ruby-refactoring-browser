@@ -26,7 +26,7 @@ fi
 
 # - checkout
 if [ $# = 1 ]; then
-  cvs -z3 -d:pserver:anonymous@rubyforge.org:/var/cvs/rrb export -D `date +%Y-%m-%d` rrb
+  cvs -z3 -d:pserver:anonymous@rubyforge.org:/var/cvs/rrb export -D now rrb
 else
   cvs -z3 -d:pserver:anonymous@rubyforge.org:/var/cvs/rrb export -r $2 rrb
 fi
