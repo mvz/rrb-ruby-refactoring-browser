@@ -3,6 +3,7 @@ require 'runit/cui/testrunner'
 
 require 'rrb/dumped_info.rb'
 require 'rrb/dump_modules'
+require 'rbconfig'
 
 DUMPED_SCRIPT = <<EOS
 class TestClassA
@@ -184,6 +185,8 @@ class TestDumpedInfo < RUNIT::TestCase
       return RRB::DumpedInfo.get_dumped_info( file )
     end
   end
+
+  RUBY_COMMAND = Config::CONFIG['ruby_install_name']
   
   def setup
     @work_dir = RRB.mk_work_dir
@@ -195,7 +198,7 @@ class TestDumpedInfo < RUNIT::TestCase
       output << RRB::DUMP_MODULES_SCRIPT
     end
     
-    system "ruby -r rrb_reflection #{@script_file} > #{@dumped_file}"    
+    system "#{RUBY_COMMAND} -r rrb_reflection #{@script_file} > #{@dumped_file}"    
   end
   
   def teardown
