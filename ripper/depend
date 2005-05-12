@@ -1,9 +1,6 @@
-CFLAGS += -DRIPPER -DRRB_RIPPER
+# CFLAGS += -DRIPPER -DRRB_RIPPER
 # CFLAGS += -DDEBUG
 # CFLAGS += -Wall
-
-ripper.o: ripper.c dispids.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 ripper.c: ripper.y resword.c
 	bison ripper.y -o ripper.c
