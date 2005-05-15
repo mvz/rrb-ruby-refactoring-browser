@@ -9,7 +9,14 @@ require 'rrb/extract_method'
 require 'rrb/move_method'
 
 class TestScriptFile < RUNIT::TestCase
-
+  def test_mk_file_path
+    assert_equals("/tmp/ruby/test.rb",
+                  RRB::ScriptFile.new("", "ruby/test.rb").mk_file_path("/tmp"))
+    assert_equals("/tmp//home/tester/ruby/test.rb",
+                  RRB::ScriptFile.new("", "/home/tester/ruby/test.rb").mk_file_path("/tmp"))
+    assert_equals("c:/tmp/c/ruby/test.rb",
+                  RRB::ScriptFile.new("", "c:/ruby/test.rb").mk_file_path("c:/tmp"))
+  end
 end
 
 if $0 == __FILE__
