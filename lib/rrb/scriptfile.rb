@@ -15,9 +15,14 @@ module RRB
       @new_script = nil
       @error_message = ""
     end
+
+    
+    def mk_file_path(dir)
+      File.join(dir, @path.sub(/\A([a-zA-Z]):/){$1})
+    end
     
     def write_source_to( dir )
-      filepath = File.join( dir,@path )
+      filepath = mk_file_path(dir)
       FileUtils.mkdir_p( File.dirname( filepath ) )
       File.open(  filepath , "w" ) do |file|
         file << @input
