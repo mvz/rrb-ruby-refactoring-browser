@@ -45,7 +45,7 @@ TEST_CLASS_A_METHOD_1 =
   end
 
 
-  TEST_DUMP_INPUT = "\
+  TEST_DUMP_INPUT1 = "\
 /home/ohai/ruby/test/file1.rb\C-a
 
 # comment
@@ -67,13 +67,23 @@ class Rename
 end
 \C-a-- END --\C-a
 "
+  TEST_DUMP_INPUT2 = <<EOS
+c:/ruby/test/file1.rb\C-a
+
+# comment only
+
+\C-a-- END --\C-a
+EOS
 
   def test_dump
-    script = RRB::Script.new_from_io( StringIO.new( TEST_DUMP_INPUT ) )
+    script = RRB::Script.new_from_io( StringIO.new( TEST_DUMP_INPUT1 ) )
     info = script.get_dumped_info
     assert_equals( "class", info["Rename"].type )
     assert_equals( ["method_1","method_2"].sort,
                    info["Rename"].public_method_names.sort )
+
+    RRB::Script.new_from_io( StringIO.new( TEST_DUMP_INPUT2 ) ).get_dumped_info
+    
   end
   
 end
