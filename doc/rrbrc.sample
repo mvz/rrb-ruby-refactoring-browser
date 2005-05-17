@@ -3,6 +3,9 @@
 #   .rrbrc is configuration file for rrb
 #   this file is ruby script
 
+#  RRB::CONF['RUBY_COMMAND'] is ruby command name
+#   default is Config::CONFIG['ruby_install_name'], normally this is 'ruby'.
+#RRB::CONF['RUBY_COMMAND'] = 'ruby'
 
 #  RRB::CONF['WORK_DIR_BASENAME'] is basename of working directory
 #  default is '/tmp/rrb_work'
