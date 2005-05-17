@@ -5,15 +5,12 @@ require 'find'
 require 'rrb/dumped_info.rb'
 require 'rrb/default'
 require 'rrb/dump_modules'
-require 'rbconfig'
 
 module RRB
 
   IO_SPLITTER = "\C-a"
   IO_TERMINATOR = '-- END --'
 
-  RUBY_COMMAND = Config::CONFIG['ruby_install_name']
-  
   class Script
 
     extend Once
