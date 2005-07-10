@@ -204,6 +204,12 @@ USG
         end
       end
     end
+
+    class FileRewriter
+      def output(script)
+        script.result_rewrite_file
+      end
+    end
     
     class UI
       def initialize(files, out)
@@ -424,7 +430,8 @@ USG
 
       diff_file = 'output.diff'
       refactoring = nil
-      overwrite = false
+      overwrite_diff = false
+      rewrite_source_files = false
       
       parser = GetoptLong.new
       parser.set_options( *OPTIONS )
@@ -432,17 +439,23 @@ USG
         print_usage if name == '--help'
         diff_file = arg if name == '-d'
         refactoring = arg if name == '-r'
-        overwrite =true if name == '-o'
+        overwrite_diff = true if name == '-o'
+        rewrite_source_files = true if name == '-w'
       end
 
-      if !overwrite && File.exist?(diff_file)
-        STDERR.print "ERROR: #{diff_file} exists\n"
-        exit 1
+      if rewrite_source_files
+        out = FileRewriter.new
+      else
+        if !overwrite_diff && File.exist?(diff_file)
+          STDERR.print "ERROR: #{diff_file} exists\n"
+          exit 1
+        end
+        out = DiffOutputer.new(diff_file)
       end
       
       refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
       ui_class = REFACTORING_MAP.fetch(refactoring){ raise 'No such refactoring' }
-      ui_class.new(ARGV, DiffOutputer.new(diff_file)).run
+      ui_class.new(ARGV, out).run
     end
 
   end
