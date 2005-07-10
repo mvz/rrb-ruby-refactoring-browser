@@ -182,20 +182,17 @@ USG
         scroll_up if @cursor < @top
       end
     end
-    
-    class UI
-      def initialize(files, diff_file)
-        @script = Script.new_from_filenames(*files)
+
+    class DiffOutputer
+      def initialize(diff_file)
         @diff_file = diff_file
       end
 
-      def setup_diff_file
+      def output(script)
+        # clear file content
         File.open(@diff_file, "wb"){}
-      end
-      
-      def output_diff
-        setup_diff_file
-        @script.files.find_all{|sf| sf.new_script != nil}.each do |sf|
+        
+        script.files.find_all{|sf| sf.new_script != nil}.each do |sf|
           tmp = Tempfile.new("rrbcui")
           begin
             tmp.print(sf.new_script)
@@ -205,6 +202,13 @@ USG
             tmp.close(true)
           end
         end
+      end
+    end
+    
+    class UI
+      def initialize(files, out)
+        @script = Script.new_from_filenames(*files)
+        @out = out
       end
 
       def select_one(prompt, words)
@@ -243,7 +247,7 @@ USG
           exit
         end
         @script.__send__(refactoring, *args)
-        output_diff
+        @out.output(@script)
       end
 
       def input_new_namespace
@@ -438,7 +442,7 @@ USG
       
       refactoring = select_one("Refactoring: ", REFACTORING) unless refactoring
       ui_class = REFACTORING_MAP.fetch(refactoring){ raise 'No such refactoring' }
-      ui_class.new(ARGV,diff_file).run
+      ui_class.new(ARGV, DiffOutputer.new(diff_file)).run
     end
 
   end
