@@ -11,7 +11,16 @@ module RRB
     def initialize( input, path )
       @input = input 
       @path = path
-      @tree = Parser.new.run( input )
+      begin
+        @tree = Parser.new.run( input )
+      rescue ArgumentError
+        if /\nRipper::([^:]+):(\d+): (.*)/ =~ $!.message
+          msg = "parse error #{path}:#{$2}: #{$3}"
+          raise RRBError, msg, $!.backtrace
+        else
+          raise
+        end
+      end
       @new_script = nil
       @error_message = ""
     end
