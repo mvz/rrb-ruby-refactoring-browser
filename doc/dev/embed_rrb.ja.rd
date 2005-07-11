@@ -70,17 +70,17 @@ IDE$B$J$I$G$O!"!V%W%m%8%'%/%H!W$H8F$P$l$k$h$&$J$b$N$G$"$k$H9M$($l$PNI$$$G$7$g$&
     $B?7$7$$%$%s%9%?%s%9$r%U%!%$%kL>$+$i@8@.$9$k!#(B
 
 === instance methods
---- rename_local_variable?(method_name, old_var, new_var)
---- rename_local_variable(method_name, old_var, new_var)
+--- rename_local_var?(method_name, old_var, new_var)
+--- rename_local_var(method_name, old_var, new_var)
 
---- rename_instance_variable?(namespace, old_var, new_var)
---- rename_instance_variable(namespace, old_var, new_var)
+--- rename_instance_var?(namespace, old_var, new_var)
+--- rename_instance_var(namespace, old_var, new_var)
 
---- rename_class_variable?(namespace, old_var, new_var)
---- rename_class_variable(namespace, old_var, new_var)
+--- rename_class_var?(namespace, old_var, new_var)
+--- rename_class_var(namespace, old_var, new_var)
 
---- rename_global_variable?(old_var, new_var)
---- rename_global_variable(old_var, new_var)
+--- rename_global_var?(old_var, new_var)
+--- rename_global_var(old_var, new_var)
 
 --- rename_method_all?(old_method, new_method)
 --- rename_method_all(old_method, new_method)

@@ -63,17 +63,17 @@ and `path' and `lineno' means place at which new class/method is created.
     Create new instance from the name of files.
 
 === instance methods
---- rename_local_variable?(method_name, old_var, new_var)
---- rename_local_variable(method_name, old_var, new_var)
+--- rename_local_var?(method_name, old_var, new_var)
+--- rename_local_var(method_name, old_var, new_var)
 
---- rename_instance_variable?(namespace, old_var, new_var)
---- rename_instance_variable(namespace, old_var, new_var)
+--- rename_instance_var?(namespace, old_var, new_var)
+--- rename_instance_var(namespace, old_var, new_var)
 
---- rename_class_variable?(namespace, old_var, new_var)
---- rename_class_variable(namespace, old_var, new_var)
+--- rename_class_var?(namespace, old_var, new_var)
+--- rename_class_var(namespace, old_var, new_var)
 
---- rename_global_variable?(old_var, new_var)
---- rename_global_variable(old_var, new_var)
+--- rename_global_var?(old_var, new_var)
+--- rename_global_var(old_var, new_var)
 
 --- rename_method_all?(old_method, new_method)
 --- rename_method_all(old_method, new_method)
