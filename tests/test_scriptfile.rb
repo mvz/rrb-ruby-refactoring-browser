@@ -17,6 +17,13 @@ class TestScriptFile < RUNIT::TestCase
     assert_equals("c:/tmp/c/ruby/test.rb",
                   RRB::ScriptFile.new("", "c:/ruby/test.rb").mk_file_path("c:/tmp"))
   end
+
+  
+  def test_s_new
+    assert_raise(RRB::RRBError){
+      RRB::ScriptFile.new("x = ;", "/home/ohai/test.rb")
+    }
+  end
 end
 
 if $0 == __FILE__
