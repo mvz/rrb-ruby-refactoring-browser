@@ -106,6 +106,26 @@ end
 #{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
 EOD
 
+INPUT_STR2 = <<EOD
+/home/ohai/test.rb#{RRB::IO_SPLITTER}
+class A
+  def A.method
+    return A
+  end
+end
+#{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
+EOD
+
+OUTPUT_STR_SMETHOD = <<EOD
+/home/ohai/test.rb#{RRB::IO_SPLITTER}
+class B
+  def B.method
+    return B
+  end
+end
+#{RRB::IO_SPLITTER}#{RRB::IO_TERMINATOR}#{RRB::IO_SPLITTER}
+EOD
+
   def test_rename_constant
 
     script = RRB::Script.new_from_io( StringIO.new( INPUT_STR ))
@@ -117,6 +137,11 @@ EOD
     script.rename_constant('::A::C', 'X')
     result = ''; script.result_to_io(result)
     assert_equals( OUTPUT_STR_X, result )
+
+    script2 = RRB::Script.new_from_io(StringIO.new(INPUT_STR2))
+    script2.rename_constant('A', 'B')
+    result = ''; script2.result_to_io(result)
+    assert_equals(OUTPUT_STR_SMETHOD, result)
   end
 
   def test_rename_constant?
