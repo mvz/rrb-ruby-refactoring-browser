@@ -92,7 +92,6 @@ module RRB
       @scope_stack.last.singleton_method_defs.delete_if do |sdef|
 	if sdef.s_obj.name == class_name.name || sdef.s_obj.self?
 	  @scope_stack.last.class_method_defs << ClassMethodNode.new( sdef )
-	  @scope_stack.last.consts.delete( sdef.s_obj )
 	  true
 	else
 	  false
