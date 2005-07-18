@@ -57,8 +57,9 @@ module RRB
   end
 
   class GetClassOnRegionVisitor < Visitor
-    def initialize( range)
+    def initialize(range, strict)
       @range = range
+      @strict = strict
       @namespace = Namespace::Toplevel 
     end
     attr_reader :namespace
@@ -67,7 +68,7 @@ module RRB
       if node.range.contain?( @range ) then
         @namespace = namespace.nested( node.name ) 
       else
-        unless node.range.out_of?(@range) then
+        if @strict && !node.range.out_of?(@range)
           @namespace = nil
         end
       end
@@ -148,9 +149,9 @@ module RRB
       visitor.method
     end
 
-    def get_class_on_region(range)
-      visitor = GetClassOnRegionVisitor.new( range )
-      @tree.accept( visitor )
+    def get_class_on_region(range, strict=true)
+      visitor = GetClassOnRegionVisitor.new(range, strict)
+      @tree.accept(visitor)
       visitor.namespace
     end    
     
@@ -175,9 +176,9 @@ module RRB
       end
     end
     
-    def get_class_on_region(path, range)
+    def get_class_on_region(path, range, strict=true)
       target_scriptfile = @files.find(){|scriptfile| scriptfile.path == path}
-      target_scriptfile && target_scriptfile.get_class_on_region(range)
+      target_scriptfile && target_scriptfile.get_class_on_region(range, strict)
     end
     
     def get_method_on_region(path, range)
@@ -185,8 +186,8 @@ module RRB
       target_scriptfile && target_scriptfile.get_method_on_region(range)
     end
 
-    def get_class_on_cursor(path, lineno)
-      get_class_on_region(path, lineno..lineno)
+    def get_class_on_cursor(path, lineno, strict=true)
+      get_class_on_region(path, lineno..lineno, strict)
     end
 
     def get_method_on_cursor(path, lineno)
