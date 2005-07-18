@@ -68,7 +68,7 @@ module RRB
 
         VimInterface.set_msg("Rename #{old_var} to #{new_var}")
       elsif RRB.valid_const?(old_var)
-        namespace = script.get_class_on_cursor(path, lineno)
+        namespace = script.get_class_on_cursor(path, lineno, false)
         true_ns = script.get_dumped_info.resolve_const(namespace, old_var)
         const = true_ns.nested(old_var).name
         args = [const, new_var]
