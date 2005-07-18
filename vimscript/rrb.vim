@@ -29,10 +29,11 @@ function s:RRBRenewBuffers()
   execute("buffer " . cur)
 endfunction
 
-function s:RRBRenameVariable(var)
+function s:RRBRefactor(exe)
+  " initialize
   call s:RRBClearMessage()
   " refactoring
-  execute "ruby RRB::VimInterface.rename_var(\"" . a:var . "\");"
+  execute "ruby " . a:exe
   " output
   if g:RRBError == ""
     silent edit
@@ -43,15 +44,10 @@ function s:RRBRenameVariable(var)
   endif
 endfunction
 
+function s:RRBRenameVariable(var)
+  call s:RRBRefactor("RRB::VimInterface.rename_var(\"" . a:var . "\");")
+endfunction
+
 function s:RRBExtractMethod(method, line1, line2)
-  call s:RRBClearMessage()
-  execute "ruby RRB::VimInterface.extract_method(\"" . a:method . "\"," . a:line1 . "," . a:line2 . ")"
-  " output
-  if g:RRBError == ""
-    silent edit
-    call s:RRBRenewBuffers()
-    echo g:RRBMessage
-  else
-    echo g:RRBError
-  endif
+  call s:RRBRefactor("RRB::VimInterface.extract_method(\"" . a:method . "\"," . a:line1 . "," . a:line2 . ")")
 endfunction
