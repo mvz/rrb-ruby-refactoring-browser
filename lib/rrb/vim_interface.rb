@@ -100,7 +100,8 @@ module RRB
         VimInterface.set_error(script.error_message)
         return
       end
-      
+
+      VimInterface.set_msg("Extract method: #{new_method}")
       script.extract_method(*args)
       script.result_rewrite_file
     end
