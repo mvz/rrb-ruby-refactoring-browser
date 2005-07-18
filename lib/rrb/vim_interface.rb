@@ -89,5 +89,20 @@ module RRB
       script.__send__(refactorer, *args)
       script.result_rewrite_file
     end
+
+    def extract_method(new_method, line1, line2)
+      path = VIM::Buffer.current.name
+      files = Dir.glob(File.dirname(path) + '/*.rb')
+      script = RRB::Script.new_from_filenames(*files)
+
+      args = [path, new_method, line1, line2]
+      unless script.extract_method?(*args)
+        VimInterface.set_error(script.error_message)
+        return
+      end
+      
+      script.extract_method(*args)
+      script.result_rewrite_file
+    end
   end
 end
