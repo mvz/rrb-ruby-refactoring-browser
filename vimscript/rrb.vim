@@ -3,7 +3,7 @@ ruby require 'rrb/vim_interface.rb'
 " Refactoring Commands
 command -nargs=1 RRBRenameVariable :call s:RRBRenameVariable(expand("<args>"))
 command -nargs=1 -range RRBExtractMethod :call s:RRBExtractMethod(expand("<args>"), <line1>, <line2>)
-" command -nargs=1 RRBRenameMethodAll :call s:RRBRenameMethodAll(expand("<args>"))
+command -nargs=1 RRBRenameMethodAll :call s:RRBRenameMethodAll(expand("<args>"))
 
 " Global variables
 let g:RRBMessage = ""
@@ -50,4 +50,8 @@ endfunction
 
 function s:RRBExtractMethod(method, line1, line2)
   call s:RRBRefactor("RRB::VimInterface.extract_method(\"" . a:method . "\"," . a:line1 . "," . a:line2 . ")")
+endfunction
+
+function s:RRBRenameMethodAll(method)
+  call s:RRBRefactor("RRB::VimInterface.rename_method_all(\"" . a:method . "\");")
 endfunction
