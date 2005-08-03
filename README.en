@@ -29,6 +29,10 @@ and input required information such as the name of variable.
 Completion is available with [TAB] key.
 And you can undo one refactoring to type M-x rrb-undo.
 
+= Installation / Vim interface
+You should install vim compiled with ruby scripting support.
+Please copy vimscript/rrb.vim to ~/.vim/plugin/.
+
 = Installation / FreeRIDE plugin
 At first, finish the installation of RRB core.
 Then, copy rubyide_tools_rrb/ to ${FreeRIDE}/plugins/.
