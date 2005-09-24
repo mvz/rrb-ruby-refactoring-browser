@@ -3,6 +3,31 @@ require 'runit/cui/testrunner'
 require 'rrb/common_visitor'
 require 'rrb/extract_method'
 
+
+class TestScriptFile_ExtractMethod < RUNIT::TestCase
+
+
+  def test_extract_method
+    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
+      script_file = RRB::ScriptFile.new( file.read, file.path )
+      script_file.extract_method('fuga', 11, 14)
+      assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,
+                    script_file.new_script )
+    end
+  end
+
+  def test_get_emethod_namespace
+    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
+      script_file = RRB::ScriptFile.new( file.read, file.path )
+      assert_equals( RRB::NS["B"],
+                    script_file.get_class_on_region( 11..14 ) )
+    end
+  end
+
+end
+
+class TestScript_ExtractMethod < RUNIT::TestCase
+
   INPUT_STR = "\
 /home/oxy/work/rrb/private/test.rb\C-a
 class X
@@ -65,29 +90,6 @@ end
 \C-a-- END --\C-a
 "
 
-
-class TestScriptFile_ExtractMethod < RUNIT::TestCase
-
-  def test_extract_method
-    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file.read, file.path )
-      script_file.extract_method('fuga', 11, 14)
-      assert_equals( File.open( 'samples/extract_method_sample_after.rb' ).read,
-                    script_file.new_script )
-    end
-  end
-
-  def test_get_emethod_namespace
-    File.open( 'samples/extract_method_sample.rb', 'r' ) do |file|
-      script_file = RRB::ScriptFile.new( file.read, file.path )
-      assert_equals( RRB::NS["B"],
-                    script_file.get_class_on_region( 11..14 ) )
-    end
-  end
-
-end
-
-class TestScript_ExtractMethod < RUNIT::TestCase
   def test_extract_method
     script = RRB::Script.new_from_io( StringIO.new(INPUT_STR ) )
     script.extract_method("/home/oxy/work/rrb/private/test.rb", 'fuga', 5, 6)
