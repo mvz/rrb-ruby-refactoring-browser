@@ -5,6 +5,7 @@ command -nargs=1 RRBRenameVariable :call s:RRBRenameVariable(expand("<args>"))
 command -nargs=1 -range RRBExtractMethod :call s:RRBExtractMethod(expand("<args>"), <line1>, <line2>)
 command -nargs=1 RRBRenameMethodAll :call s:RRBRenameMethodAll(expand("<args>"))
 
+
 " Global variables
 let g:RRBMessage = ""
 let g:RRBError = ""
@@ -55,3 +56,6 @@ endfunction
 function s:RRBRenameMethodAll(method)
   call s:RRBRefactor("RRB::VimInterface.rename_method_all(\"" . a:method . "\");")
 endfunction
+
+" call rrbcui
+" !rrbcui -w *.rb
