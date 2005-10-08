@@ -1,3 +1,10 @@
+* version 0.1
+CUI interfaceを加えた
+Vim interfaceを加えた
+バグをいくつか修正
+ドキュメントを追加
+Extract Superclassを改良
+
 * version 0.0.3
 クラスメソッドの取り扱いを改良した
 Emacs interfaceのundoを改良した

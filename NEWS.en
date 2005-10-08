@@ -1,3 +1,10 @@
+* version 0.1
+Add CUI interface
+Add Vim interface
+Fix some bugs
+Add some documents
+Improve Extract superclass refactoring.
+
 * version 0.0.3
 Refactoring class method is available
 Modify undo
