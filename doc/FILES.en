@@ -111,6 +111,8 @@ tests/ unit test script
 doc/ documentation
    FILES.en  this file
    FILES.ja  Japanese file list
+   emacs.ja.rd Japanese manual for emacs interface
+   vim.ja.rd Japanese manual for vim interface
    rrbrc.sample  sample configuration file for ~/.rrbrb
 
    dev/ documentation for developers

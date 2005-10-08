@@ -115,8 +115,10 @@ doc/  ドキュメント
 
   FILES.ja このファイル
   FILES.en このファイルの英語版
+  emacs.ja.rd Emacsインターフェースのドキュメント
+  vim.ja.rd Vimインターフェースのドキュメント
   rrbrc.sample  ~/.rrbrcのサンプルファイル
-
+  
   dev/  開発用ドキュメント
     init.rd  開発開始時に見るべきドキュメント
     init.en.rd  init.rdの英語版
