@@ -640,4 +640,5 @@
   (rrb-setup-refactoring
    (apply 'rrb-extract-superclass-impl (rrb-comp-read-extract-superclass))))
 
+(provide 'rrb)
 ;;; rrb.el ends here
