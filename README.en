@@ -10,7 +10,7 @@ Ruby 1.6.x + ruby_shim or Ruby 1.8.x.
 Emacs 20.7 or later.
 
 = Tested Emvironment
-Emacs 20.7.2/21.3, Ruby 1.6.7/1.8.0 on Debian GNU/Linux.
+Emacs 21.3, Ruby 1.8.2 on Debian GNU/Linux.
 
 = Installation / RRB core
 Type these lines on command line to install core libraries:
