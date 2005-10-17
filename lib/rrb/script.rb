@@ -80,7 +80,7 @@ module RRB
 	  return  DumpedInfo.get_dumped_info( io ) 
 	end
 	if $?/256 != 0 then
-           raise SDL::Error, "fail to run ruby internally"
+           raise RRBError, "fail to run ruby internally"
         end
       ensure
 	FileUtils.rm_r work_dir_path

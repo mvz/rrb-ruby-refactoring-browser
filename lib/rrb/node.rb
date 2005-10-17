@@ -476,7 +476,7 @@ module RRB
       when /\A([^#.]*).([^#.]+)\Z/
         ClassMethod.new( Namespace.new( $1 ), $2 )
       else
-        raise Error, "#{str} is invalid as method name"
+        raise RRBError, "#{str} is invalid as method name"
       end
     end
 
