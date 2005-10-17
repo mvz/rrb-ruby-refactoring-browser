@@ -33,7 +33,7 @@ module RRB
     end
     
     def rename_var(new_var)
-      path = VIM::Buffer.current.name
+      path = VIM::Buffer.current.name.tr('\\', '/')
       lineno, col = VIM::Window.current.cursor
       old_var = VimInterface.search_id(VIM::Buffer.current[lineno], col)
       
@@ -86,21 +86,21 @@ module RRB
         return
       end
 
-      VimInterface.refactor(type, args)
+      VimInterface.refactor(script, type, args)
     end
 
     def extract_method(new_method, line1, line2)
-      path = VIM::Buffer.current.name
+      path = VIM::Buffer.current.name.tr('\\', '/')
       files = Dir.glob(File.dirname(path) + '/*.rb')
       script = RRB::Script.new_from_filenames(*files)
 
       args = [path, new_method, line1, line2]
-      VimInterface.refactor("extract_method", args)
+      VimInterface.refactor(script, "extract_method", args)
       VimInterface.set_msg("Extract method: #{new_method}")
     end
 
     def rename_method_all(method)
-      path = VIM::Buffer.current.name
+      path = VIM::Buffer.current.name.tr('\\', '/')
       lineno, col = VIM::Window.current.cursor
       old_method = VimInterface.search_id(VIM::Buffer.current[lineno], col)
 
