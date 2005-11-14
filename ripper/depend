@@ -2,6 +2,8 @@
 # CFLAGS += -DDEBUG
 # CFLAGS += -Wall
 
+ripper.o: ripper.c dispids.h
+
 ripper.c: ripper.y resword.c
 	bison ripper.y -o ripper.c
 
