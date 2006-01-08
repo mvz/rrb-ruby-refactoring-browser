@@ -1,9 +1,10 @@
 require 'rbconfig'
+require 'tmpdir'
 
 module RRB
 
   CONF = {
-    'WORK_DIR_BASENAME' => "/tmp/rrb_work",
+    'WORK_DIR_BASENAME' => File.join(Dir.tmpdir, "rrb_work"),
     'TAB_WIDTH' => 8,
     'INDENT_LEVEL' => 2,
     'RUBY_OPTS' => "",

@@ -9,7 +9,7 @@
 
 #  RRB::CONF['WORK_DIR_BASENAME'] is basename of working directory
 #  default is '/tmp/rrb_work'
-#RRB::CONF['WORK_DIR_BASENAME'] = '/tmp/rrb_work'
+#RRB::CONF['WORK_DIR_BASENAME'] = File.join(Dir.tmpdir, "rrb_work")
 
 #  RRB::CONF['TAB_WIDTH'] is width of one tab
 #  default is 8
