@@ -178,15 +178,19 @@
   "Run COMMAND with no input from stdin and return the error code."
   (save-current-buffer
     (let ((error-code)
+          (program-name (if (featurep 'meadow) "ruby" command))
+          (program-args (if (featurep 'meadow)
+                            (append '("-S" command) args)
+                          args))
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
       (rrb-clean-buffer rrb-output-buffer)
       (rrb-clean-buffer rrb-error-buffer)
       (setq error-code (apply 'call-process
-			      command
+			      program-name
 			      nil
 			      (list rrb-output-buffer tmpfile)
 			      nil
-			      args))
+			      program-args))
       (rrb-output-to-error-buffer tmpfile)
       (delete-file tmpfile)
       error-code)))
@@ -195,17 +199,21 @@
   "Run COMMAND and return the error code."
   (save-current-buffer
     (let ((error-code)
+          (program-name (if (featurep 'meadow) "ruby" command))
+          (program-args (if (featurep 'meadow)
+                            (append '("-S" command) args)
+                          args))
 	  (tmpfile (rrb-make-temp-name rrb-tmp-file-base)))
       (rrb-clean-buffer rrb-output-buffer)
       (rrb-clean-buffer rrb-error-buffer)
       (set-buffer rrb-input-buffer)
       (setq error-code (apply 'call-process-region
 			      (point-min) (point-max)
-			      command
+			      program-name
 			      nil
 			      (list rrb-output-buffer tmpfile)
 			      nil
-                              args))
+                              program-args))
       (rrb-output-to-error-buffer tmpfile)
       (delete-file tmpfile)
       error-code)))
